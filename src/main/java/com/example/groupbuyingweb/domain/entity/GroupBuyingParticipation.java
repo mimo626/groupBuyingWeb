@@ -34,18 +34,19 @@ public class GroupBuyingParticipation {
     private UserRole role;
 
     @Column(nullable = false)
-    private int applyQuantity;
+    private Integer applyQuantity;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
 
-    @ColumnDefault("0")
     @Column(nullable = false)
-    private double paidPoint;
+    private Double paidPoint;
 
     @CreationTimestamp
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
 
+    @PrePersist
+    public void prePersist() {this.paidPoint = this.paidPoint == null ? 0 : this.paidPoint; }
 }

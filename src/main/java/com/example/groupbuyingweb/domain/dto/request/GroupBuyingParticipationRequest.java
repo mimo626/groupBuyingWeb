@@ -10,7 +10,7 @@ public class GroupBuyingParticipationRequest {
             @NotBlank(message = "로그인 상태를 확인하세요")
             String memberId,
             @Positive(message = "시스템 포인트 잔여는 0보다 큽니다.")
-            Long paidPoint
+            Double paidPoint
     ) {
     }
 
@@ -28,7 +28,7 @@ public class GroupBuyingParticipationRequest {
             @NotNull(message = "공구 아이디는 필수입니다.")
             Long groupBuyingId,
             @Positive(message = "시스템 포인트 잔여는 0보다 큽니다.")
-            Long paidPoint
+            Double paidPoint
     ) {
     }
 }
