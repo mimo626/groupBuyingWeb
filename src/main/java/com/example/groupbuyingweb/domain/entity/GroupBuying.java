@@ -29,53 +29,46 @@ public class GroupBuying {
     @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
     private GroupBuyingCategory category;
-
     @Column(nullable = false)
     private String title;
-
     @Column(nullable = false)
     private String productName;
-
     @Column(nullable = false)
     private Double totalPrice;
-
     @Column(nullable = false)
     private Integer targetQuantity;
 
+    @Column(nullable = false, length = 500)
+    private String productUrl;
+    @Column(length = 500)
+    private String productImageUrl;
+    @Column(length = 500)
+    private String productContent;
+
+    @Column(nullable = false)
+    private String neighborhoodName;
     @Column(nullable = false)
     private String meetingPlace;
-
     @Column(nullable = false)
     private Double latitude;
-
     @Column(nullable = false)
     private Double longitude;
 
+
     @Column(nullable = false)
     private Integer viewCount;
-
-    @Column(nullable = false, length = 500)
-    private String productUrl;
-
-    @Column(length = 500)
-    private String productImageUrl;
-
-    @Column(length = 500)
-    private String productContent;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
     private GroupBuyingStatus status;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String trackingNumber;
-
     private LocalDateTime meetingAt;
 
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
-
     private LocalDateTime deadline;
 
     @PrePersist
