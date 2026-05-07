@@ -12,7 +12,7 @@ public class GroupBuyingResponse {
             int unitPrice,
             int targetQuantity,
             int currentQuantity,
-            String neighborhoodName,
+            String neighborhoodName, // 동네 이름 --동
             int viewCount,
             String status,
             LocalDateTime deadline,
@@ -29,7 +29,7 @@ public class GroupBuyingResponse {
             int unitPrice,
             int targetQuantity,
             int currentQuantity,
-            String neighborhoodName,
+            String meetingPlace, // 만남 장소 텍스트
             int viewCount,
             String status,
             String content,
