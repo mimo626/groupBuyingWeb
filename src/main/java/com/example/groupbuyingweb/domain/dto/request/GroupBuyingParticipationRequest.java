@@ -1,10 +1,6 @@
 package com.example.groupbuyingweb.domain.dto.request;
 
 public class GroupBuyingParticipationRequest {
-    public record Pay(
-            Long groupBuyingId
-    ) {
-    }
 
     public record Charge(
             int userId,
@@ -12,7 +8,7 @@ public class GroupBuyingParticipationRequest {
     ) {
     }
 
-    public record Settle(
+    public record Send( // settlement, pay
             int userId,
             Long groupBuyingId
     ) {
