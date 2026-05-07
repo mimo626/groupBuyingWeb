@@ -5,7 +5,7 @@ import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class) // 생성일자 자동 생성을 위해 추가
 public class GroupBuying {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -66,15 +66,18 @@ public class GroupBuying {
     private String trackingNumber;
     private LocalDateTime meetingAt;
 
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+    @Column(nullable = false)
     private LocalDateTime deadline;
+
+    @CreationTimestamp
+    @Column(updatable = false, columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
         this.viewCount = this.viewCount == null ? 0 : this.viewCount;
     }
+
     public void patch(GroupBuyingRequest.Update request) {
         if (request.title() != null) this.title = request.title();
         if (request.productName() != null) this.productName = request.productName();
