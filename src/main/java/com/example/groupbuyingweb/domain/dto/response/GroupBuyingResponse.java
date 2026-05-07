@@ -1,39 +1,53 @@
 package com.example.groupbuyingweb.domain.dto.response;
 
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
+
 import java.time.LocalDateTime;
 
 public class GroupBuyingResponse {
 
-    // 1. 목록 조회용
+    // 공구 목록 조회
     public record List(
             Long id,
             String title,
             String productImageUrl,
-            int unitPrice,
+            double unitPrice,
             int targetQuantity,
             int currentQuantity,
             String neighborhoodName, // 동네 이름 --동
             int viewCount,
-            String status,
+            GroupBuyingStatus status,
             LocalDateTime deadline,
-            LocalDateTime createDate
+            LocalDateTime createAt
     ) {}
 
-    // 2. 상세 조회용
+    // 공구 상세 조회
     public record Detail(
             Long id,
             String title,
             String productImageUrl,
             String productUrl,
             double totalPrice,
-            int unitPrice,
+            double unitPrice,
             int targetQuantity,
             int currentQuantity,
             String meetingPlace, // 만남 장소 텍스트
             int viewCount,
-            String status,
+            GroupBuyingStatus status,
             String content,
             LocalDateTime deadline,
-            LocalDateTime createDate
+            LocalDateTime createAt
+    ) {}
+
+    public record Create(
+            Long id
+    ) {}
+
+    public record Participate(
+            Long id
+    ) {}
+
+    public record UpdateStatus(
+            Long id
     ) {}
 }
