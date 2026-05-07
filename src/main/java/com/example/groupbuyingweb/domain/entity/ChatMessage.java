@@ -2,10 +2,8 @@ package com.example.groupbuyingweb.domain.entity;
 
 import com.example.groupbuyingweb.domain.enums.MessageType;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "chat_message")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class ChatMessage {
 
     @Id
@@ -23,9 +22,9 @@ public class ChatMessage {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    //@ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "sender_id", nullable = false)
-    //private User sender;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private Member sender;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "message_type")
@@ -34,14 +33,16 @@ public class ChatMessage {
     @Column(nullable = false)
     private String content;
 
+    @CreationTimestamp
+    @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime createAt;
 
-    //@Builder
-    //public ChatMessage(ChatRoom chatRoom, User sender, MessageType messageType, String content) {
-    //    this.chatRoom = chatRoom;
-    //    this.sender = sender;
-    //    this.messageType = messageType;
-    //    this.content = content;
-    //    this.createAt = LocalDateTime.now();
-    //}
+    @Builder
+    public ChatMessage(ChatRoom chatRoom, Member sender, MessageType messageType, String content) {
+        this.chatRoom = chatRoom;
+        this.sender = sender;
+        this.messageType = messageType;
+        this.content = content;
+        this.createAt = LocalDateTime.now();
+    }
 }
