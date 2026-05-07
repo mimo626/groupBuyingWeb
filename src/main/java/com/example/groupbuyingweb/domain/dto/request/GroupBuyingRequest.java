@@ -51,7 +51,7 @@ public class GroupBuyingRequest {
 
             Double latitude,
             Double longitude,
-            String meetingAddress,
+            String meetingPlace,
 
             String productUrl,
             String productImageUrl,
