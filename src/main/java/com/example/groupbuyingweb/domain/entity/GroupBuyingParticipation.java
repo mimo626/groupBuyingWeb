@@ -1,5 +1,7 @@
 package com.example.groupbuyingweb.domain.entity;
 
+import com.example.groupbuyingweb.domain.dto.request.GroupBuyingParticipationRequest;
+import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import jakarta.persistence.*;
@@ -11,9 +13,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
 @ToString
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class GroupBuyingParticipation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +45,7 @@ public class GroupBuyingParticipation {
 
     @ColumnDefault("0")
     @Column(nullable = false)
-    private double paidPoint;
+    private Double paidPoint;
 
     @CreationTimestamp
     @Column(columnDefinition = "TIMESTAMP")
