@@ -9,8 +9,8 @@ public class GroupBuyingParticipationRequest {
     }
 
     public record Send( // settlement, pay
-            int userId,
-            Long groupBuyingId
+                        String userId,
+                        Long groupBuyingId
     ) {
     }
 

@@ -20,7 +20,6 @@ public class PointController {
     private PointService pointService;
 
 
-
 //    public ApiResponse<Void> participate(@PathVariable Long id) {
 //        groupBuyingService.participate(id);
 //        return ApiResponse.success("참여가 완료되었습니다.");
@@ -28,7 +27,7 @@ public class PointController {
 
     @GetMapping("/pay")
     public ApiResponse<?> payPoint(Long gbpId, HttpSession session){
-        int userId = (Integer) session.getAttribute("user_id");
+        String userId = (String) session.getAttribute("user_id");
         GroupBuyingParticipationResponse.UserResult dto =  pointService.payPoint(new GroupBuyingParticipationRequest.Send(userId,gbpId));
         if (dto != null) {
             return ApiResponse.success(HttpStatus.CREATED, "지불 완료", dto);
