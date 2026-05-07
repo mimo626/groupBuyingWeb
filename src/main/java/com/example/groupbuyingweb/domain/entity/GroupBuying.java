@@ -23,8 +23,8 @@ public class GroupBuying {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
@@ -43,7 +43,7 @@ public class GroupBuying {
     private Integer targetQuantity;
 
     @Column(nullable = false)
-    private String meetingAddress;
+    private String meetingPlace;
 
     @Column(nullable = false)
     private Double latitude;
@@ -91,7 +91,7 @@ public class GroupBuying {
         if (request.targetQuantity() != null) this.targetQuantity = request.targetQuantity();
         if (request.latitude() != null) this.latitude = request.latitude();
         if (request.longitude() != null) this.longitude = request.longitude();
-        if (request.meetingAddress() != null) this.meetingAddress = request.meetingAddress();
+        if (request.meetingPlace() != null) this.meetingPlace = request.meetingPlace();
         if (request.productUrl() != null) this.productUrl = request.productUrl();
         if (request.productImageUrl() != null) this.productImageUrl = request.productImageUrl();
         if (request.deadline() != null) this.deadline = request.deadline();
