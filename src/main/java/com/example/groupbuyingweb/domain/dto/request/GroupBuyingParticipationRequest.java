@@ -3,19 +3,19 @@ package com.example.groupbuyingweb.domain.dto.request;
 public class GroupBuyingParticipationRequest {
 
     public record Charge(
-            int userId,
+            int memberId,
             Long paidPoint
     ) {
     }
 
     public record Send( // settlement, pay
-                        String userId,
+                        String memberId,
                         Long groupBuyingId
     ) {
     }
 
     public record Refund(
-            int userId,
+            int memberId,
             Long groupBuyingId,
             Long paidPoint
     ) {

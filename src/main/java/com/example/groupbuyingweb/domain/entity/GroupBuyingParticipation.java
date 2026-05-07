@@ -3,10 +3,7 @@ package com.example.groupbuyingweb.domain.entity;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -18,29 +15,30 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class GroupBuyingParticipation {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     //FK 사용자id
-    //@ManyToOne(FetchType.LAZY)
-    //@JoinColumn(name="id")
-    //private User userId;
+    @ManyToOne(FetchType.LAZY)
+    @JoinColumn(name="member_id")
+    private Member memberId;
 
     //FK 공구id
-    //@ManyToOne(FetchType.LAZY)
-    //@JoinColumn(name="id")
-    //private GroupBuying groupBuyingId;
+    @ManyToOne(FetchType.LAZY)
+    @JoinColumn(name="group_buying_id")
+    private GroupBuying groupBuyingId;
 
     // 참여자 / 주최자 역할
     private Enum<UserRole> role;
 
-    private Long applyQuantity;
+    private int applyQuantity;
 
     private Enum<PaymentStatus> paymentStatus;
 
-    private Long paidPoint;
+    private double paidPoint;
 
     @CreationTimestamp
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
+
 }
