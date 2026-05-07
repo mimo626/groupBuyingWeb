@@ -36,7 +36,7 @@ public class Member {
     private Double longitude;
 
     @Column(nullable = false)
-    private Integer point;
+    private Double point;
     @Column(nullable = false)
     private Integer acornExp;
 

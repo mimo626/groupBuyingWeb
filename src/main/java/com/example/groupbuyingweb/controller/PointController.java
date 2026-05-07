@@ -20,11 +20,6 @@ public class PointController {
     private PointService pointService;
 
 
-//    public ApiResponse<Void> participate(@PathVariable Long id) {
-//        groupBuyingService.participate(id);
-//        return ApiResponse.success("참여가 완료되었습니다.");
-//    }
-
     @GetMapping("/pay")
     public ApiResponse<?> payPoint(Long gbpId, HttpSession session){
         String userId = (String) session.getAttribute("user_id");

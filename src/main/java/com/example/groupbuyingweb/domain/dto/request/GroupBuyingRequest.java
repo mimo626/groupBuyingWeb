@@ -64,12 +64,19 @@ public class GroupBuyingRequest {
             GroupBuyingStatus status,
 
             String trackingNumber,
-            LocalDateTime meetingDate
+            LocalDateTime meetingAt
     ) {}
 
     // 공구 목록 검색 조건 변경할 때
     public record SearchCondition(
             GroupBuyingCategory category, // 값이 없으면(null) 전체 조회
             String keyword     // 값이 없으면(null) 단순 목록 조회
+    ) {}
+
+    // 공구 참여할 때
+    public record Participate(
+            @NotNull(message = "신청 수량은 필수입니다.")
+            @Positive(message = "최소 1개 이상 신청해야 합니다.")
+            Integer applyQuantity
     ) {}
 }
