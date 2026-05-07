@@ -38,4 +38,23 @@ public class PointService {
         return new GroupBuyingParticipationResponse.UserResult(member.getId());
 
     }
+
+    @Transactional
+    public GroupBuyingParticipationResponse.UserResult refundPoint(GroupBuyingParticipationRequest.Send request) {
+        // 1. 공구 참여 정보 조회
+        GroupBuyingParticipation participation = participationRepo.findById(request.groupBuyingId())
+                .orElseThrow();
+        // 2. 회원 정보 조회
+        Member member = memberRepository.findById(request.memberId())
+                .orElseThrow();
+
+        // 3. 환불할 paidPoint 조회
+        double refundPay = participation.getPaidPoint();
+
+        // 4. 로직 수행
+        participationRepo.decreasePaidPoint(request.groupBuyingId(), refundPay);
+        memberRepository.increasePoint(request.memberId(), refundPay);
+
+        return new GroupBuyingParticipationResponse.UserResult(member.getId());
+    }
 }
