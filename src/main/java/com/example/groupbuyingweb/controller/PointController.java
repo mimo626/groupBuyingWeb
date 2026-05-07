@@ -29,11 +29,7 @@ public class PointController {
     public ApiResponse<?> payPoint(Long gbpId, HttpSession session){
         String userId = (String) session.getAttribute("user_id");
         GroupBuyingParticipationResponse.UserResult dto =  pointService.payPoint(new GroupBuyingParticipationRequest.Send(userId,gbpId));
-        if (dto != null) {
-            return ApiResponse.success(HttpStatus.CREATED, "지불 완료", dto);
-        } else {
-            return ApiResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR, "지불 실패", null);
-        }
+        return ApiResponse.success(dto); // null -> errorHandler
     }
 
 //    @GetMapping("/refund")

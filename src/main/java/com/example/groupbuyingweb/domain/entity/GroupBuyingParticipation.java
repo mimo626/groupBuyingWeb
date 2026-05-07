@@ -4,6 +4,7 @@ import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -12,29 +13,35 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GroupBuyingParticipation {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //FK 사용자id
-    @ManyToOne(FetchType.LAZY)
-    @JoinColumn(name="member_id")
-    private Member memberId;
+    //FK 사용자 id
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="member_id", nullable = false)
+    private Member member;
 
-    //FK 공구id
-    @ManyToOne(FetchType.LAZY)
+    //FK 공구 id
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="group_buying_id")
-    private GroupBuying groupBuyingId;
+    private GroupBuying groupBuying;
 
-    // 참여자 / 주최자 역할
-    private Enum<UserRole> role;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
 
+    @Column(nullable = false)
     private int applyQuantity;
 
-    private Enum<PaymentStatus> paymentStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus;
 
+    @ColumnDefault("0")
+    @Column(nullable = false)
     private double paidPoint;
 
     @CreationTimestamp
