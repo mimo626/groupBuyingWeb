@@ -20,12 +20,13 @@ public class GroupBuyingParticipation {
     @GeneratedValue(strategy = GenerationType.UUID)
     private Long id;
 
-    //@ManyToOne
+    //FK 사용자id
+    //@ManyToOne(FetchType.LAZY)
     //@JoinColumn(name="id")
     //private User userId;
 
-    //FK, 참여하는 공구 id
-    //@ManyToOne
+    //FK 공구id
+    //@ManyToOne(FetchType.LAZY)
     //@JoinColumn(name="id")
     //private GroupBuying groupBuyingId;
 
