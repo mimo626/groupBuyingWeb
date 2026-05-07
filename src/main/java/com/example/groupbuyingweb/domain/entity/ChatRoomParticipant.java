@@ -1,15 +1,13 @@
 package com.example.groupbuyingweb.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "chat_room_participant")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class ChatRoomParticipant {
 
     @Id
@@ -20,15 +18,15 @@ public class ChatRoomParticipant {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    //@ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "user_id", nullable = false)
-    //private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Member user;
 
     private Long lastReadMessageId;
 
-    //@Builder
-    //public ChatRoomParticipant(ChatRoom chatRoom, User user) {
-    //    this.chatRoom = chatRoom;
-    //    this.user = user;
-    //}
+    @Builder
+    public ChatRoomParticipant(ChatRoom chatRoom, Member user) {
+        this.chatRoom = chatRoom;
+        this.user = user;
+    }
 }
