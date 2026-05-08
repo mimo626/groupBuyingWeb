@@ -1,5 +1,7 @@
 package com.example.groupbuyingweb.domain.dto.response;
 
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class ChatRoomResponse {
             Long groupPurchaseId,
             String groupPurchaseTitle,
             String lastMessage,
-            String status,
+            GroupBuyingStatus status,
             LocalDateTime lastMessageAt,
             int unreadCount
     ) {}
@@ -30,7 +32,7 @@ public class ChatRoomResponse {
             Long chatRoomId,
             Long groupPurchaseId,
             String groupPurchaseTitle,
-            String status,
+            GroupBuyingStatus status,
             String trackingNumber,
             LocalDateTime meetingAt,
             String meetingLocation,
