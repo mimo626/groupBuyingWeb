@@ -2,7 +2,7 @@ package com.example.groupbuyingweb.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -40,8 +40,8 @@ public class Member {
     @Column(nullable = false)
     private Integer acornExp;
 
-    @CreatedDate
-    @Column(updatable = false)
+    @CreationTimestamp
+    @Column(updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
 
     @PrePersist
