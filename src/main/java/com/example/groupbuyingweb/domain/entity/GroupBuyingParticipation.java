@@ -51,5 +51,8 @@ public class GroupBuyingParticipation {
     private LocalDateTime createdAt;
 
     @PrePersist
-    public void prePersist() {this.paidPoint = this.paidPoint == null ? 0 : this.paidPoint; }
+    public void prePersist() {
+        this.paymentStatus = this.paymentStatus == null ? PaymentStatus.Incomplete : this.paymentStatus;
+        this.paidPoint = this.paidPoint == null ? 0 : this.paidPoint;
+    }
 }
