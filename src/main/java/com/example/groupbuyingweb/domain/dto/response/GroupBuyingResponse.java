@@ -40,14 +40,16 @@ public class GroupBuyingResponse {
     ) {}
 
     public record Create(
-            Long id
+            Long groupBuyingId,
+            Long groupBuyingPartiId
     ) {}
 
     public record Participate(
-            Long id
+            Long groupBuyingId,
+            Long groupBuyingPartiId
     ) {}
 
     public record UpdateStatus(
-            Long id
+            Long groupBuyingId
     ) {}
 }
