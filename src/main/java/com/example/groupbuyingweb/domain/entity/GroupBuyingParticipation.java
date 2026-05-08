@@ -55,4 +55,8 @@ public class GroupBuyingParticipation {
         this.paymentStatus = this.paymentStatus == null ? PaymentStatus.Incomplete : this.paymentStatus;
         this.paidPoint = this.paidPoint == null ? 0 : this.paidPoint;
     }
+    public void increasePoint(double totalPay) {
+        this.paidPoint += totalPay;
+    }
+
 }

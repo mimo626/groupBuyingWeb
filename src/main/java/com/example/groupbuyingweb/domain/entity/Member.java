@@ -54,8 +54,12 @@ public class Member {
 
     public void decreasePoint(double totalPay) {
         if (this.point < totalPay){
-            throw new Exception();
+            //throw new Exception();
         }
         this.point -= totalPay;
+    }
+
+    public void chargePoint(Double charge) {
+        this.point += charge;
     }
 }

@@ -20,29 +20,25 @@ public class PointController {
     private PointService pointService;
 
 
-    @GetMapping("/pay")
-    public ApiResponse<?> payPoint(Long gbpId, HttpSession session){
-        String userId = (String) session.getAttribute("user_id");
-        GroupBuyingParticipationResponse.UserResult dto =  pointService.payPoint(new GroupBuyingParticipationRequest.Send(userId,gbpId));
-        return ApiResponse.success(dto); // null -> errorHandler
-    }
-
-    @GetMapping("/pay")
-    public ApiResponse<?> payPoint(GroupBuyingParticipationRequest.Send request, HttpSession session){
-        String userId = (String) session.getAttribute("user_id");
-        GroupBuyingParticipationResponse.UserResult dto =  pointService.payPoint(userId, request);
-        return ApiResponse.success(dto); // null -> errorHandler
-    }
+//    @GetMapping("/pay")
+//    public ApiResponse<?> payPoint(GroupBuyingParticipationRequest.Send request, HttpSession session){
+//        String userId = (String) session.getAttribute("user_id");
+//        GroupBuyingParticipationResponse.UserResult dto =  pointService.payPoint(userId, request);
+//        return ApiResponse.success(dto); // null -> errorHandler
+//    }
 
 //    @GetMapping("/refund")
 //    public ApiResponse<?> refundPoint(int 사용자id ,int 공구참여id, int 포인트){
 //
 //    }
 //
-//    @GetMapping("/charge")
-//    public ApiResponse<?> chargePoint(int 사용자id, int 포인트){
-//
-//    }
+    @GetMapping("/charge")
+    public ApiResponse<?> chargePoint(GroupBuyingParticipationRequest.Charge request,HttpSession session){
+        String memberId = (String) session.getAttribute("member_id");
+        double charge = request.point();
+        GroupBuyingParticipationResponse.UserResult dto = pointService.chargePoint(memberId, charge);
+        return ApiResponse.success(dto); // null -> errorHandler
+    }
 //
 //    @GetMapping("/settlement")
 //    public ApiResponse<?> sendPointToOrganizer(공구 참여 테이블 엔티티 order?){
