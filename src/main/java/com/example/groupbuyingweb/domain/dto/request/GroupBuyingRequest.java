@@ -21,8 +21,10 @@ public class GroupBuyingRequest {
 
             @Positive(message = "가격은 0보다 커야 합니다.")
             double totalPrice,
-            @Positive(message = "모집 인원은 1명 이상이어야 합니다.")
+            @Positive(message = "모집 수량은 1개 이상이어야 합니다.")
             int targetQuantity,
+            @Positive(message = "신청 수량은 1개 이상이어야 합니다.")
+            int organizerQuantity,
 
             // 지도 관련 정보
             @NotNull(message = "만남 장소의 위치 정보가 필요합니다.")
