@@ -17,7 +17,7 @@ public class GroupBuyingRequest {
             String productName,
             @NotNull(message = "카테고리를 선택해주세요.")
             GroupBuyingCategory category,
-            String content,
+            String productContent,
 
             @Positive(message = "가격은 0보다 커야 합니다.")
             double totalPrice,
