@@ -75,6 +75,7 @@ public class GroupBuying {
 
     @PrePersist
     public void prePersist() {
+        this.status = this.status == null ? GroupBuyingStatus.RECRUITING : this.status;
         this.viewCount = this.viewCount == null ? 0 : this.viewCount;
     }
 
