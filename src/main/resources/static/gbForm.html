@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>공구 생성 테스트</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        .form-group { margin-bottom: 10px; }
+        label { display: inline-block; width: 120px; font-weight: bold; }
+        input, select, textarea { padding: 5px; width: 300px; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+<h2>🛒 공구 생성 테스트</h2>
+<form id="gbForm">
+    <div class="form-group"><label>제목:</label><input type="text" name="title" value="맛있는 사과 공구"></div>
+    <div class="form-group"><label>상품명:</label><input type="text" name="productName" value="꿀사과"></div>
+    <div class="form-group">
+        <label>카테고리:</label>
+        <select name="category">
+            <option value="FOOD">식품</option>
+            <option value="DAILY_NECESSITY">생필품</option>
+        </select>
+    </div>
+    <div class="form-group"><label>상세내용:</label><textarea name="content">진짜 맛있어요 같이 사요!</textarea></div>
+    <div class="form-group"><label>총 가격:</label><input type="number" name="totalPrice" value="20000"></div>
+    <div class="form-group"><label>목표 수량:</label><input type="number" name="targetQuantity" value="10"></div>
+    <div class="form-group"><label>방장 신청수량:</label><input type="number" name="organizerQuantity" value="1"></div>
+    <div class="form-group"><label>위도(Lat):</label><input type="text" name="latitude" value="37.1234"></div>
+    <div class="form-group"><label>경도(Lng):</label><input type="text" name="longitude" value="127.1234"></div>
+    <div class="form-group"><label>만남 장소:</label><input type="text" name="meetingPlace" value="상봉역 1번 출구"></div>
+    <div class="form-group"><label>상품 URL:</label><input type="text" name="productUrl" value="http://example.com"></div>
+    <div class="form-group"><label>마감 기한:</label><input type="datetime-local" name="deadline" id="deadline"></div>
+
+    <button type="button" onclick="submitForm()">공구 등록하기</button>
+</form>
+
+<div id="result">결과가 여기에 표시됩니다.</div>
+
+<script>
+    // 마감 기한 초기값 설정 (오늘로부터 7일 뒤)
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    document.getElementById('deadline').value = now.toISOString().slice(0, 16);
+
+    async function submitForm() {
+        const form = document.getElementById('gbForm');
+        const formData = new FormData(form);
+
+        // 컨트롤러가 @RequestBody를 사용하지 않으므로 URLSearchParams로 변환하여 전송
+        const data = new URLSearchParams();
+        for (const pair of formData) {
+            data.append(pair[0], pair[1]);
+        }
+
+        try {
+            const response = await fetch('/group-buying/create', {
+                method: 'POST',
+                body: data
+            });
+            const result = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        } catch (error) {
+            document.getElementById('result').textContent = '에러 발생: ' + error;
+        }
+    }
+</script>
+</body>
+</html>
