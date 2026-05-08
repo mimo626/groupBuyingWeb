@@ -11,11 +11,16 @@ public class ChatRoomResponse {
     ) {}
 
     // 채팅방 리스트 조회
+    public record ListResponse(
+            List<ListItem> chatRooms
+    ) {}
+
     public record ListItem(
             Long chatRoomId,
             Long groupPurchaseId,
             String groupPurchaseTitle,
             String lastMessage,
+            String status,
             LocalDateTime lastMessageAt,
             int unreadCount
     ) {}
