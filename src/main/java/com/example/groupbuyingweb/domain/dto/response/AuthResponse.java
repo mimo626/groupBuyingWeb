@@ -12,8 +12,8 @@ public class AuthResponse {
             String nickname,
             String address,
             Integer radius,
-            Double latitude,
-            Double longitude
+            Double entX,
+            Double entY
     ) {}
 
     public record DuplicateCheck(

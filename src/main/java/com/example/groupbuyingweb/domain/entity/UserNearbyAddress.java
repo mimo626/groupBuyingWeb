@@ -48,13 +48,13 @@ public class UserNearbyAddress {
     @Column(name = "neighborhood_name", nullable = false, length = 50)
     private String neighborhoodName;
 
-    // 주변 주소의 위도
-    @Column(name = "latitude", nullable = false)
-    private Double latitude;
+    // 주변 주소의 X 좌표
+    @Column(name = "ent_x", nullable = false)
+    private Double entX;
 
-    // 주변 주소의 경도
-    @Column(name = "longitude", nullable = false)
-    private Double longitude;
+    // 주변 주소의 Y 좌표
+    @Column(name = "ent_y", nullable = false)
+    private Double entY;
 
     // 생성 날짜
     @CreationTimestamp
