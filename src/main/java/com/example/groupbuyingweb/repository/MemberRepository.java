@@ -8,11 +8,4 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MemberRepository extends JpaRepository<Member, String> {
-    @Modifying
-    @Query("UPDATE Member m SET m.point = m.point - :amount WHERE m.id = :id")
-    void decreasePoint(@Param("id") String id, @Param("amount") Double amount);
-
-    @Modifying
-    @Query("UPDATE Member m SET m.point = m.point + :amount WHERE m.id = :id")
-    void increasePoint(@Param("id") String id, @Param("amount") Double amount);
 }

@@ -59,4 +59,11 @@ public class GroupBuyingParticipation {
         this.paidPoint += totalPay;
     }
 
+    public void settlePoint(Double point) {
+        if (this.paidPoint < point){
+            //throw new RuntimeException();
+        }
+        this.paymentStatus = PaymentStatus.Complete;
+        this.paidPoint -= point;
+    }
 }
