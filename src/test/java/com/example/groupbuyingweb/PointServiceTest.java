@@ -18,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-
-import static org.mockito.BDDMockito.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -103,7 +100,7 @@ class PointServiceTest {
                 .meetingPlace("장충단공원 앞")
                 .latitude(37.560)
                 .longitude(127.000)
-                .deadline(LocalDateTime.now().plusDays(3)) // 현재 시간 기준 3일 뒤 마감
+                .deadline(LocalDateTime.now().plusDays(3))
                 .build();
 
         groupBuyingRepository.saveAndFlush(groupBuying);
@@ -175,7 +172,7 @@ class PointServiceTest {
                 .meetingPlace("장충단공원 앞")
                 .latitude(37.560)
                 .longitude(127.000)
-                .deadline(LocalDateTime.now().plusDays(3)) // 현재 시간 기준 3일 뒤 마감
+                .deadline(LocalDateTime.now().plusDays(3))
                 .build();
         groupBuyingRepository.saveAndFlush(groupBuying);
         long groupBuyingId = groupBuying.getId();
