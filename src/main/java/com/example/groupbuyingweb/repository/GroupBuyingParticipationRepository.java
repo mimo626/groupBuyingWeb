@@ -1,20 +1,26 @@
 package com.example.groupbuyingweb.repository;
 
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
-import jakarta.validation.constraints.NotNull;
+import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.enums.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface GroupBuyingParticipationRepository extends JpaRepository<GroupBuyingParticipation, Long> {
-    @Modifying //(clearAutomatically = true) // 삽입 삭제 수정 시 메모리를 청소하고 db에서 새로 가져온다
-    @Query("UPDATE GroupBuyingParticipation p SET p.paidPoint = p.paidPoint + :amount WHERE p.id = :id")
-    void increasePaidPoint(@Param("id") Long id, @Param("amount") Double amount);
 
-    @Modifying
-    @Query("UPDATE GroupBuyingParticipation p SET p.paidPoint = p.paidPoint - :amount WHERE p.id = :id")
-    void decreasePaidPoint(@Param("id") Long id, @Param("amount") Double amount);
+    @Query("SELECT SUM(g.paidPoint) FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :gbpId")
+    Double sumSettlePay(@Param("gbpId") long groupBuyingId);
+
+
+    @Query("SELECT g.member FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :groupBuyingId AND g.role = :role")
+    Member findMemberByGroupBuyingIdAndRole(long groupBuyingId, UserRole role);
+
+    GroupBuyingParticipation findByGroupBuyingIdAndMemberId(long groupBuyingId, String memberId);
+
+    List<GroupBuyingParticipation> findAllByGroupBuyingId(long groupBuyingId);
 }
