@@ -43,8 +43,8 @@ public class ChatRoomResponse {
 
     public record Message(
             Long messageId,
-            Long userId,       // Nullable
-            String messageType,         // TEXT/SYSTEM
+            String senderId,   // Nullable (SYSTEM 메시지의 경우 null)
+            String messageType,
             String content,
             LocalDateTime sentAt
     ) {}
