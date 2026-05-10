@@ -5,33 +5,31 @@ import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor // @Autowired 대신 생성자 주입 (권장 방식)
+@Transactional(readOnly = true)
 public class GroupBuyingService {
-    @Autowired
-    private GroupBuyingRepository groupBuyingRepository;
-    @Autowired
-    private MemberRepository memberRepository;
-    @Autowired
-    private GroupBuyingParticipationRepository groupBuyingParticipationRepository;
 
+    private final GroupBuyingRepository groupBuyingRepository;
+    private final MemberRepository memberRepository;
+    private final GroupBuyingParticipationRepository participationRepository; // 변수명 간소화
+    private final PointService pointService;
+
+    // 공구 개설
     @Transactional
     public GroupBuyingResponse.Create addGroupBuying(GroupBuyingRequest.Create request, String memberId) {
-//        공구 생성 dto로 공구 엔티티 생성(필요한 값 추가)
-        // 작성자(Member) 존재 확인
-        Member member = memberRepository.findAll().get(0);
-//        Member member = memberRepository.findById(memberId)
-//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        Member member = getMember(memberId);
 
-        // DTO -> Entity 변환 (Builder 사용)
         GroupBuying groupBuying = GroupBuying.builder()
                 .member(member)
                 .title(request.title())
@@ -49,44 +47,87 @@ public class GroupBuyingService {
                 .neighborhoodName("상봉동")
                 .build();
 
-//        공구 레포지토리의 save() 실행 → 공구 반환 시 성공
         GroupBuying savedGroupBuying = groupBuyingRepository.save(groupBuying);
 
-        // 공구 참여 엔티티 생성(사용자 id, 공구 id, 역할-주최자, 신청 수량) → 공구 참여 레포지토리의 save() 실행 → 공구 참여 id 반환 시 성공
-        GroupBuyingParticipation groupBuyingParticipation = GroupBuyingParticipation.builder()
+        // 중복 분리: 공통 참여 엔티티 생성 메서드 호출 (주최자)
+        GroupBuyingParticipation participation = createParticipation(
+                member, savedGroupBuying, UserRole.ORGANIZER, request.organizerQuantity(), PaymentStatus.Complete
+        );
+
+        return new GroupBuyingResponse.Create(savedGroupBuying.getId(), participation.getId());
+    }
+
+    // 공구 참여 및 공구 시작
+    @Transactional
+    public GroupBuyingResponse.Participate participateGroupBuying(Integer applyQuantity, String memberId, Long groupBuyingId) {
+        GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+        int targetQuantity = groupBuying.getTargetQuantity(); // 리포지토리 재조회 불필요 (엔티티 사용)
+        int currentQuantity = calculateCurrentQuantity(groupBuyingId);
+
+        int totalQuantityAfterApply = currentQuantity + applyQuantity;
+
+        // 수량 초과 예외 처리
+        if (totalQuantityAfterApply > targetQuantity) {
+            throw new IllegalStateException("모집 수량을 초과하여 신청할 수 없습니다.");
+        }
+
+        Member member = getMember(memberId);
+
+        // 참여자의 포인트 결제
+        pointService.payPoint(memberId, groupBuyingId, groupBuying.getTotalPrice(), applyQuantity);
+
+        // 공구 참여 엔티티 생성 메서드 호출 (참여자 기준)
+        GroupBuyingParticipation participation = createParticipation(
+                member, groupBuying, UserRole.PARTICIPANT, applyQuantity, PaymentStatus.Complete
+        );
+
+        // 상태 변경: 목표 수량 달성 시 공구 시작
+        if (totalQuantityAfterApply == targetQuantity) {
+            groupBuying.updateStatus(GroupBuyingStatus.START);
+            // @Transactional 덕분에 groupBuyingRepository.save()를 호출하지 않아도 트랜잭션 종료 시 자동 UPDATE 쿼리 발생
+        }
+
+        return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
+    }
+
+    /* ================= 공통 로직 ================= */
+
+    // 공구 상세 Dto 생성
+    public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId) {
+        GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+        int currentQuantity = calculateCurrentQuantity(groupBuyingId);
+        return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity);
+    }
+
+    // 공구 참여 엔티티 생성
+    private GroupBuyingParticipation createParticipation(Member member, GroupBuying groupBuying, UserRole role, int applyQuantity, PaymentStatus paymentStatus) {
+        GroupBuyingParticipation participation = GroupBuyingParticipation.builder()
                 .member(member)
                 .groupBuying(groupBuying)
-                .role(UserRole.ORGANIZER)
-                .applyQuantity(request.organizerQuantity())
-                .paymentStatus(PaymentStatus.Complete)
+                .role(role)
+                .applyQuantity(applyQuantity)
+                .paymentStatus(paymentStatus)
                 .build();
-
-//        각각 id 반환 실패 시 예외 처리
-
-        // Response DTO 반환
-        return new GroupBuyingResponse.Create(
-                savedGroupBuying.getId(), groupBuyingParticipation.getId());
+        return participationRepository.save(participation);
     }
 
-    public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId){
-        GroupBuying groupBuying = groupBuyingRepository.findById(groupBuyingId).get();
-        GroupBuyingResponse.Detail detail = new GroupBuyingResponse.Detail(groupBuying);
-
-        // 현재 모집 계산 후 저장 로직
-        return detail;
+    // 공구의 현재 총 신청 수량 계산
+    private int calculateCurrentQuantity(Long groupBuyingId) {
+        return participationRepository.findAllByGroupBuyingId(groupBuyingId)
+                .stream()
+                .mapToInt(GroupBuyingParticipation::getApplyQuantity)
+                .sum();
     }
 
-//    public GroupBuyingResponse.Participate participateGroupBuying(Integer applyQuantity, String memberId, Long groupBuyingId) {
-//        공구 id로 공구 조회 → 모집 수량 저장
-//
-//                - 모집 수량 검사 로직
-//        공구 id로 모든 공구 참여 테이블을 조회해 현재 신청 수량 계산 후 저장
-//        공구의 모집 수량 > 현재 신청 수량  + 새 신청 수량 -> 공구 참여 엔티티 생성
-//        공구의 모집 수량 = 현재 신청 수량  + 새 신청 수량 -> 공구 참여 엔티티 생성 → 공구 진행 상태를 모집 중 -> 공구 시작으로 상태 변경 서비스 함수 실행
-//        공구의 모집 수량 < 현재 신청 수량  + 새 신청 수량 -> 공구 참여 불가로 에러 반환
-//                - 공구 참여 엔티티 생성 시 (사용자 id, 공구 id, 역할-참여자, 신청 수량)
-//        공구 참여 레포의 save() 실행
-//        생성 성공 시 공구 참여 id 반환
-//        생성 실패 시 에러처리
-//    }
+    // 공구 엔티티 조회
+    private GroupBuying getGroupBuying(Long groupBuyingId) {
+        return groupBuyingRepository.findById(groupBuyingId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매 게시글입니다."));
+    }
+
+    // 멤버 조회 (임시 로직 격리)
+    private Member getMember(String memberId) {
+        // TODO: 나중에 findById(memberId) 로 변경
+        return memberRepository.findAll().get(0);
+    }
 }
