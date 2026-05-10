@@ -39,17 +39,16 @@ public class GroupBuyingResponse {
             LocalDateTime deadline,
             LocalDateTime createAt
     ) {
-        public Detail(GroupBuying groupBuying) {
-            this(
+        public static Detail of(GroupBuying groupBuying, int currentQuantity) {
+            return new Detail(
                     groupBuying.getId(),
                     groupBuying.getTitle(),
                     groupBuying.getProductImageUrl(),
                     groupBuying.getProductUrl(),
                     groupBuying.getTotalPrice(),
-                    // 1인당 가격 계산 (0으로 나누기 방지)
                     groupBuying.getTargetQuantity() > 0 ? groupBuying.getTotalPrice() / groupBuying.getTargetQuantity() : 0,
                     groupBuying.getTargetQuantity(),
-                    0,
+                    currentQuantity,
                     groupBuying.getMeetingPlace(),
                     groupBuying.getViewCount(),
                     groupBuying.getStatus(),
