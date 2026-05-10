@@ -1,11 +1,11 @@
 package com.example.groupbuyingweb.domain.entity;
 
+import com.example.groupbuyingweb.core.error.BusinessException;
+import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 @Entity
@@ -60,6 +60,9 @@ public class Member {
     }
 
     public void chargePoint(Double charge) {
+        if (charge == 0.0){ // 충전금액 0 일 때 테스트
+            throw new BusinessException(ErrorCode.TEST_ZERO_POINT);
+        }
         this.point += charge;
     }
 }
