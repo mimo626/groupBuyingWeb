@@ -12,6 +12,8 @@ import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +46,7 @@ public class GroupBuyingService {
                 .productUrl(request.productUrl())
                 .productImageUrl(request.productImageUrl())
                 .deadline(request.deadline())
-                .neighborhoodName("상봉동")
+                .neighborhoodName("상봉동")  //TODO 위도, 경도로 동네 이름 조회해서 저장
                 .build();
 
         GroupBuying savedGroupBuying = groupBuyingRepository.save(groupBuying);
@@ -61,7 +63,7 @@ public class GroupBuyingService {
     @Transactional
     public GroupBuyingResponse.Participate participateGroupBuying(Integer applyQuantity, String memberId, Long groupBuyingId) {
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
-        int targetQuantity = groupBuying.getTargetQuantity(); // 리포지토리 재조회 불필요 (엔티티 사용)
+        int targetQuantity = groupBuying.getTargetQuantity();
         int currentQuantity = calculateCurrentQuantity(groupBuyingId);
 
         int totalQuantityAfterApply = currentQuantity + applyQuantity;
@@ -73,21 +75,35 @@ public class GroupBuyingService {
 
         Member member = getMember(memberId);
 
-        // 참여자의 포인트 결제
-        pointService.payPoint(memberId, groupBuyingId, groupBuying.getTotalPrice(), applyQuantity);
-
-        // 공구 참여 엔티티 생성 메서드 호출 (참여자 기준)
+        // 공구 참여 엔티티 먼저 생성
         GroupBuyingParticipation participation = createParticipation(
                 member, groupBuying, UserRole.PARTICIPANT, applyQuantity, PaymentStatus.Complete
         );
 
+        // 단가 계산 (총액 / 목표수량)
+        double unitPrice = groupBuying.getTotalPrice() / targetQuantity;
+
+        // 참여자의 포인트 결제 진행 (DB 조회 없이 만들어둔 객체를 그대로 넘김)
+        pointService.payPoint(member, participation, unitPrice);
+
         // 상태 변경: 목표 수량 달성 시 공구 시작
         if (totalQuantityAfterApply == targetQuantity) {
             groupBuying.updateStatus(GroupBuyingStatus.START);
-            // @Transactional 덕분에 groupBuyingRepository.save()를 호출하지 않아도 트랜잭션 종료 시 자동 UPDATE 쿼리 발생
         }
 
         return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
+    }
+
+    public Page<GroupBuyingResponse.List> getGroupBuyings(GroupBuyingRequest.SearchCondition condition, Pageable pageable) {
+
+        // Repository에서 Page<GroupBuying> 조회
+        return groupBuyingRepository.searchGroupBuyings(condition.category(), condition.keyword(), pageable)
+                // 메서드 참조(::) 대신 람다식(->)을 사용
+                .map(groupBuying -> {
+                    int currentQuantity = calculateCurrentQuantity(groupBuying.getId());
+
+                    return GroupBuyingResponse.List.of(groupBuying, currentQuantity);
+                });
     }
 
     /* ================= 공통 로직 ================= */
