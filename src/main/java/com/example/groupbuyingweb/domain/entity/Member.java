@@ -32,9 +32,9 @@ public class Member {
     @Column(nullable = false)
     private Integer radius;
     @Column(nullable = false)
-    private Double latitude;
+    private Double entX;
     @Column(nullable = false)
-    private Double longitude;
+    private Double entY;
 
     @Column(nullable = false)
     private Double point;

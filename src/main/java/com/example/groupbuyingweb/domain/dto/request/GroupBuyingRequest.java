@@ -28,9 +28,9 @@ public class GroupBuyingRequest {
 
             // 지도 관련 정보
             @NotNull(message = "만남 장소의 위치 정보가 필요합니다.")
-            double latitude,
+            double entX,
             @NotNull(message = "만남 장소의 위치 정보가 필요합니다.")
-            double longitude,
+            double entY,
             @NotBlank(message = "만남 장소에 대한 설명을 입력해주세요. ex) \"강남역 1번 출구 앞\"")
             String meetingPlace,
 
@@ -51,8 +51,8 @@ public class GroupBuyingRequest {
             Double totalPrice,
             Integer targetQuantity,
 
-            Double latitude,
-            Double longitude,
+            Double entX,
+            Double entY,
             String meetingPlace,
 
             String productUrl,

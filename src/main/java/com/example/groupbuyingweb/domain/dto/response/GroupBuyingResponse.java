@@ -1,5 +1,6 @@
 package com.example.groupbuyingweb.domain.dto.response;
 
+import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 
 import java.time.LocalDateTime;
@@ -37,7 +38,27 @@ public class GroupBuyingResponse {
             String content,
             LocalDateTime deadline,
             LocalDateTime createAt
-    ) {}
+    ) {
+        public Detail(GroupBuying groupBuying) {
+            this(
+                    groupBuying.getId(),
+                    groupBuying.getTitle(),
+                    groupBuying.getProductImageUrl(),
+                    groupBuying.getProductUrl(),
+                    groupBuying.getTotalPrice(),
+                    // 1인당 가격 계산 (0으로 나누기 방지)
+                    groupBuying.getTargetQuantity() > 0 ? groupBuying.getTotalPrice() / groupBuying.getTargetQuantity() : 0,
+                    groupBuying.getTargetQuantity(),
+                    0,
+                    groupBuying.getMeetingPlace(),
+                    groupBuying.getViewCount(),
+                    groupBuying.getStatus(),
+                    groupBuying.getProductContent(),
+                    groupBuying.getDeadline(),
+                    groupBuying.getCreatedAt()
+            );
+        }
+    }
 
     public record Create(
             Long groupBuyingId,

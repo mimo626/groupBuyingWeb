@@ -7,6 +7,7 @@ import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
+import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class GroupBuyingService {
     private GroupBuyingRepository groupBuyingRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private GroupBuyingParticipationRepository groupBuyingParticipationRepository;
 
     @Transactional
     public GroupBuyingResponse.Create addGroupBuying(GroupBuyingRequest.Create request, String memberId) {
@@ -37,8 +40,8 @@ public class GroupBuyingService {
                 .productContent(request.productContent())
                 .totalPrice(request.totalPrice())
                 .targetQuantity(request.targetQuantity())
-                .latitude(request.latitude())
-                .longitude(request.longitude())
+                .entX(request.entX())
+                .entY(request.entY())
                 .meetingPlace(request.meetingPlace())
                 .productUrl(request.productUrl())
                 .productImageUrl(request.productImageUrl())
@@ -64,4 +67,26 @@ public class GroupBuyingService {
         return new GroupBuyingResponse.Create(
                 savedGroupBuying.getId(), groupBuyingParticipation.getId());
     }
+
+    public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId){
+        GroupBuying groupBuying = groupBuyingRepository.findById(groupBuyingId).get();
+        GroupBuyingResponse.Detail detail = new GroupBuyingResponse.Detail(groupBuying);
+
+        // 현재 모집 계산 후 저장 로직
+        return detail;
+    }
+
+//    public GroupBuyingResponse.Participate participateGroupBuying(Integer applyQuantity, String memberId, Long groupBuyingId) {
+//        공구 id로 공구 조회 → 모집 수량 저장
+//
+//                - 모집 수량 검사 로직
+//        공구 id로 모든 공구 참여 테이블을 조회해 현재 신청 수량 계산 후 저장
+//        공구의 모집 수량 > 현재 신청 수량  + 새 신청 수량 -> 공구 참여 엔티티 생성
+//        공구의 모집 수량 = 현재 신청 수량  + 새 신청 수량 -> 공구 참여 엔티티 생성 → 공구 진행 상태를 모집 중 -> 공구 시작으로 상태 변경 서비스 함수 실행
+//        공구의 모집 수량 < 현재 신청 수량  + 새 신청 수량 -> 공구 참여 불가로 에러 반환
+//                - 공구 참여 엔티티 생성 시 (사용자 id, 공구 id, 역할-참여자, 신청 수량)
+//        공구 참여 레포의 save() 실행
+//        생성 성공 시 공구 참여 id 반환
+//        생성 실패 시 에러처리
+//    }
 }
