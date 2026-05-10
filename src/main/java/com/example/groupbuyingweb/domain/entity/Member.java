@@ -31,9 +31,9 @@ public class Member {
     private String address;
     @Column(nullable = false)
     private Integer radius;
-    @Column(nullable = false)
+    @Column(name = "ent_x", nullable = false)
     private Double entX;
-    @Column(nullable = false)
+    @Column(name = "ent_y", nullable = false)
     private Double entY;
 
     @Column(nullable = false)
