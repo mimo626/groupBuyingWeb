@@ -45,8 +45,8 @@ class PointServiceTest {
                 .password("password123")
                 .nickname("charge")
                 .address("서울시 중구 장충동")
-                .latitude(37.123)
-                .longitude(127.123)
+                .entX(37.123)
+                .entY(127.123)
                 .point(5000.0) // 기존 포인트 5000
                 .build();
         memberRepository.saveAndFlush(member);
@@ -68,8 +68,8 @@ class PointServiceTest {
                 .password("password123")
                 .nickname("charge")
                 .address("서울시 중구 장충동")
-                .latitude(37.123)
-                .longitude(127.123)
+                .entX(37.123)
+                .entY(127.123)
                 .point(10000.0) // 기존 포인트 5000
                 .build();
         memberRepository.saveAndFlush(member);
@@ -80,8 +80,8 @@ class PointServiceTest {
                 .password("password123")
                 .nickname("org_테스터")
                 .address("서울시 중구 장충동")
-                .latitude(37.124)
-                .longitude(127.124)
+                .entX(37.124)
+                .entY(127.124)
                 .point(5000.0)
                 .build();
         memberRepository.saveAndFlush(organizer);
@@ -98,8 +98,8 @@ class PointServiceTest {
                 .productContent("사과 10알이에요요용")
                 .neighborhoodName("장충동")
                 .meetingPlace("장충단공원 앞")
-                .latitude(37.560)
-                .longitude(127.000)
+                .entX(37.560)
+                .entY(127.000)
                 .deadline(LocalDateTime.now().plusDays(3))
                 .build();
 
@@ -133,8 +133,8 @@ class PointServiceTest {
                 .password("password123")
                 .nickname("settle11")
                 .address("서울시 중구 장충동")
-                .latitude(37.123)
-                .longitude(127.123)
+                .entX(37.123)
+                .entY(127.123)
                 .point(0.0)
                 .build();
 
@@ -143,8 +143,8 @@ class PointServiceTest {
                 .password("password123")
                 .nickname("settle22")
                 .address("서울시 중구 장충동")
-                .latitude(37.125)
-                .longitude(127.123)
+                .entX(37.125)
+                .entY(127.123)
                 .point(0.0)
                 .build();
 
@@ -153,8 +153,8 @@ class PointServiceTest {
                 .password("password123")
                 .nickname("주최자입니다")
                 .address("서울시 중구 장충동")
-                .latitude(37.121)
-                .longitude(127.123)
+                .entX(37.121)
+                .entY(127.123)
                 .point(100.0) // 기존 포인트 100
                 .build();
         memberRepository.saveAllAndFlush(List.of(member1,member2,organizerMember));
@@ -170,8 +170,8 @@ class PointServiceTest {
                 .productContent("사과 10알이에요요용")
                 .neighborhoodName("장충동")
                 .meetingPlace("장충단공원 앞")
-                .latitude(37.560)
-                .longitude(127.000)
+                .entX(37.560)
+                .entY(127.000)
                 .deadline(LocalDateTime.now().plusDays(3))
                 .build();
         groupBuyingRepository.saveAndFlush(groupBuying);
