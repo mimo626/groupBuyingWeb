@@ -29,8 +29,8 @@ class MemberTest {
                 .password("password123")
                 .nickname("도토리대장")
                 .address("서울시 중랑구 상봉동")
-                .latitude(37.595)
-                .longitude(127.086)
+                .entX(37.595)
+                .entY(127.086)
                 // point, acornExp, radius는 PrePersist에서 처리되므로 비워둠
                 .build();
 
