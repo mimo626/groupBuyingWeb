@@ -5,7 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,9 +31,9 @@ public class Member {
     @Column(nullable = false)
     private Integer radius;
     @Column(nullable = false)
-    private Double latitude;
+    private Double entX;
     @Column(nullable = false)
-    private Double longitude;
+    private Double entY;
 
     @Column(nullable = false)
     private Double point;

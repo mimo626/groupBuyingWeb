@@ -49,10 +49,10 @@ public class GroupBuying {
     private String neighborhoodName;
     @Column(nullable = false)
     private String meetingPlace;
-    @Column(nullable = false)
-    private Double latitude;
-    @Column(nullable = false)
-    private Double longitude;
+    @Column(name = "ent_x", nullable = false)
+    private Double entX;
+    @Column(name = "ent_y", nullable = false)
+    private Double entY;
 
 
     @Column(nullable = false)
@@ -86,8 +86,8 @@ public class GroupBuying {
         if (request.productContent() != null) this.productContent = request.productContent();
         if (request.totalPrice() != null) this.totalPrice = request.totalPrice();
         if (request.targetQuantity() != null) this.targetQuantity = request.targetQuantity();
-        if (request.latitude() != null) this.latitude = request.latitude();
-        if (request.longitude() != null) this.longitude = request.longitude();
+        if (request.entX() != null) this.entX = request.entX();
+        if (request.entY() != null) this.entY = request.entY();
         if (request.meetingPlace() != null) this.meetingPlace = request.meetingPlace();
         if (request.productUrl() != null) this.productUrl = request.productUrl();
         if (request.productImageUrl() != null) this.productImageUrl = request.productImageUrl();
