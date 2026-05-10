@@ -93,4 +93,7 @@ public class GroupBuying {
         if (request.productImageUrl() != null) this.productImageUrl = request.productImageUrl();
         if (request.deadline() != null) this.deadline = request.deadline();
     }
+    public void updateStatus(GroupBuyingStatus newStatus) {
+        this.status = newStatus;
+    }
 }

@@ -21,18 +21,11 @@ public class PointService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public void payPoint(String memberId, long groupBuyingId, Double totalPrice, Integer targetQuantity) {
-        // 1. 공구 참여 정보 조회
-        GroupBuyingParticipation participation = participationRepository.findByGroupBuyingIdAndMemberId(groupBuyingId, memberId);
+    public void payPoint(Member member, GroupBuyingParticipation participation, double unitPrice) {
+        // 1. 총 결제 금액 계산 = 단가 * 내 신청 수량
+        double totalPay = unitPrice * participation.getApplyQuantity();
 
-        // 2. 회원 정보 조회
-        Member member = memberRepository.findById(memberId).orElseThrow();
-        double pricePerQuantity = totalPrice / targetQuantity;
-
-        // 3. 가격 계산
-        double totalPay = pricePerQuantity * participation.getApplyQuantity();
-
-        // 4. 로직 수행
+        // 2. 포인트 차감 및 증가 (잔액 부족 예외 처리 로직이 내부에 있다고 가정합니다)
         member.decreasePoint(totalPay);
         participation.increasePoint(totalPay);
     }

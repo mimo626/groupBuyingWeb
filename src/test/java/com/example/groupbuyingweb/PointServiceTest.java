@@ -117,7 +117,7 @@ class PointServiceTest {
         participationRepository.saveAndFlush(participation);
 
         // 2. 목표 포인트 20000, 목표 수량 10개 (개당 2000) -> 2개 4000 지불
-        pointService.payPoint(memberId, groupBuyingId, 20000.0, 10);
+        pointService.payPoint(member, participation, 20000.0);
 
         // 3. 검증
         assertThat(member.getPoint()).isEqualTo(6000.0); // 10000 - 4000
