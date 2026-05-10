@@ -20,17 +20,22 @@ public class GroupBuyingRequest {
             String productContent,
 
             @Positive(message = "가격은 0보다 커야 합니다.")
-            double totalPrice,
-            @Positive(message = "모집 수량은 1개 이상이어야 합니다.")
-            int targetQuantity,
-            @Positive(message = "신청 수량은 1개 이상이어야 합니다.")
-            int organizerQuantity,
+            @NotNull(message = "가격을 입력해주세요.")
+            Double totalPrice,
 
-            // 지도 관련 정보
+            @Positive(message = "모집 수량은 1개 이상이어야 합니다.")
+            @NotNull(message = "모집 수량을 입력해주세요.")
+            Integer targetQuantity,
+
+            @Positive(message = "신청 수량은 1개 이상이어야 합니다.")
+            @NotNull(message = "신청 수량을 입력해주세요.")
+            Integer organizerQuantity,
+
             @NotNull(message = "만남 장소의 위치 정보가 필요합니다.")
-            double entX,
+            Double entX,
             @NotNull(message = "만남 장소의 위치 정보가 필요합니다.")
-            double entY,
+            Double entY,
+
             @NotBlank(message = "만남 장소에 대한 설명을 입력해주세요. ex) \"강남역 1번 출구 앞\"")
             String meetingPlace,
 
