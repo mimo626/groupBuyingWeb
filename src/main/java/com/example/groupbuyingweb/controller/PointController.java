@@ -6,13 +6,10 @@ import com.example.groupbuyingweb.domain.dto.response.GroupBuyingParticipationRe
 import com.example.groupbuyingweb.service.PointService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@RestController
+@Controller
 @RequestMapping("/api/point")
 public class PointController {
 
@@ -32,13 +29,24 @@ public class PointController {
 //
 //    }
 //
-    @GetMapping("/charge")
+    @PostMapping("/charge")
+    @ResponseBody
     public ApiResponse<?> chargePoint(GroupBuyingParticipationRequest.Charge request,HttpSession session){
         String memberId = (String) session.getAttribute("member_id");
         double charge = request.point();
         GroupBuyingParticipationResponse.UserResult dto = pointService.chargePoint(memberId, charge);
         return ApiResponse.success(dto); // null -> errorHandler
     }
+
+    @GetMapping("/testapi/login")
+    public String pointTestPage(HttpSession session) {
+        // 테스트 : member_id 세션에 강제 주입, 도토리대장거
+        session.setAttribute("member_id", "f698dfe8-cc7e-453a-946d-9a39f8e8574c");
+
+        return "chargeTest"; // templates/chargeTest.html
+    }
+
+
 //
 //    @GetMapping("/settlement")
 //    public ApiResponse<?> sendPointToOrganizer(공구 참여 테이블 엔티티 order?){
