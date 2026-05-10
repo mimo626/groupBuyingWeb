@@ -24,22 +24,22 @@ public class GroupBuyingController {
         return ApiResponse.success(res);
     }
 
-//    @GetMapping("{id}")
-//    @ResponseBody
-//    public ApiResponse<GroupBuyingResponse.Detail> getGroupBuyingById(@PathVariable("id") Long groupBuyingId) {
-//        GroupBuyingResponse.Detail res = groupBuyingService.findById(groupBuyingId);
-//        return ApiResponse.success(res);
-//    }
-//
-//    @PostMapping("{id}/participate")
-//    @ResponseBody
-//    public ApiResponse<GroupBuyingResponse.Participate> participateGroupBuying(@PathVariable("id") Long groupBuyingId,
-//                                                                               @Valid GroupBuyingRequest.Participate groupBuyingRequest) {
-//        String memberId = "";
-//        GroupBuyingResponse.Participate res = groupBuyingService.participateGroupBuying(
-//                groupBuyingRequest.applyQuantity(),
-//                memberId,
-//                groupBuyingId);
-//        return ApiResponse.success(res);
-//    }
+    @GetMapping("{id}")
+    @ResponseBody
+    public ApiResponse<GroupBuyingResponse.Detail> getGroupBuyingById(@PathVariable("id") Long groupBuyingId) {
+        GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId);
+        return ApiResponse.success(res);
+    }
+
+    @PostMapping("{id}/participate")
+    @ResponseBody
+    public ApiResponse<GroupBuyingResponse.Participate> participateGroupBuying(@PathVariable("id") Long groupBuyingId,
+                                                                               @Valid GroupBuyingRequest.Participate groupBuyingRequest) {
+        String memberId = "";
+        GroupBuyingResponse.Participate res = groupBuyingService.participateGroupBuying(
+                groupBuyingRequest.applyQuantity(),
+                memberId,
+                groupBuyingId);
+        return ApiResponse.success(res);
+    }
 }
