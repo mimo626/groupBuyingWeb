@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupBuyingRepository extends JpaRepository<GroupBuying, Long> {
+    Integer findTargetQuantityById(long groupBuyingId);
 }
