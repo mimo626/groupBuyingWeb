@@ -1,6 +1,7 @@
 package com.example.groupbuyingweb.controller;
 
 import com.example.groupbuyingweb.core.api.ApiResponse;
+import com.example.groupbuyingweb.domain.dto.response.ChatMessageResponse;
 import com.example.groupbuyingweb.domain.dto.response.ChatRoomResponse;
 import com.example.groupbuyingweb.service.ChatRoomService;
 import jakarta.servlet.http.HttpSession;
@@ -54,6 +55,25 @@ public class ChatRoomController {
             HttpSession session) {
         String memberId = (String) session.getAttribute("member_id");
         ChatRoomResponse.Detail response = chatRoomService.getChatRoomDetail(roomId, memberId);
+        return ApiResponse.success(response);
+    }
+
+    /**
+     * 특정 채팅방의 안 읽은 메시지 수 조회
+     *
+     * GET /api/chat/rooms/{roomId}/unread
+     *
+     * 채팅방 목록 화면에서 배지 숫자를 실시간으로 갱신할 때 사용
+     * 전체 목록/상세를 다시 불러오지 않고 카운트만 빠르게 반환
+     *
+     * @param: roomId 안 읽은 수를 조회할 채팅방 ID
+     */
+    @GetMapping("/rooms/{roomId}/unread")
+    public ApiResponse<ChatMessageResponse.UnreadCount> getUnreadCount(
+            @PathVariable Long roomId,
+            HttpSession session) {
+        String memberId = (String) session.getAttribute("member_id");
+        ChatMessageResponse.UnreadCount response = chatRoomService.getUnreadCount(roomId, memberId);
         return ApiResponse.success(response);
     }
 }

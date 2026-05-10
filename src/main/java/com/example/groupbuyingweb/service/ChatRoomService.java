@@ -1,5 +1,6 @@
 package com.example.groupbuyingweb.service;
 
+import com.example.groupbuyingweb.domain.dto.response.ChatMessageResponse;
 import com.example.groupbuyingweb.domain.dto.response.ChatRoomResponse;
 import com.example.groupbuyingweb.domain.entity.ChatMessage;
 import com.example.groupbuyingweb.domain.entity.ChatRoom;
@@ -97,7 +98,7 @@ public class ChatRoomService {
     /**
      * 현재 사용자가 참여 중인 채팅방 목록 조회
      *
-     * 각 채팅방의 마지막 메시지와 안 읽은 메시지 수를 함께 반환함
+     * 각 채팅방의 마지막 메시지와 안 읽은 메시지 수를 함께 반환
      *
      * @param memberId: 조회를 요청한 회원 ID (세션에서 추출)
      */
@@ -136,5 +137,35 @@ public class ChatRoomService {
                 .toList();
 
         return new ChatRoomResponse.ListResponse(items);
+    }
+
+    /**
+     * 특정 채팅방의 안 읽은 메시지 수만 조회
+     *
+     * 채팅방 목록 화면에서 배지 숫자를 실시간으로 갱신할 때 사용
+     * 전체 목록이나 상세를 다시 불러오지 않고 카운트만 반환
+     *
+     * @param chatRoomId: 조회할 채팅방 ID
+     * @param memberId: 조회를 요청한 회원 ID (세션에서 추출)
+     */
+    @Transactional(readOnly = true)
+    public ChatMessageResponse.UnreadCount getUnreadCount(Long chatRoomId, String memberId) {
+        // 참여자인지 먼저 검증
+        participantService.validateParticipant(chatRoomId, memberId);
+
+        // 현재 사용자의 lastReadMessageId 조회
+        ChatRoomParticipant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId, memberId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방 참여자가 아닙니다."));
+
+        Long lastReadMessageId = participant.getLastReadMessageId();
+
+        // lastReadMessageId가 null이면 한 번도 읽지 않은 것 -> 전체 메시지 수가 unreadCount
+        // null이 아니면 마지막으로 읽은 메시지 이후의 메시지 수만 카운트
+        long count = (lastReadMessageId == null)
+                ? chatMessageRepository.countByChatRoomIdAndIdGreaterThan(chatRoomId, 0L)
+                : chatMessageRepository.countByChatRoomIdAndIdGreaterThan(chatRoomId, lastReadMessageId);
+
+        return new ChatMessageResponse.UnreadCount((int) count);
     }
 }
