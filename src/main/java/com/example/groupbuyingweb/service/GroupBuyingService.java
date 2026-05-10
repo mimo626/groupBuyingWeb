@@ -24,7 +24,7 @@ public class GroupBuyingService {
 
     private final GroupBuyingRepository groupBuyingRepository;
     private final MemberRepository memberRepository;
-    private final GroupBuyingParticipationRepository participationRepository; // 변수명 간소화
+    private final GroupBuyingParticipationRepository participationRepository;
     private final PointService pointService;
 
     // 공구 개설
@@ -51,10 +51,16 @@ public class GroupBuyingService {
 
         GroupBuying savedGroupBuying = groupBuyingRepository.save(groupBuying);
 
-        // 중복 분리: 공통 참여 엔티티 생성 메서드 호출 (주최자)
+        // 공구 참여 엔티티 생성 (주최자)
         GroupBuyingParticipation participation = createParticipation(
                 member, savedGroupBuying, UserRole.ORGANIZER, request.organizerQuantity(), PaymentStatus.Complete
         );
+
+        // 단가 계산 (총액 / 목표수량)
+        double unitPrice = groupBuying.getTotalPrice() / groupBuying.getTargetQuantity();
+
+        // 주최자의 포인트 결제 진행
+        pointService.payPoint(member, participation, unitPrice);
 
         return new GroupBuyingResponse.Create(savedGroupBuying.getId(), participation.getId());
     }
@@ -75,7 +81,7 @@ public class GroupBuyingService {
 
         Member member = getMember(memberId);
 
-        // 공구 참여 엔티티 먼저 생성
+        // 공구 참여 엔티티 생성
         GroupBuyingParticipation participation = createParticipation(
                 member, groupBuying, UserRole.PARTICIPANT, applyQuantity, PaymentStatus.Complete
         );
