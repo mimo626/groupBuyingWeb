@@ -29,4 +29,15 @@ public class ChatRoomParticipant {
         this.chatRoom = chatRoom;
         this.user = user;
     }
+
+    /**
+     * 마지막으로 읽은 메시지 ID 갱신 (읽음 처리)
+     *
+     * 채팅방 상세 조회 시 호출되어, 이 값이 갱신된 이후에 도착한 메시지만
+     * 안 읽은 메시지로 계산됨
+     * (unreadCount = 메시지 id > lastReadMessageId 인 메시지 수)
+     */
+    public void updateLastReadMessageId(Long messageId) {
+        this.lastReadMessageId = messageId;
+    }
 }
