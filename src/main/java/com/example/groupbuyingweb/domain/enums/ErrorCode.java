@@ -8,6 +8,16 @@ import lombok.Getter;
 public enum ErrorCode {
 
     INTERNAL_SERVER_ERROR(500,"서버 내부 오류입니다."),
+    // 회원가입 / 인증
+    DUPLICATED_LOGIN_ID(400, "이미 사용 중인 로그인 아이디입니다."),
+    DUPLICATED_NICKNAME(400, "이미 사용 중인 닉네임입니다."),
+    PASSWORD_NOT_MATCH(400, "비밀번호가 일치하지 않습니다."),
+    TERMS_NOT_AGREED(400, "필수 약관에 동의해야 합니다."),
+
+    // 주소 / 카카오 API
+    ADDRESS_REGION_NOT_FOUND(400, "좌표의 행정동 정보를 찾을 수 없습니다."),
+    KAKAO_LOCAL_API_ERROR(500, "카카오 로컬 API 호출 중 오류가 발생했습니다."),
+
     // 포인트
     INSUFFICIENT_POINT(400, "포인트 잔액이 부족합니다."),
 
