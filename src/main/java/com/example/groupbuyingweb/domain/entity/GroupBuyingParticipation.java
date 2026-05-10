@@ -1,5 +1,7 @@
 package com.example.groupbuyingweb.domain.entity;
 
+import com.example.groupbuyingweb.core.error.BusinessException;
+import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import jakarta.persistence.*;
@@ -57,7 +59,7 @@ public class GroupBuyingParticipation {
 
     public void settlePoint(Double point) {
         if (this.paidPoint < point){
-            //throw new RuntimeException();
+            throw new BusinessException(ErrorCode.INSUFFICIENT_POINT);
         }
         this.paymentStatus = PaymentStatus.Complete;
         this.paidPoint -= point;
