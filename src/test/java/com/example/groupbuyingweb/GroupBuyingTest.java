@@ -3,25 +3,33 @@ package com.example.groupbuyingweb;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
-import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 @Transactional
-//@Commit
 class GroupBuyingTest {
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Autowired
     private GroupBuyingRepository groupBuyingRepository;
@@ -29,57 +37,98 @@ class GroupBuyingTest {
     @Autowired
     private MemberRepository memberRepository;
 
-    @Test
-    @DisplayName("공동구매 게시글 생성 및 저장 테스트")
-    void createGroupBuyingTest() {
-        // 1. Given: 공구 작성자(Member) 먼저 생성 및 저장
+    private Member testMember;
+    private GroupBuying testGroupBuying;
+
+    @BeforeEach
+    void setUp() {
+        // 테스트용 멤버 1명, 공구 1개 세팅
         Member member = Member.builder()
-                .loginId("host01")
-                .password("password123")
-                .nickname("사과킬러")
-                .address("서울시 중랑구 상봉동")
-                .entX(37.595)
-                .entY(127.086)
+                .loginId("testUser")
+                .password("1234")
+                .nickname("테스터")
+                .address("상봉동")
+                .entX(37.0).entY(127.0)
                 .build();
-        Member savedMember = memberRepository.saveAndFlush(member);
+        testMember = memberRepository.saveAndFlush(member);
 
-        // 저장할 공구 객체 생성 (Member 객체 주입)
         GroupBuying groupBuying = GroupBuying.builder()
-                .member(savedMember) // FK 연관관계 매핑
-                .title("상봉동 꿀사과 10kg 같이 사요!")
-                .productName("청송 꿀사과 10kg")
+                .member(testMember)
+                .title("상봉동 사과 공구")
+                .productName("사과")
                 .category(GroupBuyingCategory.FOOD)
-                .totalPrice(50000.0)
+                .totalPrice(10000.0)
                 .targetQuantity(10)
-                .productUrl("https://example.com/apple")
-                .productImageUrl("https://example.com/apple.jpg")
-                .productContent("진짜 맛있는 사과입니다. 1인당 1kg씩 나눠 가져요!")
+                .productUrl("url")
+                .meetingPlace("상봉역")
                 .neighborhoodName("상봉동")
-                .meetingPlace("상봉역 3번 출구 앞")
-                .entX(37.596) // 사용자 엔티티의 entX, entY와 맞춰서 작성
-                .entY(127.087)
-                .deadline(LocalDateTime.now().plusDays(3)) // 3일 뒤 마감 설정
-                // viewCount, status는 @PrePersist에서 처리되므로 비워둠
+                .entX(37.0).entY(127.0)
+                .deadline(LocalDateTime.now().plusDays(3))
                 .build();
+        testGroupBuying = groupBuyingRepository.saveAndFlush(groupBuying);
+    }
 
-        // 2. When: 레포지토리를 통해 저장
-        GroupBuying savedGroupBuying = groupBuyingRepository.saveAndFlush(groupBuying);
+    @Test
+    @DisplayName("1. 공구 생성 테스트 (Form Data 전송)")
+    @Order(1)
+    void createGroupBuyingTest() throws Exception {
+        // 컨트롤러에 @RequestBody가 없으므로 Form 전송 방식으로 테스트합니다.
+        mockMvc.perform(post("/group-buying/create")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("title", "새로운 공구")
+                        .param("productName", "배")
+                        .param("category", "FOOD")
+                        .param("totalPrice", "20000")
+                        .param("targetQuantity", "5")
+                        .param("organizerQuantity", "1")
+                        .param("entX", "37.5")
+                        .param("entY", "127.5")
+                        .param("meetingPlace", "우리집 앞")
+                        .param("productUrl", "http://apple.com")
+                        .param("deadline", LocalDateTime.now().plusDays(5).toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").exists()) // 응답 data가 있는지 확인
+                .andDo(print());
+    }
 
-        // 3. Then: 검증
-        // ID가 잘 생성되었는지 확인
-        assertNotNull(savedGroupBuying.getId());
-        assertThat(savedGroupBuying.getTitle()).isEqualTo("상봉동 꿀사과 10kg 같이 사요!");
+    @Test
+    @DisplayName("2. 공구 상세 조회 테스트 (Path Variable)")
+    @Order(2)
+    void getGroupBuyingDetailTest() throws Exception {
+        // @RequestMapping("/group-buying")이 있으므로 경로를 맞춰줍니다.
+        mockMvc.perform(get("/group-buying/" + testGroupBuying.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("상봉동 사과 공구"))
+                .andDo(print());
+    }
 
-        // FK 매핑 검증: 게시글의 작성자가 처음에 만든 멤버가 맞는지 확인
-        assertThat(savedGroupBuying.getMember().getId()).isEqualTo(savedMember.getId());
+    @Test
+    @DisplayName("3. 공구 참여 테스트 (Form Data 전송)")
+    @Order(3)
+    void participateGroupBuyingTest() throws Exception {
+        mockMvc.perform(post("/group-buying/" + testGroupBuying.getId() + "/participate")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        // HTML 폼에서 <input name="applyQuantity" value="2"> 로 보낸 것과 똑같은 효과!
+                        .param("applyQuantity", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.groupBuyingId").value(testGroupBuying.getId()))
+                .andDo(print());
+    }
 
-        // @PrePersist 설정값들이 잘 들어갔는지 확인
-        assertThat(savedGroupBuying.getStatus()).isEqualTo(GroupBuyingStatus.RECRUITING); // 기본값: RECRUITING
-        assertThat(savedGroupBuying.getViewCount()).isEqualTo(0); // 기본값: 0
-
-        // @CreationTimestamp(Auditing) 작동 확인
-        assertNotNull(savedGroupBuying.getCreatedAt());
-
-        System.out.println("생성된 공구 게시글 ID: " + savedGroupBuying.getId());
+    @Test
+    @DisplayName("4. 공구 목록 조회 테스트 (Query Parameter)")
+    @Order(4)
+    void getGroupBuyingsListTest() throws Exception {
+        // GET 요청에서 param()은 URL 뒤에 붙는 쿼리스트링(?category=FOOD&page=0)이 됩니다.
+        mockMvc.perform(get("/group-buying/list")
+                        .param("category", "FOOD")
+                        .param("keyword", "사과") // DTO에 keyword 필드가 있다면 테스트
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "createdAt,desc"))
+                .andExpect(status().isOk())
+                // 검색 결과 첫 번째 항목의 제목 확인
+                .andExpect(jsonPath("$.data.content[0].title").value("상봉동 사과 공구"))
+                .andDo(print());
     }
 }
