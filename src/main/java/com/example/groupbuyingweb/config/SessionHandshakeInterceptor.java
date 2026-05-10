@@ -12,7 +12,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import java.util.Map;
 
 /**
- * WebSocket 핸드셰이크(연결 수립) 직전에 실행되는 인터셉터
+ * WebSocket 핸드셰이크 직전에 실행되는 인터셉터
  *
  * WebSocket은 처음 연결할 때 HTTP 업그레이드 요청 사용
  * 이 순간이 HTTP 세션에 접근할 수 있는 유일한 시점임

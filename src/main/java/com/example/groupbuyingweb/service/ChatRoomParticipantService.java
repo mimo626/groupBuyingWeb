@@ -55,8 +55,6 @@ public class ChatRoomParticipantService {
                 .orElseThrow(() -> new IllegalArgumentException("채팅방 참여자가 아닙니다."));
 
         // 엔티티의 updateLastReadMessageId() 호출
-        // @Transactional이 붙어 있으므로 별도 save() 없이도 변경 내용이 DB에 반영됨
-        // (JPA 더티 체킹: 트랜잭션 종료 시 엔티티 변경을 자동으로 감지해서 UPDATE 쿼리 실행)
         participant.updateLastReadMessageId(lastMessageId);
     }
 }
