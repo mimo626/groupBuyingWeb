@@ -34,7 +34,7 @@ public class MyPageController {
     @GetMapping("/profile")
     public ApiResponse<?> getProfile(HttpSession session){
         // 이대로 authService에 로그인 체크로 넣는것도 고려
-        String memberId = (String) session.getAttribute("member_id");
+        String memberId = (String) session.getAttribute("loginUserId");
         if (memberId == null){
             throw new BusinessException(ErrorCode.UNAUTHORIZED);
         }
@@ -46,7 +46,7 @@ public class MyPageController {
     @ResponseBody
     @GetMapping("/neighborhood")
     public ApiResponse<?> getNeighborhood(HttpSession session){
-        String memberId = (String) session.getAttribute("member_id");
+        String memberId = (String) session.getAttribute("loginUserId");
         if (memberId == null){
             throw new BusinessException(ErrorCode.UNAUTHORIZED);
         }
@@ -57,7 +57,7 @@ public class MyPageController {
     @ResponseBody
     @PatchMapping("/neighborhood")
     public ApiResponse<MyPageResponse.Neighborhood> patchNeighborhood(MyPageRequest.UpdateNeighborhood request,HttpSession session){
-        String memberId = (String) session.getAttribute("member_id");
+        String memberId = (String) session.getAttribute("loginUserId");
         if (memberId == null){
             throw new BusinessException(ErrorCode.UNAUTHORIZED);
         }

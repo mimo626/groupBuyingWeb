@@ -7,13 +7,20 @@
 <body>
 <h2>포인트 충전 API 테스트 화면</h2>
 
-<p>현재 로그인된 세션 ID: <strong th:text="${session.member_id}"></strong></p>
+<p>현재 로그인된 세션 ID: <strong th:text="${session.loginUserId}"></strong></p>
 
 <hr>
 
 <div>
     <input type="number" id="pointInput">
     <button onclick="requestCharge()">충전 요청하기</button>
+</div>
+
+<div>
+    <button onclick="requestProfile('profile')">내정보 조회 요청하기</button>
+</div>
+<div>
+    <button onclick="requestProfile('neighborhood')">내주변 동네 요청하기</button>
 </div>
 
 <div class="result-box">
@@ -57,6 +64,31 @@
                 document.getElementById("jsonResult").innerText = "오류 발생: " + error.message;
             });
     }
+
+    function requestProfile(target){
+        const apiUrl = `/api/mypage/`+target;
+
+        fetch(apiUrl)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+
+                if (data.status === 400){
+                    alert(data.message);
+                    location.href = `/loginTest.html`;
+                } else {
+                    document.getElementById("jsonResult").style.color = "blue";
+                    document.getElementById("jsonResult").innerText = JSON.stringify(data);
+                }
+                //document.getElementById("jsonResult").innerText = JSON.stringify(data);
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+                document.getElementById("jsonResult").innerText = "오류 발생: " + error.message;
+            });
+    }
+
 </script>
 </body>
 </html>
