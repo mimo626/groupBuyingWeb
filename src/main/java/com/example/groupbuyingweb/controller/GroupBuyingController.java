@@ -58,11 +58,11 @@ public class GroupBuyingController {
 
     @PatchMapping("/{id}/status")
     public ApiResponse<GroupBuyingResponse.UpdateStatus> updateGroupBuyingStatus(
-            @PathVariable Long id,
+            @PathVariable("id") Long groupBuyingId,
             @RequestBody GroupBuyingRequest.UpdateStatus request
     ) {
-        String memberId = "";
-        GroupBuyingResponse.UpdateStatus res = groupBuyingService.updateStatus(id, memberId, request);
+        GroupBuyingResponse.UpdateStatus res = groupBuyingService.updateStatusFromRequest(groupBuyingId, request);
         return ApiResponse.success(res);
     }
+
 }
