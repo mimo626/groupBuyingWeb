@@ -76,6 +76,5 @@ public class MyPageService {
                 member.getEntY(),
                 nearbyAddressList
         );
-
     }
 }

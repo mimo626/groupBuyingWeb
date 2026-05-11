@@ -2,9 +2,7 @@ package com.example.groupbuyingweb.controller;
 
 import com.example.groupbuyingweb.core.api.ApiResponse;
 import com.example.groupbuyingweb.core.error.BusinessException;
-import com.example.groupbuyingweb.domain.dto.request.GroupBuyingParticipationRequest;
 import com.example.groupbuyingweb.domain.dto.request.MyPageRequest;
-import com.example.groupbuyingweb.domain.dto.response.GroupBuyingParticipationResponse;
 import com.example.groupbuyingweb.domain.dto.response.MyPageResponse;
 import com.example.groupbuyingweb.domain.entity.UserNearbyAddress;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
