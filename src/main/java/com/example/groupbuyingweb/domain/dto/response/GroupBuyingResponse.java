@@ -87,6 +87,14 @@ public class GroupBuyingResponse {
     ) {}
 
     public record UpdateStatus(
-            Long groupBuyingId
-    ) {}
+            Long groupBuyingId,
+            GroupBuyingStatus status
+    ) {
+        public static UpdateStatus from(GroupBuying groupBuying) {
+            return new UpdateStatus(
+                    groupBuying.getId(),
+                    groupBuying.getStatus()
+            );
+        }
+    }
 }
