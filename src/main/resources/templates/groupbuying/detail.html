@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <h1 th:text="${groupBuying.title}"></h1>
+    <div th:text="${groupBuying.productName}"></div>
+    <div th:if="${groupBuying.productContent}" th:text="${groupBuying.productContent}"></div>
+</div>
+
+</body>
+</html>
