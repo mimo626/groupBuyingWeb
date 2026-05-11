@@ -122,43 +122,42 @@ public class GroupBuyingService {
 
     // 공구 진행 상태 변경
     @Transactional
-    public void updateStatusFromRequest(Long id, String memberId, GroupBuyingRequest.UpdateStatus request) {
+    public GroupBuyingResponse.UpdateStatus updateStatusFromRequest(Long groupBuyingId, GroupBuyingRequest.UpdateStatus request) {
         // 권한 체크 로직
 
         // 상태 변경 로직 호출 (DTO의 값들을 풀어서 전달)
-        processStatusChange(id, request.status(), request.trackingNumber(), request.meetingAt());
-    }
+        GroupBuying updatedGroupBuying = processStatusChange(
+                groupBuyingId, request.status(), request.trackingNumber(), request.meetingAt()
+        );
 
+        // 엔티티를 응답 DTO로 변환하여 반환
+        return GroupBuyingResponse.UpdateStatus.from(updatedGroupBuying);
+    }
     // 서비스 내부 호출용 공구 진행상태 변경 메서드 (공구 참여 로직에서도 호출 가능)
     @Transactional
-    public void processStatusChange(Long id, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingAt) {
-        GroupBuying groupBuying = groupBuyingRepository.findById(id)
+    public GroupBuying processStatusChange(Long groupBuyingId, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingTime) {
+        GroupBuying groupBuying = groupBuyingRepository.findById(groupBuyingId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공구입니다."));
 
-        // 엔티티 상태 업데이트
         groupBuying.updateStatus(newStatus);
 
-        // 상태별 추가 비즈니스 로직 처리 (Java 14+ switch 표현식 활용)
         switch (newStatus) {
             case START -> {
-                // TODO: 채팅방 생성 로직
+                // TODO: 채팅방 생성
             }
             case SHIPPING -> {
-                if (trackingNumber != null) {
-//                    groupBuying.setTrackingNumber(trackingNumber);
-                }
+//                if (trackingNumber != null) groupBuying.setTrackingNumber(trackingNumber);
             }
             case MEETING_SCHEDULED -> {
-                if (meetingAt != null) {
-//                    groupBuying.setMeetingTime(meetingAt);
-                }
+//                if (meetingTime != null) groupBuying.setMeetingAt(meetingAt);
             }
-            // RECRUITING, PURCHASED, SETTLING, CLOSED 등은 엔티티 상태만 변경된다면 생략 가능
-            default -> {}
+            default -> {
+            }
         }
 
-        // 채팅방에 시스템 메시지 전송 (알림)
 //        chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus.getDescription());
+
+        return groupBuying; // 변경된 엔티티 반환
     }
 
     /* ================= 공통 로직 ================= */
