@@ -101,7 +101,6 @@ public class GroupBuyingService {
         // 상태 변경: 목표 수량 달성 시 공구 시작 및 채팅방 생성
         if (totalQuantityAfterApply == targetQuantity) {
             processStatusChange(groupBuyingId, GroupBuyingStatus.START, null, null);
-            chatRoomService.createChatRoom(groupBuying);
         }
 
         return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
@@ -135,7 +134,7 @@ public class GroupBuyingService {
     }
     // 서비스 내부 호출용 공구 진행상태 변경 메서드 (공구 참여 로직에서도 호출 가능)
     @Transactional
-    public GroupBuying processStatusChange(Long groupBuyingId, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingTime) {
+    public GroupBuying processStatusChange(Long groupBuyingId, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingAt) {
         GroupBuying groupBuying = groupBuyingRepository.findById(groupBuyingId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공구입니다."));
 
@@ -143,18 +142,30 @@ public class GroupBuyingService {
 
         switch (newStatus) {
             case START -> {
-                // TODO: 채팅방 생성
+                // 채팅방 생성
+                chatRoomService.createChatRoom(groupBuying);
+            }
+            case PURCHASED -> {
+
             }
             case SHIPPING -> {
-//                if (trackingNumber != null) groupBuying.setTrackingNumber(trackingNumber);
+                if (trackingNumber != null) groupBuying.updateTrackingNumber(trackingNumber);
             }
             case MEETING_SCHEDULED -> {
-//                if (meetingTime != null) groupBuying.setMeetingAt(meetingAt);
+                if (meetingAt != null) groupBuying.updateMeetingAt(meetingAt);
+            }
+            case SETTLING -> {
+                //TODO 정산 진행
+            }
+            case CLOSED -> {
+                //TODO 공구 종료
             }
             default -> {
+                break;
             }
         }
 
+        // TODO 상태 변경 시 어떤 내용을 전달할 지 정하기
 //        chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus.getDescription());
 
         return groupBuying; // 변경된 엔티티 반환
