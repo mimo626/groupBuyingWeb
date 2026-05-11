@@ -165,8 +165,9 @@ public class GroupBuyingService {
             }
         }
 
-        // TODO 상태 변경 시 어떤 내용을 전달할 지 정하기
-//        chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus.getDescription());
+        if (newStatus != GroupBuyingStatus.START) {
+            chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus);
+        }
 
         return groupBuying; // 변경된 엔티티 반환
     }
