@@ -147,7 +147,7 @@ public class ChatRoomService {
 
                     // 마지막 메시지 조회 (없으면 null)
                     ChatMessage lastMessage = chatMessageRepository
-                            .findTopByChatRoomIdOrderByCreateAtDesc(chatRoom.getId())
+                            .findTopByChatRoomIdOrderByCreateAtDescIdDesc(chatRoom.getId())
                             .orElse(null);
 
                     // 안 읽은 메시지 수 계산
