@@ -43,6 +43,8 @@ public class GroupBuyingResponse {
     public record Detail(
             Long id,
             String title,
+            String productName,
+            String productContent,
             String productImageUrl,
             String productUrl,
             double totalPrice,
@@ -52,7 +54,6 @@ public class GroupBuyingResponse {
             String meetingPlace, // 만남 장소 텍스트
             int viewCount,
             GroupBuyingStatus status,
-            String content,
             LocalDateTime deadline,
             LocalDateTime createAt
     ) {
@@ -60,6 +61,8 @@ public class GroupBuyingResponse {
             return new Detail(
                     groupBuying.getId(),
                     groupBuying.getTitle(),
+                    groupBuying.getProductName(),
+                    groupBuying.getProductContent(),
                     groupBuying.getProductImageUrl(),
                     groupBuying.getProductUrl(),
                     groupBuying.getTotalPrice(),
@@ -69,7 +72,6 @@ public class GroupBuyingResponse {
                     groupBuying.getMeetingPlace(),
                     groupBuying.getViewCount(),
                     groupBuying.getStatus(),
-                    groupBuying.getProductContent(),
                     groupBuying.getDeadline(),
                     groupBuying.getCreatedAt()
             );
