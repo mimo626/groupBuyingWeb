@@ -3,6 +3,7 @@ package com.example.groupbuyingweb;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -130,5 +131,50 @@ class GroupBuyingTest {
                 // 검색 결과 첫 번째 항목의 제목 확인
                 .andExpect(jsonPath("$.data.content[0].title").value("상봉동 사과 공구"))
                 .andDo(print());
+    }
+
+    @Test
+    @DisplayName("5. 자동 상태 변경 테스트: 목표 수량 달성 시 공구 상태가 START로 변경되는지 확인")
+    @Order(5)
+    void autoUpdateStatusToStartWhenTargetQuantityMetTest() throws Exception {
+        // given: testGroupBuying의 목표 수량은 10개입니다. (setUp 메서드 기준)
+        int applyQuantity = 10;
+
+        // when: 목표 수량인 10개를 꽉 채워서 참여 요청을 보냅니다.
+        mockMvc.perform(post("/group-buying/" + testGroupBuying.getId() + "/participate")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("applyQuantity", String.valueOf(applyQuantity)))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        // then: DB에서 해당 공구를 다시 조회하여 상태가 START로 자동 변경되었는지 확인합니다.
+        GroupBuying updatedGroupBuying = groupBuyingRepository.findById(testGroupBuying.getId()).orElseThrow();
+        assertEquals(GroupBuyingStatus.START, updatedGroupBuying.getStatus(), "목표 수량 달성 시 상태가 START로 변경되어야 합니다.");
+    }
+
+    @Test
+    @DisplayName("6. 수동 상태 변경 테스트: 상태 업데이트 API 호출 시 상태와 부가 데이터가 저장되는지 확인")
+    @Order(6)
+    void updateGroupBuyingStatusManuallyTest() throws Exception {
+        // given: 상태를 SHIPPING으로 변경하고 운송장 번호를 함께 넘기는 JSON 요청 생성
+        // (직전 질문에서 작성했던 컨트롤러가 @RequestBody를 사용하므로 JSON 형식으로 테스트합니다)
+        String requestJson = """
+            {
+                "status": "SHIPPING",
+                "trackingNumber": "1234-5678-9012"
+            }
+            """;
+
+        // when: PATCH 메서드로 상태 변경 API 호출
+        mockMvc.perform(patch("/group-buying/" + testGroupBuying.getId() + "/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        // then: DB에서 다시 조회하여 상태와 운송장 번호가 올바르게 업데이트되었는지 검증
+        GroupBuying updatedGroupBuying = groupBuyingRepository.findById(testGroupBuying.getId()).orElseThrow();
+        assertEquals(GroupBuyingStatus.SHIPPING, updatedGroupBuying.getStatus());
+        assertEquals("1234-5678-9012", updatedGroupBuying.getTrackingNumber(), "운송장 번호가 정상적으로 저장되어야 합니다.");
     }
 }
