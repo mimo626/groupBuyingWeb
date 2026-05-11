@@ -1,6 +1,7 @@
 package com.example.groupbuyingweb.domain.entity;
 
 import com.example.groupbuyingweb.core.error.BusinessException;
+import com.example.groupbuyingweb.domain.dto.request.MyPageRequest;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
@@ -64,5 +65,14 @@ public class Member {
             throw new BusinessException(ErrorCode.TEST_ZERO_POINT);
         }
         this.point += charge;
+    }
+
+    public void patchAddress(MyPageRequest.UpdateNeighborhood request) {
+        if (request.address() == null || request.entX() == null || request.entY() == null) {
+            throw new BusinessException(ErrorCode.ADDRESS_REGION_NOT_FOUND);
+        }
+        this.address = request.address();
+        this.entX = request.entX();
+        this.entY = request.entY();
     }
 }
