@@ -4,6 +4,7 @@ import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.GroupBuyingImage;
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
@@ -14,12 +15,18 @@ import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor // @Autowired 대신 생성자 주입 (권장 방식)
@@ -33,9 +40,12 @@ public class GroupBuyingService {
     private final AddressService addressService;
     private final ChatRoomService chatRoomService;
 
+    @Value("${file.upload.dir}")
+    private String uploadDir;
+
     // 공구 개설
     @Transactional
-    public GroupBuyingResponse.Create addGroupBuying(GroupBuyingRequest.Create request, String memberId) {
+    public GroupBuyingResponse.Create addGroupBuying(GroupBuyingRequest.Create request, List<MultipartFile> images, String memberId) {
         Member member = getMember(memberId);
 
         GroupBuying groupBuying = GroupBuying.builder()
@@ -50,10 +60,54 @@ public class GroupBuyingService {
                 .entY(request.entY())
                 .meetingPlace(request.meetingPlace())
                 .productUrl(request.productUrl())
-                .productImageUrl(request.productImageUrl())
                 .deadline(request.deadline())
                 .neighborhoodName(addressService.createNeighborhoodName(request.entX(), request.entY()))
                 .build();
+
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        // 2. 이미지 처리 및 GroupBuyingImage 엔티티 생성
+        if (images != null && !images.isEmpty()) {
+            for (int i = 0; i < images.size(); i++) {
+                MultipartFile file = images.get(i);
+
+                if (!file.isEmpty()) {
+                    String originalFilename = file.getOriginalFilename();
+                    String storedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+                    // 나중에 HTML 화면에서 <img> 태그로 보여줄 때 사용할 URL 경로
+                    String imageUrl = "/uploads/" + storedFilename;
+
+                    File targetFile = new File(uploadDir + storedFilename);
+
+                    try {
+                        file.transferTo(targetFile); // 실제 폴더에 저장
+
+                        // 첫 번째로 올라온 이미지를 썸네일(대표 이미지)로 지정!
+                        boolean isThumbnail = (i == 0);
+
+                        GroupBuyingImage imageEntity = GroupBuyingImage.builder()
+                                .originalFilename(originalFilename)
+                                .storedFilename(storedFilename)
+                                .imageUrl(imageUrl)
+                                .isThumbnail(isThumbnail)
+                                .build();
+
+                        // 공구 엔티티에 이미지 추가 (JPA가 나중에 알아서 DB에 INSERT 해줌)
+                        groupBuying.addImage(imageEntity);
+
+                    } catch (IOException e) {
+                        throw new RuntimeException("파일 업로드 중 오류 발생", e);
+                    }
+                }
+            }
+        }
+
+        // 3. DB 저장 (Cascade 옵션 때문에 GroupBuying만 저장해도 Image까지 같이 INSERT 됩니다)
+        groupBuyingRepository.save(groupBuying);
 
         GroupBuying savedGroupBuying = groupBuyingRepository.save(groupBuying);
 
@@ -107,7 +161,7 @@ public class GroupBuyingService {
     }
 
     // 공구 목록 조회(검색/필터링)
-    public Page<GroupBuyingResponse.List> getGroupBuyings(GroupBuyingRequest.SearchCondition condition, Pageable pageable) {
+    public Page<GroupBuyingResponse.GroupBuyings> getGroupBuyings(GroupBuyingRequest.SearchCondition condition, Pageable pageable) {
 
         // Repository에서 Page<GroupBuying> 조회
         return groupBuyingRepository.searchGroupBuyings(condition.category(), condition.keyword(), pageable)
@@ -115,7 +169,7 @@ public class GroupBuyingService {
                 .map(groupBuying -> {
                     int currentQuantity = calculateCurrentQuantity(groupBuying.getId());
 
-                    return GroupBuyingResponse.List.of(groupBuying, currentQuantity);
+                    return GroupBuyingResponse.GroupBuyings.of(groupBuying, currentQuantity);
                 });
     }
 
