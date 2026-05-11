@@ -7,6 +7,9 @@ import com.example.groupbuyingweb.domain.entity.ChatRoom;
 import com.example.groupbuyingweb.domain.entity.ChatRoomParticipant;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
+import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
+import com.example.groupbuyingweb.domain.enums.MessageType;
 import com.example.groupbuyingweb.repository.ChatMessageRepository;
 import com.example.groupbuyingweb.repository.ChatRoomParticipantRepository;
 import com.example.groupbuyingweb.repository.ChatRoomRepository;
@@ -57,6 +60,38 @@ public class ChatRoomService {
                     .build();
             participantRepository.save(participant);
         });
+    }
+
+    /**
+     * 시스템 메시지 전송
+     *
+     * 공구 상태 변경 시 사용
+     */
+    @Transactional
+    public void sendSystemMessage(Long groupBuyingId, GroupBuyingStatus status) {
+        ChatRoom chatRoom = chatRoomRepository.findByGroupBuyingId(groupBuyingId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+
+        Member host = chatRoom.getGroupBuying().getMember();
+
+        String content = switch (status) {
+            case START -> "채팅방이 개설되었습니다. 주최자는 물품 구매를 완료해주세요.";
+            case PURCHASED -> "주최자가 물품 구매를 완료했습니다. 주최자는 운송장 번호를 입력해주세요.";
+            case SHIPPING -> "물품이 배송 중입니다. 주최자는 만남 일정을 등록해주세요.";
+            case MEETING_SCHEDULED -> "만남 일정이 확정되었습니다.";
+            case SETTLING -> "정산이 시작되었습니다. 참여자는 정산 완료 버튼을 눌러주세요.";
+            case CLOSED -> "공구가 종료되었습니다. 이용해 주셔서 감사합니다!";
+            default -> "[공구 상태 변경] " + status.getDescription();
+        };
+
+        ChatMessage systemMessage = ChatMessage.builder()
+                .chatRoom(chatRoom)
+                .sender(host)
+                .messageType(MessageType.SYSTEM)
+                .content(content)
+                .build();
+
+        chatMessageRepository.save(systemMessage);
     }
 
     /**
