@@ -133,8 +133,7 @@
         <span>공구 개설</span>
     </div>
 
-    <form action="/group-buying/create" method="post">
-
+    <form action="/group-buying/create" method="post" enctype="multipart/form-data" id="createForm">
         <div class="form-group">
             <label>공구 제목 <span class="required">*</span></label>
             <input type="text" name="title" class="form-control" placeholder="예: 신선 딸기 공구" required>
@@ -188,11 +187,8 @@
         </div>
 
         <div class="form-group">
-            <label>대표 이미지 <span style="color: #999; font-weight: normal; font-size: 12px;">(선택)</span></label>
-            <div class="image-upload-box">
-                <div>🖼️</div>
-                <div style="margin-top: 5px;">이미지를 업로드하세요</div>
-            </div>
+            <label>대표 이미지 <span style="color: #999; font-weight: normal; font-size: 12px;">(최대 3개, 선택)</span></label>
+            <input type="file" name="images" id="imageInput" accept="image/*" multiple class="form-control"/>
         </div>
 
         <div class="form-group">
@@ -210,6 +206,14 @@
         <button type="submit" class="btn-submit">공구 개설하기</button>
     </form>
 </div>
-
+<script>
+    // JS 3개 제한 로직
+    document.getElementById('imageInput').addEventListener('change', function() {
+        if (this.files.length > 3) {
+            alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
+            this.value = '';
+        }
+    });
+</script>
 </body>
 </html>
