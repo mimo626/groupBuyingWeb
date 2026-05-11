@@ -1,6 +1,7 @@
 package com.example.groupbuyingweb.domain.entity;
 
 import com.example.groupbuyingweb.core.error.BusinessException;
+import com.example.groupbuyingweb.domain.dto.request.MyPageRequest;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;

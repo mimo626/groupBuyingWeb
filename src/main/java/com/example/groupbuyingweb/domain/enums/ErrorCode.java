@@ -14,6 +14,8 @@ public enum ErrorCode {
     PASSWORD_NOT_MATCH(400, "비밀번호가 일치하지 않습니다."),
     TERMS_NOT_AGREED(400, "필수 약관에 동의해야 합니다."),
 
+    UNAUTHORIZED(400, "로그인이 필요합니다"),
+
     // 주소 / 카카오 API
     ADDRESS_REGION_NOT_FOUND(400, "좌표의 행정동 정보를 찾을 수 없습니다."),
     KAKAO_LOCAL_API_ERROR(500, "카카오 로컬 API 호출 중 오류가 발생했습니다."),
