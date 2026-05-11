@@ -86,6 +86,12 @@ public class AddressService {
 
         return coordinates;
     }
+    public String createNeighborhoodName(Double baseEntX, Double baseEntY) {
+            AddressService.RegionInfo regionInfo =
+                    kakaoLocalApiClient.convertCoordinateToRegion(baseEntX, baseEntY);
+
+        return regionInfo.neighborhoodName();
+        }
 
     private Coordinate moveByMeter(
             Coordinate baseCoordinate,

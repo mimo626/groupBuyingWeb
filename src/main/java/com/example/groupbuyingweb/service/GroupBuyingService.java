@@ -33,17 +33,6 @@ public class GroupBuyingService {
     public GroupBuyingResponse.Create addGroupBuying(GroupBuyingRequest.Create request, String memberId) {
         Member member = getMember(memberId);
 
-//        addressService.createNeighborhoodName(request.entX(), request.entY());
-//        addressService.createNeighborhoodName(126.94621910280937, 37.547261903037);
-
-//        public String createNeighborhoodName(Double baseEntX, Double baseEntY) {
-//            AddressService.RegionInfo regionInfo =
-//                    kakaoLocalApiClient.convertCoordinateToRegion(baseEntX, baseEntY);
-//            String neighborhoodName =  regionInfo.neighborhoodName();
-//
-//            System.out.println("동: " + neighborhoodName);   // 삼평동
-//            return neighborhoodName;
-//        }
         GroupBuying groupBuying = GroupBuying.builder()
                 .member(member)
                 .title(request.title())
@@ -58,7 +47,7 @@ public class GroupBuyingService {
                 .productUrl(request.productUrl())
                 .productImageUrl(request.productImageUrl())
                 .deadline(request.deadline())
-                .neighborhoodName("상봉동")  //TODO 위도, 경도로 동네 이름 조회해서 저장
+                .neighborhoodName(addressService.createNeighborhoodName(request.entX(), request.entY()))
                 .build();
 
         GroupBuying savedGroupBuying = groupBuyingRepository.save(groupBuying);
@@ -107,6 +96,7 @@ public class GroupBuyingService {
         // 상태 변경: 목표 수량 달성 시 공구 시작
         if (totalQuantityAfterApply == targetQuantity) {
             groupBuying.updateStatus(GroupBuyingStatus.START);
+            // TODO 채팅방 생성
         }
 
         return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
