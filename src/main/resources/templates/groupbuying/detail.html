@@ -1,15 +1,261 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>공구 상세</title>
+    <style>
+        /* 기본 리셋 및 폰트 */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f5f6f8; /* 바깥 배경은 약간 어두운 회색 */
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 모바일 화면 컨테이너 */
+        .mobile-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 100px; /* 하단 고정 버튼을 위한 여백 */
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* --- 상단 이미지 슬라이드 (기존 코드 개선) --- */
+        .carousel-wrapper { position: relative; width: 100%; overflow: hidden; }
+        .carousel-track { display: flex; transition: transform 0.3s ease-in-out; }
+        .carousel-slide { min-width: 100%; box-sizing: border-box; }
+        .carousel-slide img { width: 100%; height: 350px; object-fit: cover; display: block; }
+
+        .carousel-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.4); color: white; border: none;
+            width: 36px; height: 36px; cursor: pointer; border-radius: 50%;
+            font-size: 16px; z-index: 10; display: flex; align-items: center; justify-content: center;
+        }
+        .carousel-btn.prev { left: 10px; }
+        .carousel-btn.next { right: 10px; }
+
+        /* --- 본문 내용 영역 --- */
+        .content-section { padding: 20px; }
+
+        /* 상태 뱃지 및 조회수 */
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .status-badge {
+            background-color: #00c781; color: white;
+            padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;
+        }
+        .view-count { font-size: 13px; color: #999; }
+
+        /* 제목 및 설명 */
+        .title { font-size: 22px; font-weight: bold; margin: 0 0 5px 0; color: #222; }
+        .subtitle { font-size: 14px; color: #666; margin: 0 0 20px 0; }
+
+        /* 주최자 정보 */
+        .host-info {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; margin-bottom: 20px;
+        }
+        .host-profile { display: flex; align-items: center; font-size: 14px; font-weight: 600; }
+        .host-icon {
+            width: 24px; height: 24px; background-color: #fcece4; color: #d9734e;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin-right: 8px; font-size: 12px;
+        }
+        .host-label { color: #d9734e; font-size: 12px; margin-left: 6px; }
+        .date-text { font-size: 12px; color: #aaa; }
+
+        /* 2x2 정보 그리드 (가격, 마감시간 등) */
+        .info-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+        }
+        .info-card {
+            background-color: #fdfdfd; border: 1px solid #f0f0f0;
+            padding: 15px; border-radius: 10px;
+        }
+        .info-label { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .info-value { font-size: 15px; font-weight: bold; color: #333; }
+        .info-value.highlight { color: #c4302b; font-size: 18px; }
+        .info-value .unit { font-size: 13px; color: #666; font-weight: normal; }
+
+        .link-text { color: #d9734e; text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 4px; }
+
+        /* 수령 장소 영역 */
+        .location-card {
+            background-color: #fdfdfd; border: 1px solid #f0f0f0;
+            padding: 15px; border-radius: 10px; margin-bottom: 20px;
+        }
+        .map-placeholder {
+            width: 100%; height: 120px; background-color: #e9ecef;
+            border-radius: 8px; margin-top: 10px; display: flex;
+            align-items: center; justify-content: center; color: #999; font-size: 13px;
+            /* 추후 카카오맵 API 연동 위치 */
+        }
+
+        /* --- 하단 고정 바 --- */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background-color: white;
+            padding: 15px 20px; box-sizing: border-box;
+            border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+            z-index: 100;
+        }
+        .chat-notice {
+            text-align: center; font-size: 13px; color: #666;
+            background-color: #f5f6f8; padding: 8px; border-radius: 6px; margin-bottom: 10px;
+        }
+        .submit-btn {
+            width: 100%; padding: 16px; background-color: #92533c; /* 갈색 버튼 */
+            color: white; border: none; border-radius: 8px; font-size: 16px;
+            font-weight: bold; cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<div>
-    <h1 th:text="${groupBuying.title}"></h1>
-    <div th:text="${groupBuying.productName}"></div>
-    <div th:if="${groupBuying.productContent}" th:text="${groupBuying.productContent}"></div>
+
+<div class="mobile-container">
+
+    <div class="image-section">
+        <div class="carousel-wrapper" th:if="${not #lists.isEmpty(groupBuying.images)}">
+            <div class="carousel-track" id="imageTrack">
+                <div class="carousel-slide" th:each="img : ${groupBuying.images}">
+                    <img th:src="${img.imageUrl}" alt="상품이미지">
+                </div>
+            </div>
+            <th:block th:if="${#lists.size(groupBuying.images) > 1}">
+                <button class="carousel-btn prev" onclick="moveSlide(-1)">&#10094;</button>
+                <button class="carousel-btn next" onclick="moveSlide(1)">&#10095;</button>
+            </th:block>
+        </div>
+        <div class="carousel-wrapper" th:if="${#lists.isEmpty(groupBuying.images)}">
+            <img src="https://via.placeholder.com/480x350?text=No+Image" style="width:100%; height:350px; object-fit:cover;">
+        </div>
+    </div>
+
+    <div class="content-section">
+
+        <div class="header-top">
+            <span class="status-badge" th:text="${groupBuying.status.description}">모집중</span>
+            <span class="view-count" th:text="|👁 ${groupBuying.viewCount}|">👁 128</span>
+        </div>
+        <h1 class="title" th:text="${groupBuying.title}">치킨 공동구매 하실 분!</h1>
+        <p class="subtitle" th:text="${groupBuying.productName}">교촌 허니콤보</p>
+        <p th:if="${groupBuying.productContent}" th:text="${groupBuying.productContent}" style="font-size: 14px; line-height: 1.5; color: #444; margin-bottom: 20px;"></p>
+
+        <div class="host-info">
+            <div class="host-profile">
+                <div class="host-icon">👤</div>
+                <span th:text="${groupBuying.member.nickname}">따뜻한 이웃</span>
+                <span class="host-label">주최자</span>
+            </div>
+            <div class="date-text" th:text="${#temporals.format(groupBuying.createAt, 'MM-dd 등록')}">05-15 등록</div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">가격</div>
+                <div class="info-value highlight">
+                    <span th:text="${#numbers.formatInteger(groupBuying.unitPrice, 0, 'COMMA')}">19,000</span>원<span class="unit">/개</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">마감 시간</div>
+                <div class="info-value" th:text="${#temporals.format(groupBuying.deadline, 'MM월 dd일 HH:mm')}">5월 15일 18:00</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">상품 정보</div>
+                <div class="info-value">
+                    <a th:href="${groupBuying.productUrl}" target="_blank" class="link-text">
+                        🔗 상품 링크 보기
+                    </a>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">모집 현황</div>
+                <div class="info-value" th:text="|${groupBuying.currentQuantity} / ${groupBuying.targetQuantity}개|">5 / 7개</div>
+            </div>
+        </div>
+
+        <div class="location-card">
+            <div class="info-label">수령 장소</div>
+            <div class="info-value" th:text="${groupBuying.meetingPlace}">상봉역 1번 출구</div>
+            <div class="map-placeholder">
+                📍 지도 영역 (API 연동 예정)
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="chat-notice">💬 모집 완료 후 채팅방이 열려요</div>
+        <button class="submit-btn" th:data-id="${groupBuying.id}" onclick="participate(this.getAttribute('data-id'))">
+            참여 신청하기
+        </button>
+    </div>
+
 </div>
+
+<script>
+    // --- 이미지 슬라이드 로직 ---
+    let currentIndex = 0;
+    function moveSlide(direction) {
+        const track = document.getElementById('imageTrack');
+        const slides = document.querySelectorAll('.carousel-slide');
+        if(slides.length === 0) return;
+
+        const totalSlides = slides.length;
+        currentIndex += direction;
+
+        if (currentIndex < 0) currentIndex = totalSlides - 1;
+        else if (currentIndex >= totalSlides) currentIndex = 0;
+
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }
+
+    // --- 참여 신청 API 통신 로직 ---
+    function participate(groupBuyingId) {
+        // 1. 사용자에게 수량 입력받기 (간단한 prompt 사용)
+        const quantityStr = prompt("신청할 수량을 입력해주세요. (숫자만 입력)");
+
+        // 취소를 누르거나 입력하지 않은 경우 종료
+        if (quantityStr === null || quantityStr.trim() === "") return;
+
+        const applyQuantity = parseInt(quantityStr, 10);
+        if (isNaN(applyQuantity) || applyQuantity <= 0) {
+            alert("유효한 수량을 입력해주세요.");
+            return;
+        }
+
+        // 2. 서버가 Form Data를 기대하므로 URLSearchParams로 데이터 세팅
+        const formData = new URLSearchParams();
+        formData.append("applyQuantity", applyQuantity);
+
+        // 3. 컨트롤러로 POST 요청 쏘기
+        fetch(`/group-buying/${groupBuyingId}/participate`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded" // 폼 데이터 전송 방식
+            },
+            body: formData.toString()
+        })
+        .then(response => response.json()) // ApiResponse 반환을 JSON으로 파싱
+        .then(data => {
+            if (data.status === 'SUCCESS' || data.code === 200) {
+                alert("참여 신청이 완료되었습니다!");
+                window.location.reload(); // 성공 시 화면 새로고침하여 모집 현황 반영
+            } else {
+                alert("신청 실패: " + (data.message || "오류가 발생했습니다."));
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("서버와 통신 중 문제가 발생했습니다.");
+        });
+    }
+</script>
 
 </body>
 </html>
