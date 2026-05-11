@@ -10,17 +10,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
 @RequestMapping("/group-buying")
 public class GroupBuyingController {
     @Autowired
     private GroupBuyingService groupBuyingService;
 
     @PostMapping("/create")
-    @ResponseBody
     public ApiResponse<GroupBuyingResponse.Create> addGroupBuying(@Valid GroupBuyingRequest.Create groupBuyingRequest) {
         // DB에 있는 첫 번째 유저의 ID를 가져오거나, 콘솔에 찍힌 ID를 직접 넣으세요.
         String memberId = "";
@@ -29,14 +27,12 @@ public class GroupBuyingController {
     }
 
     @GetMapping("/{id}")
-    @ResponseBody
     public ApiResponse<GroupBuyingResponse.Detail> getGroupBuyingById(@PathVariable("id") Long groupBuyingId) {
         GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId);
         return ApiResponse.success(res);
     }
 
     @PostMapping("/{id}/participate")
-    @ResponseBody
     public ApiResponse<GroupBuyingResponse.Participate> participateGroupBuying(@PathVariable("id") Long groupBuyingId,
                                                                                @Valid GroupBuyingRequest.Participate groupBuyingRequest) {
         String memberId = "";
@@ -48,7 +44,6 @@ public class GroupBuyingController {
     }
 
     @GetMapping("/list")
-    @ResponseBody
     public ApiResponse<Page<GroupBuyingResponse.List>> getGroupBuyings(
             GroupBuyingRequest.SearchCondition condition,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
@@ -58,11 +53,11 @@ public class GroupBuyingController {
 
     @PatchMapping("/{id}/status")
     public ApiResponse<GroupBuyingResponse.UpdateStatus> updateGroupBuyingStatus(
-            @PathVariable Long id,
+            @PathVariable("id") Long groupBuyingId,
             @RequestBody GroupBuyingRequest.UpdateStatus request
     ) {
-        String memberId = "";
-        GroupBuyingResponse.UpdateStatus res = groupBuyingService.updateStatus(id, memberId, request);
+        GroupBuyingResponse.UpdateStatus res = groupBuyingService.updateStatusFromRequest(groupBuyingId, request);
         return ApiResponse.success(res);
     }
+
 }

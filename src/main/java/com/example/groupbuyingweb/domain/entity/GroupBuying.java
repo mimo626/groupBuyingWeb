@@ -93,7 +93,19 @@ public class GroupBuying {
         if (request.productImageUrl() != null) this.productImageUrl = request.productImageUrl();
         if (request.deadline() != null) this.deadline = request.deadline();
     }
+
+    // 상태 변경
     public void updateStatus(GroupBuyingStatus newStatus) {
         this.status = newStatus;
+    }
+
+    // 운송장 번호 등록/수정
+    public void updateTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    // 만남 시간 설정/수정
+    public void updateMeetingAt(LocalDateTime meetingAt) {
+        this.meetingAt = meetingAt;
     }
 }

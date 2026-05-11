@@ -101,7 +101,6 @@ public class GroupBuyingService {
         // 상태 변경: 목표 수량 달성 시 공구 시작 및 채팅방 생성
         if (totalQuantityAfterApply == targetQuantity) {
             processStatusChange(groupBuyingId, GroupBuyingStatus.START, null, null);
-            chatRoomService.createChatRoom(groupBuying);
         }
 
         return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
@@ -122,43 +121,54 @@ public class GroupBuyingService {
 
     // 공구 진행 상태 변경
     @Transactional
-    public void updateStatusFromRequest(Long id, String memberId, GroupBuyingRequest.UpdateStatus request) {
+    public GroupBuyingResponse.UpdateStatus updateStatusFromRequest(Long groupBuyingId, GroupBuyingRequest.UpdateStatus request) {
         // 권한 체크 로직
 
         // 상태 변경 로직 호출 (DTO의 값들을 풀어서 전달)
-        processStatusChange(id, request.status(), request.trackingNumber(), request.meetingAt());
-    }
+        GroupBuying updatedGroupBuying = processStatusChange(
+                groupBuyingId, request.status(), request.trackingNumber(), request.meetingAt()
+        );
 
+        // 엔티티를 응답 DTO로 변환하여 반환
+        return GroupBuyingResponse.UpdateStatus.from(updatedGroupBuying);
+    }
     // 서비스 내부 호출용 공구 진행상태 변경 메서드 (공구 참여 로직에서도 호출 가능)
     @Transactional
-    public void processStatusChange(Long id, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingAt) {
-        GroupBuying groupBuying = groupBuyingRepository.findById(id)
+    public GroupBuying processStatusChange(Long groupBuyingId, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingAt) {
+        GroupBuying groupBuying = groupBuyingRepository.findById(groupBuyingId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공구입니다."));
 
-        // 엔티티 상태 업데이트
         groupBuying.updateStatus(newStatus);
 
-        // 상태별 추가 비즈니스 로직 처리 (Java 14+ switch 표현식 활용)
         switch (newStatus) {
             case START -> {
-                // TODO: 채팅방 생성 로직
+                // 채팅방 생성
+                chatRoomService.createChatRoom(groupBuying);
+            }
+            case PURCHASED -> {
+
             }
             case SHIPPING -> {
-                if (trackingNumber != null) {
-//                    groupBuying.setTrackingNumber(trackingNumber);
-                }
+                if (trackingNumber != null) groupBuying.updateTrackingNumber(trackingNumber);
             }
             case MEETING_SCHEDULED -> {
-                if (meetingAt != null) {
-//                    groupBuying.setMeetingTime(meetingAt);
-                }
+                if (meetingAt != null) groupBuying.updateMeetingAt(meetingAt);
             }
-            // RECRUITING, PURCHASED, SETTLING, CLOSED 등은 엔티티 상태만 변경된다면 생략 가능
-            default -> {}
+            case SETTLING -> {
+                //TODO 정산 진행
+            }
+            case CLOSED -> {
+                //TODO 공구 종료
+            }
+            default -> {
+                break;
+            }
         }
 
-        // 채팅방에 시스템 메시지 전송 (알림)
+        // TODO 상태 변경 시 어떤 내용을 전달할 지 정하기
 //        chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus.getDescription());
+
+        return groupBuying; // 변경된 엔티티 반환
     }
 
     /* ================= 공통 로직 ================= */
