@@ -4,6 +4,7 @@ import com.example.groupbuyingweb.core.api.ApiResponse;
 import com.example.groupbuyingweb.domain.dto.request.AuthRequest;
 import com.example.groupbuyingweb.domain.dto.response.AuthResponse;
 import com.example.groupbuyingweb.service.AuthService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,16 @@ public class AuthController {
             @Valid @RequestBody AuthRequest.Signup request
     ) {
         AuthResponse.SignupResult response = authService.signup(request);
+        return ApiResponse.success(response);
+    }
+
+    @ResponseBody
+    @PostMapping("/login")
+    public ApiResponse<AuthResponse.LoginResult> login(
+            @Valid @RequestBody AuthRequest.Login request,
+            HttpSession session
+    ) {
+        AuthResponse.LoginResult response = authService.login(request, session);
         return ApiResponse.success(response);
     }
 }

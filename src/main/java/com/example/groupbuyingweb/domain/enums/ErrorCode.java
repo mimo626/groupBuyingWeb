@@ -20,6 +20,10 @@ public enum ErrorCode {
     ADDRESS_REGION_NOT_FOUND(400, "좌표의 행정동 정보를 찾을 수 없습니다."),
     KAKAO_LOCAL_API_ERROR(500, "카카오 로컬 API 호출 중 오류가 발생했습니다."),
 
+    // 로그인
+    LOGIN_FAILED(401, "로그인 아이디 또는 비밀번호가 올바르지 않습니다."),
+    LOGIN_REQUIRED(401, "로그인이 필요한 요청입니다."),
+
     // 포인트
     INSUFFICIENT_POINT(400, "포인트 잔액이 부족합니다."),
 

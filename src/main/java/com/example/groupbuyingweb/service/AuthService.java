@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.groupbuyingweb.core.session.LoginSessionManager;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +27,7 @@ public class AuthService {
     private final UserNearbyAddressRepository userNearbyAddressRepository;
     private final AddressService addressService;
     private final PasswordEncoder passwordEncoder;
+    private final LoginSessionManager loginSessionManager;
 
     public AuthResponse.DuplicateCheck checkLoginId(String loginId) {
         boolean exists = memberRepository.existsByLoginId(loginId);
@@ -92,4 +95,33 @@ public class AuthService {
             throw new BusinessException(ErrorCode.DUPLICATED_NICKNAME);
         }
     }
+
+    public AuthResponse.LoginResult login(
+            AuthRequest.Login request,
+            HttpSession session
+    ) {
+        // 1. 로그인 아이디로 회원 조회
+        Member member = memberRepository.findByLoginId(request.loginId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.LOGIN_FAILED));
+
+        // 2. 입력 비밀번호와 저장된 해시 비밀번호 비교
+        if (!passwordEncoder.matches(request.password(), member.getPassword())) {
+            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+        }
+
+        // 3. 로그인 성공 시 세션에 Member.id 저장
+        loginSessionManager.login(session, member.getId());
+
+        // 4. 로그인 성공 응답 DTO 반환
+        return new AuthResponse.LoginResult(
+                member.getId(),
+                member.getLoginId(),
+                member.getNickname(),
+                member.getAddress(),
+                member.getRadius(),
+                member.getEntX(),
+                member.getEntY()
+        );
+    }
+
 }
