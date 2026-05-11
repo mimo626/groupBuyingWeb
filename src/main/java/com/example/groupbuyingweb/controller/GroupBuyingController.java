@@ -14,6 +14,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/group-buying")
@@ -29,13 +32,13 @@ public class GroupBuyingController {
     }
 
     @PostMapping("/create")
-    public String addGroupBuying(@Valid @ModelAttribute GroupBuyingRequest.Create groupBuyingRequest) {
-        String memberId = "testUser"; // 테스트용 임시 ID
+    public String addGroupBuying(
+            @Valid @ModelAttribute GroupBuyingRequest.Create request,
+            @RequestParam("images") List<MultipartFile> images) { // ✨ 폼의 name="images" 와 매핑
 
-        System.out.println(groupBuyingRequest);
+        String memberId = "testUser";
 
-        GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(groupBuyingRequest, memberId);
-
+        GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, memberId);
         return "redirect:/group-buying/" + res.groupBuyingId();
     }
     @GetMapping("/{id}")
@@ -61,7 +64,7 @@ public class GroupBuyingController {
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
 
-        Page<GroupBuyingResponse.List> list = groupBuyingService.getGroupBuyings(condition, pageable);
+        Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable);
         model.addAttribute("groupBuyings", list);
         return "groupbuying/list"; // 타임리프 템플릿 경로 (templates/groupbuying/list.html)
     }
