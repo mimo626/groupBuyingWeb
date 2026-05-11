@@ -19,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor // @Autowired 대신 생성자 주입 (권장 방식)
 @Transactional(readOnly = true)
@@ -29,6 +31,7 @@ public class GroupBuyingService {
     private final GroupBuyingParticipationRepository participationRepository;
     private final PointService pointService;
     private final AddressService addressService;
+    private final ChatRoomService chatRoomService;
 
     // 공구 개설
     @Transactional
@@ -97,13 +100,14 @@ public class GroupBuyingService {
 
         // 상태 변경: 목표 수량 달성 시 공구 시작
         if (totalQuantityAfterApply == targetQuantity) {
-            groupBuying.updateStatus(GroupBuyingStatus.START);
+            processStatusChange(groupBuyingId, GroupBuyingStatus.START, null, null);
             // TODO 채팅방 생성
         }
 
         return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
     }
 
+    // 공구 목록 조회(검색/필터링)
     public Page<GroupBuyingResponse.List> getGroupBuyings(GroupBuyingRequest.SearchCondition condition, Pageable pageable) {
 
         // Repository에서 Page<GroupBuying> 조회
@@ -114,6 +118,47 @@ public class GroupBuyingService {
 
                     return GroupBuyingResponse.List.of(groupBuying, currentQuantity);
                 });
+    }
+
+    // 공구 진행 상태 변경
+    @Transactional
+    public void updateStatusFromRequest(Long id, String memberId, GroupBuyingRequest.UpdateStatus request) {
+        // 권한 체크 로직
+
+        // 상태 변경 로직 호출 (DTO의 값들을 풀어서 전달)
+        processStatusChange(id, request.status(), request.trackingNumber(), request.meetingAt());
+    }
+
+    // 서비스 내부 호출용 공구 진행상태 변경 메서드 (공구 참여 로직에서도 호출 가능)
+    @Transactional
+    public void processStatusChange(Long id, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingAt) {
+        GroupBuying groupBuying = groupBuyingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공구입니다."));
+
+        // 엔티티 상태 업데이트
+        groupBuying.updateStatus(newStatus);
+
+        // 상태별 추가 비즈니스 로직 처리 (Java 14+ switch 표현식 활용)
+        switch (newStatus) {
+            case START -> {
+                // TODO: 채팅방 생성 로직
+            }
+            case SHIPPING -> {
+                if (trackingNumber != null) {
+//                    groupBuying.setTrackingNumber(trackingNumber);
+                }
+            }
+            case MEETING_SCHEDULED -> {
+                if (meetingAt != null) {
+//                    groupBuying.setMeetingTime(meetingAt);
+                }
+            }
+            // RECRUITING, PURCHASED, SETTLING, CLOSED 등은 엔티티 상태만 변경된다면 생략 가능
+            default -> {}
+        }
+
+        // 채팅방에 시스템 메시지 전송 (알림)
+//        chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus.getDescription());
     }
 
     /* ================= 공통 로직 ================= */
