@@ -26,12 +26,24 @@ public class GroupBuyingService {
     private final MemberRepository memberRepository;
     private final GroupBuyingParticipationRepository participationRepository;
     private final PointService pointService;
+    private final AddressService addressService;
 
     // 공구 개설
     @Transactional
     public GroupBuyingResponse.Create addGroupBuying(GroupBuyingRequest.Create request, String memberId) {
         Member member = getMember(memberId);
 
+//        addressService.createNeighborhoodName(request.entX(), request.entY());
+//        addressService.createNeighborhoodName(126.94621910280937, 37.547261903037);
+
+//        public String createNeighborhoodName(Double baseEntX, Double baseEntY) {
+//            AddressService.RegionInfo regionInfo =
+//                    kakaoLocalApiClient.convertCoordinateToRegion(baseEntX, baseEntY);
+//            String neighborhoodName =  regionInfo.neighborhoodName();
+//
+//            System.out.println("동: " + neighborhoodName);   // 삼평동
+//            return neighborhoodName;
+//        }
         GroupBuying groupBuying = GroupBuying.builder()
                 .member(member)
                 .title(request.title())
