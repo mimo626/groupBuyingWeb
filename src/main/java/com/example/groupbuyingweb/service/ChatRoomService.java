@@ -6,9 +6,11 @@ import com.example.groupbuyingweb.domain.entity.ChatMessage;
 import com.example.groupbuyingweb.domain.entity.ChatRoom;
 import com.example.groupbuyingweb.domain.entity.ChatRoomParticipant;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.repository.ChatMessageRepository;
 import com.example.groupbuyingweb.repository.ChatRoomParticipantRepository;
 import com.example.groupbuyingweb.repository.ChatRoomRepository;
+import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,36 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomParticipantRepository participantRepository;
     private final ChatRoomParticipantService participantService;
+    private final GroupBuyingParticipationRepository groupBuyingParticipationRepository;
+
+    /**
+     * 채팅방 생성 및 공구 참여자 전원 입장 처리
+     *
+     * 목표 수량 달성 시 GroupBuyingService에서 호출됨
+     * 기존 참여자(주최자 포함) 전원을 채팅방에 자동 입장시킴
+     *
+     * @param groupBuying: 채팅방을 생성할 공구 엔티티
+     */
+    @Transactional
+    public void createChatRoom(GroupBuying groupBuying) {
+        ChatRoom chatRoom = ChatRoom.builder()
+                .groupBuying(groupBuying)
+                .build();
+        chatRoomRepository.save(chatRoom);
+
+        // 공동구매 참여자 목록 조회
+        List<GroupBuyingParticipation> participations =
+                groupBuyingParticipationRepository.findAllByGroupBuyingId(groupBuying.getId());
+
+        // 입장 처리
+        participations.forEach(participation -> {
+            ChatRoomParticipant participant = ChatRoomParticipant.builder()
+                    .chatRoom(chatRoom)
+                    .user(participation.getMember())
+                    .build();
+            participantRepository.save(participant);
+        });
+    }
 
     /**
      * 채팅방 상세 정보 조회

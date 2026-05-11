@@ -27,6 +27,7 @@ public class GroupBuyingService {
     private final GroupBuyingParticipationRepository participationRepository;
     private final PointService pointService;
     private final AddressService addressService;
+    private final ChatRoomService chatRoomService;
 
     // 공구 개설
     @Transactional
@@ -93,10 +94,10 @@ public class GroupBuyingService {
         // 참여자의 포인트 결제 진행 (DB 조회 없이 만들어둔 객체를 그대로 넘김)
         pointService.payPoint(member, participation, unitPrice);
 
-        // 상태 변경: 목표 수량 달성 시 공구 시작
+        // 상태 변경: 목표 수량 달성 시 공구 시작 및 채팅방 생성
         if (totalQuantityAfterApply == targetQuantity) {
             groupBuying.updateStatus(GroupBuyingStatus.START);
-            // TODO 채팅방 생성
+            chatRoomService.createChatRoom(groupBuying);
         }
 
         return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
