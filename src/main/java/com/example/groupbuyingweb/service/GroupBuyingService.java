@@ -156,6 +156,7 @@ public class GroupBuyingService {
             }
             case SETTLING -> {
                 //TODO 정산 진행
+                pointService.settlePoint(groupBuyingId);
             }
             case CLOSED -> {
                 //TODO 공구 종료
@@ -164,9 +165,9 @@ public class GroupBuyingService {
                 break;
             }
         }
-
         // TODO 상태 변경 시 어떤 내용을 전달할 지 정하기
-//        chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus.getDescription());
+        // 변경된 상태
+//        chatRoomService.sendSystemMessage(newStatus.getDescription());
 
         return groupBuying; // 변경된 엔티티 반환
     }
