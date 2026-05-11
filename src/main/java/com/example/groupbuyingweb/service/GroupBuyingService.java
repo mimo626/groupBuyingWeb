@@ -1,10 +1,12 @@
 package com.example.groupbuyingweb.service;
 
+import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
@@ -77,7 +79,7 @@ public class GroupBuyingService {
 
         // 수량 초과 예외 처리
         if (totalQuantityAfterApply > targetQuantity) {
-            throw new IllegalStateException("모집 수량을 초과하여 신청할 수 없습니다.");
+            throw new BusinessException(ErrorCode.EXCEED_TARGET_QUANTITY);
         }
 
         Member member = getMember(memberId);
@@ -146,7 +148,7 @@ public class GroupBuyingService {
     // 공구 엔티티 조회
     private GroupBuying getGroupBuying(Long groupBuyingId) {
         return groupBuyingRepository.findById(groupBuyingId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매 게시글입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_CREATE_GROUP_BUYING));
     }
 
     // 멤버 조회 (임시 로직 격리)
