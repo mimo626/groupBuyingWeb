@@ -9,6 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table
@@ -41,8 +43,6 @@ public class GroupBuying {
     @Column(nullable = false, length = 500)
     private String productUrl;
     @Column(length = 500)
-    private String productImageUrl;
-    @Column(length = 500)
     private String productContent;
 
     @Column(nullable = false)
@@ -69,6 +69,10 @@ public class GroupBuying {
     @Column(nullable = false)
     private LocalDateTime deadline;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "groupBuying", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupBuyingImage> images = new ArrayList<>();
+
     @CreationTimestamp
     @Column(updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
@@ -90,7 +94,6 @@ public class GroupBuying {
         if (request.entY() != null) this.entY = request.entY();
         if (request.meetingPlace() != null) this.meetingPlace = request.meetingPlace();
         if (request.productUrl() != null) this.productUrl = request.productUrl();
-        if (request.productImageUrl() != null) this.productImageUrl = request.productImageUrl();
         if (request.deadline() != null) this.deadline = request.deadline();
     }
 
@@ -107,5 +110,11 @@ public class GroupBuying {
     // 만남 시간 설정/수정
     public void updateMeetingAt(LocalDateTime meetingAt) {
         this.meetingAt = meetingAt;
+    }
+
+    //
+    public void addImage(GroupBuyingImage image) {
+        this.images.add(image);
+        image.updateGroupBuying(this);
     }
 }
