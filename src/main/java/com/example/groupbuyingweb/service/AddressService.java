@@ -14,7 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AddressService {
 
-    private static final double DEFAULT_RADIUS_METER = 1000.0;
+    private static final double DEFAULT_RADIUS_METER = 700.0;
     private static final double SEARCH_INTERVAL_METER = 250.0;
     private static final double METER_PER_LATITUDE = 111_320.0;
 

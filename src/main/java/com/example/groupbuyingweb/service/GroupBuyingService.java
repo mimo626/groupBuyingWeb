@@ -223,6 +223,10 @@ public class GroupBuyingService {
         // 변경된 상태
 //        chatRoomService.sendSystemMessage(newStatus.getDescription());
 
+        if (newStatus != GroupBuyingStatus.START) {
+            chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus);
+        }
+
         return groupBuying; // 변경된 엔티티 반환
     }
 
