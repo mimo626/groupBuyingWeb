@@ -1,5 +1,6 @@
 package com.example.groupbuyingweb.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,5 +16,12 @@ public class AuthPageController {
     public String signupTest(Model model) {
         model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
         return "signupTest";
+    }
+
+    @GetMapping("/auth/charge-test")
+    public String myPageTest(HttpSession session) {
+        String login = (String) session.getAttribute("member_id");
+        System.out.println(login);
+        return "chargeTest";
     }
 }
