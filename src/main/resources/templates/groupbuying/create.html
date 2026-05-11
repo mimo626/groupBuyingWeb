@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>공구 개설</title>
+    <style>
+        /* 기본 리셋 및 폰트 설정 */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            background-color: #f9f8f5; /* 이미지와 비슷한 따뜻한 배경색 */
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* 폼 컨테이너 (모바일 화면 크기에 맞춤) */
+        .form-container {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .header .close-btn {
+            color: #999;
+            font-size: 24px;
+            margin-right: 15px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* 폼 그룹 기본 마진 */
+        .form-group { margin-bottom: 20px; }
+
+        /* 라벨 스타일 */
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        /* 필수 입력 별표 */
+        .required { color: #e74c3c; margin-left: 2px;}
+
+        /* 입력창 공통 스타일 */
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { border-color: #8d553f; }
+        .form-control::placeholder { color: #aaa; }
+
+        /* ✨ 2단(절반) 배치용 Flexbox 설정 ✨ */
+        .flex-row {
+            display: flex;
+            gap: 15px;
+        }
+        .flex-row .form-group {
+            flex: 1; /* 남은 공간을 동일하게 나눠 가짐 */
+            margin-bottom: 20px;
+        }
+
+        /* 텍스트 에어리어 (설명) */
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        /* 이미지 업로드 박스 (현재는 UI만) */
+        .image-upload-box {
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            color: #999;
+            cursor: pointer;
+            background: #faf9f7;
+            font-size: 14px;
+        }
+
+        /* 위치 입력창 래퍼 (아이콘 삽입용) */
+        .location-wrapper { position: relative; }
+        .location-wrapper input { padding-left: 36px; }
+        .location-wrapper .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #999;
+        }
+        .hint-text { font-size: 12px; color: #888; margin-top: 6px; display: block; }
+
+        /* 제출 버튼 */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background-color: #8d553f; /* 디자인에 있는 갈색 버튼 */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .btn-submit:hover { background-color: #7a4834; }
+
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="header">
+        <a href="javascript:history.back()" class="close-btn">✕</a>
+        <span>공구 개설</span>
+    </div>
+
+    <form action="/group-buying/create" method="post" enctype="multipart/form-data" id="createForm">
+        <div class="form-group">
+            <label>공구 제목 <span class="required">*</span></label>
+            <input type="text" name="title" class="form-control" placeholder="예: 신선 딸기 공구" required>
+        </div>
+
+        <div class="form-group">
+            <label>상품 이름 <span class="required">*</span></label>
+            <input type="text" name="productName" class="form-control" placeholder="예: 제주 감귤" required>
+        </div>
+
+        <div class="form-group">
+            <label>상품 설명 <span style="color: #999; font-weight: normal; font-size: 12px;">(선택)</span></label>
+            <textarea name="productContent" class="form-control" placeholder="예: 5kg 한 박스, 정품 보증 1년"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>상품 URL <span class="required">*</span></label>
+            <input type="url" name="productUrl" class="form-control" placeholder="https://..." required>
+        </div>
+
+        <div class="flex-row">
+            <div class="form-group">
+                <label>카테고리</label>
+                <select name="category" class="form-control">
+                    <option th:each="category : ${categories}"
+                            th:value="${category.name()}"
+                            th:text="${category.description}">생활용품
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>전체 가격 <span class="required">*</span></label>
+                <input type="number" name="totalPrice" class="form-control" placeholder="예: 150000" required>
+            </div>
+        </div>
+
+        <div class="flex-row">
+            <div class="form-group">
+                <label>내가 살 수량 <span class="required">*</span></label>
+                <input type="number" name="organizerQuantity" class="form-control" value="1" min="1" required>
+            </div>
+            <div class="form-group">
+                <label>모집 수량 <span class="required">*</span></label>
+                <input type="number" name="targetQuantity" class="form-control" value="10" min="2" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>마감 시간 <span class="required">*</span></label>
+            <input type="datetime-local" name="deadline" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>대표 이미지 <span style="color: #999; font-weight: normal; font-size: 12px;">(최대 3개, 선택)</span></label>
+            <input type="file" name="images" id="imageInput" accept="image/*" multiple class="form-control"/>
+        </div>
+
+        <div class="form-group">
+            <label>수령 장소 <span class="required">*</span></label>
+            <div class="location-wrapper">
+                <span class="icon">📍</span>
+                <input type="text" name="meetingPlace" class="form-control" placeholder="예: 강남역 3번 출구, 또는 지도에서 선택" required>
+            </div>
+            <span class="hint-text">왼쪽 지도 아이콘을 눌러 위치를 선택하거나 직접 입력하세요</span>
+        </div>
+
+        <input type="hidden" name="entX" value="126.94621910280937">
+        <input type="hidden" name="entY" value="37.547261903037">
+
+        <button type="submit" class="btn-submit">공구 개설하기</button>
+    </form>
+</div>
+<script>
+    // JS 3개 제한 로직
+    document.getElementById('imageInput').addEventListener('change', function() {
+        if (this.files.length > 3) {
+            alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
+            this.value = '';
+        }
+    });
+</script>
+</body>
+</html>

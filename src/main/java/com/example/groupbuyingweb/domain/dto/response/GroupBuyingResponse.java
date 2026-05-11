@@ -1,17 +1,19 @@
 package com.example.groupbuyingweb.domain.dto.response;
 
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.GroupBuyingImage;
+import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class GroupBuyingResponse {
 
     // 공구 목록 조회
-    public record List(
+    public record GroupBuyings(
             Long id,
             String title,
-            String productImageUrl,
             double unitPrice,
             int targetQuantity,
             int currentQuantity,
@@ -22,11 +24,10 @@ public class GroupBuyingResponse {
             LocalDateTime createAt
     ) {
         // Entity -> DTO 변환 정적 팩토리 메서드
-        public static List of(GroupBuying groupBuying, int currentQuantity) {
-            return new List(
+        public static GroupBuyings of(GroupBuying groupBuying, int currentQuantity) {
+            return new GroupBuyings(
                     groupBuying.getId(),
                     groupBuying.getTitle(),
-                    groupBuying.getProductImageUrl(),
                     groupBuying.getTargetQuantity() > 0 ? groupBuying.getTotalPrice() / groupBuying.getTargetQuantity() : 0,
                     groupBuying.getTargetQuantity(),
                     currentQuantity,
@@ -42,8 +43,10 @@ public class GroupBuyingResponse {
     // 공구 상세 조회
     public record Detail(
             Long id,
+            Member member,
             String title,
-            String productImageUrl,
+            String productName,
+            String productContent,
             String productUrl,
             double totalPrice,
             double unitPrice,
@@ -52,15 +55,17 @@ public class GroupBuyingResponse {
             String meetingPlace, // 만남 장소 텍스트
             int viewCount,
             GroupBuyingStatus status,
-            String content,
             LocalDateTime deadline,
+            List<ImageDetail> images,
             LocalDateTime createAt
     ) {
         public static Detail of(GroupBuying groupBuying, int currentQuantity) {
             return new Detail(
                     groupBuying.getId(),
+                    groupBuying.getMember(),
                     groupBuying.getTitle(),
-                    groupBuying.getProductImageUrl(),
+                    groupBuying.getProductName(),
+                    groupBuying.getProductContent(),
                     groupBuying.getProductUrl(),
                     groupBuying.getTotalPrice(),
                     groupBuying.getTargetQuantity() > 0 ? groupBuying.getTotalPrice() / groupBuying.getTargetQuantity() : 0,
@@ -69,10 +74,21 @@ public class GroupBuyingResponse {
                     groupBuying.getMeetingPlace(),
                     groupBuying.getViewCount(),
                     groupBuying.getStatus(),
-                    groupBuying.getProductContent(),
                     groupBuying.getDeadline(),
+                    groupBuying.getImages().stream()
+                            .map(ImageDetail::of)
+                            .toList(),
                     groupBuying.getCreatedAt()
             );
+        }
+    }
+
+    public record ImageDetail(
+            String imageUrl,
+            boolean isThumbnail
+    ) {
+        public static ImageDetail of(GroupBuyingImage image) {
+            return new ImageDetail(image.getImageUrl(), image.isThumbnail());
         }
     }
 
