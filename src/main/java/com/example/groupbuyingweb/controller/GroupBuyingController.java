@@ -55,4 +55,14 @@ public class GroupBuyingController {
     ) {
         return ApiResponse.success(groupBuyingService.getGroupBuyings(condition, pageable));
     }
+
+    @PatchMapping("/{id}/status")
+    public ApiResponse<GroupBuyingResponse.UpdateStatus> updateGroupBuyingStatus(
+            @PathVariable Long id,
+            @RequestBody GroupBuyingRequest.UpdateStatus request
+    ) {
+        String memberId = "";
+        GroupBuyingResponse.UpdateStatus res = groupBuyingService.updateStatus(id, memberId, request);
+        return ApiResponse.success(res);
+    }
 }
