@@ -1,5 +1,6 @@
 package com.example.groupbuyingweb.domain.dto.response;
 
+import com.example.groupbuyingweb.domain.entity.UserNearbyAddress;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 
@@ -22,7 +23,7 @@ public class MyPageResponse {
             Integer radius,
             Double entX,
             Double entY,
-            List<NearbyAddress> nearbyAddresses
+            List<UserNearbyAddress> nearbyAddresses
     ) {}
 
     public record NearbyAddress(

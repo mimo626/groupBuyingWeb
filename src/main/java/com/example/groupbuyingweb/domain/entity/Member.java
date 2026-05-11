@@ -65,4 +65,13 @@ public class Member {
         }
         this.point += charge;
     }
+
+    public void patchAddress(MyPageRequest.UpdateNeighborhood request) {
+        if (request.address() != null || request.entX() != null || request.entY() != null) {
+            throw new BusinessException(ErrorCode.ADDRESS_REGION_NOT_FOUND);
+        }
+        this.address = request.address();
+        this.entX = request.entX();
+        this.entY = request.entY();
+    }
 }
