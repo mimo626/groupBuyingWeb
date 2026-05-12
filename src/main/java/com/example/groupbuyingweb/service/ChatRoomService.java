@@ -79,7 +79,7 @@ public class ChatRoomService {
             case PURCHASED -> "주최자가 물품 구매를 완료했습니다. 주최자는 운송장 번호를 입력해주세요.";
             case SHIPPING -> "물품이 배송 중입니다. 주최자는 만남 일정을 등록해주세요.";
             case MEETING_SCHEDULED -> "만남 일정이 확정되었습니다.";
-            case SETTLING -> "정산이 시작되었습니다. 참여자는 정산 완료 버튼을 눌러주세요.";
+            case SETTLING -> "정산이 시작되었습니다. 참여자는 구매 확정 버튼을 눌러주세요.";
             case CLOSED -> "공구가 종료되었습니다. 이용해 주셔서 감사합니다!";
             default -> "[공구 상태 변경] " + status.getDescription();
         };
