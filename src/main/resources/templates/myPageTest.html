@@ -22,6 +22,9 @@
 <div>
     <button onclick="requestProfile('neighborhood')">내주변 동네 요청하기</button>
 </div>
+<div>
+    <button onclick="patchNeighborhood()">동네 수정하기</button>
+</div>
 
 <div class="result-box">
     <h3>서버 응답 결과 (JSON):</h3>
@@ -87,6 +90,10 @@
                 console.error("API 호출 에러:", error);
                 document.getElementById("jsonResult").innerText = "오류 발생: " + error.message;
             });
+    }
+
+    function patchNeighborhood(){
+
     }
 
 </script>
