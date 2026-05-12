@@ -124,4 +124,8 @@ public class AuthService {
         );
     }
 
+    public void logout(HttpSession session) {
+        loginSessionManager.logout(session);
+    }
+
 }
