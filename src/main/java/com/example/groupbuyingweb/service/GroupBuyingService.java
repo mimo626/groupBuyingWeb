@@ -239,13 +239,13 @@ public class GroupBuyingService {
 
     // 공구 상세 Dto 생성
     public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId, String loggedInUserId) {
-        // 1. 공동구매 엔티티 조회 (예외 처리 생략)
+        // 공동구매 엔티티 조회 (예외 처리 생략)
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
 
         // 현재 모집된 수량
         int currentQuantity = calculateCurrentQuantity(groupBuyingId);
 
-        // 권한 및 상태 체크 로직 ✨
+        // 권한 및 상태 체크 로직
         boolean isOrganizer = false;
         boolean isParticipant = false;
 
@@ -263,7 +263,6 @@ public class GroupBuyingService {
                         .existsByGroupBuyingIdAndMemberIdAndRole(groupBuyingId, loggedInUserId, UserRole.PARTICIPANT);
             }
         }
-
         return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity, isOrganizer, isParticipant, hasParticipants);
     }
 
