@@ -44,11 +44,16 @@
     // 버튼 클릭 시 공구 개설 화면으로 이동
     const createGroupBtn = document.getElementById("createGroupBtn");
     const myPageBtn = document.getElementById("myPageBtn");
-
+    const chattingBtn = document.getElementById("chattingBtn");
 
     createGroupBtn.addEventListener("click", () => {
         // 지정해주신 로컬호스트 주소로 이동
         window.location.href = "http://localhost:8088/group-buying/create";
+    });
+
+    chattingBtn.addEventListener("click", () => {
+        // 지정해주신 로컬호스트 주소로 이동
+        window.location.href = "http://localhost:8088/chat/rooms-test";
     });
     myPageBtn.addEventListener("click", () => {
         // 지정해주신 로컬호스트 주소로 이동
