@@ -13,10 +13,7 @@ import com.example.groupbuyingweb.service.PointService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,10 +49,12 @@ public class MyPageController {
 
     @ResponseBody
     @PatchMapping("/neighborhood")
-    public ApiResponse<MyPageResponse.Neighborhood> patchNeighborhood(MyPageRequest.UpdateNeighborhood request,HttpSession session){
+    public ApiResponse<MyPageResponse.Neighborhood> patchNeighborhood(
+            @RequestBody MyPageRequest.UpdateNeighborhood request,
+            HttpSession session){
         String memberId = loginSessionManager.requireLoginUserId(session);
         MyPageResponse.Neighborhood dto = myPageService.patchNeighborhood(memberId, request);
-        return ApiResponse.success(dto); // 수정 결과에 수정한 주변 동 정보 데이터가 들어가야하는지는 고민 필요
+        return ApiResponse.success(dto);
     }
 
 

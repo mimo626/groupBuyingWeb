@@ -19,7 +19,8 @@ public class AuthPageController {
     }
 
     @GetMapping("/auth/mypage")
-    public String myPageTest(HttpSession session) {
+    public String myPageTest(Model model, HttpSession session) {
+        model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
         String login = (String) session.getAttribute("member_id");
         System.out.println(login);
         return "myPageTest";
