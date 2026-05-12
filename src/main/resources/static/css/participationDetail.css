@@ -1,0 +1,108 @@
+/* 상단 헤더 */
+#btn-back {
+    cursor: pointer;
+}
+header h1 {
+    display: inline-block;
+}
+#group-buying-status-badge {
+    color: coral;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+/* 공통 섹션 카드 스타일 */
+.card-section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+/* 1. 요약 정보 섹션 */
+#summary-section {
+    cursor: pointer; /* 클릭 가능한 느낌을 주기 위해 추가 */
+}
+#product-content {
+    color: gray;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+#group-buying-title {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+#product-name {
+    color: gray;
+    font-size: 14px;
+    margin-top: 0;
+}
+.summary-price-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 20px;
+}
+#unit-price {
+    font-size: 24px;
+}
+#apply-quantity {
+    color: gray;
+    font-size: 14px;
+}
+.total-point-wrap {
+    text-align: right;
+}
+.total-point-wrap p {
+    color: gray;
+    font-size: 12px;
+    margin: 0;
+}
+#total-paid-point {
+    font-size: 20px;
+    color: coral;
+}
+
+/* 2. 진행 상태 리스트 */
+#progress-list {
+    list-style: none;
+    padding-left: 0;
+}
+.progress-item {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+}
+.progress-marker {
+    margin-right: 10px;
+}
+.progress-label {
+    display: block;
+}
+.progress-current-text {
+    color: red;
+    font-size: 12px;
+}
+
+/* 3. 만남 일정 섹션 */
+#meeting-section {
+    background-color: #fdfafb;
+}
+#meeting-section h3 {
+    color: purple;
+    margin-top: 0;
+}
+.meeting-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.meeting-row:last-child {
+    margin-bottom: 0;
+}
+.meeting-label {
+    color: purple;
+}
+.meeting-value {
+    color: purple;
+    font-weight: bold;
+}

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>도토리 창고 - 공구 상세</title>
+    <link rel="stylesheet" href="/css/participationDetail.css">
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<header id="header">
+    <button type="button" id="btn-back">↩</button>
+    <h1>공구 상세</h1>
+    <span id="group-buying-status-badge"></span>
+</header>
+
+<hr>
+
+<main id="main-content">
+
+    <!-- 공구 요약 정보 -->
+    <section id="summary-section" class="card-section">
+        <p id="product-content"></p>
+        <h2 id="group-buying-title"></h2>
+        <p id="product-name"></p>
+
+        <div class="summary-price-wrap">
+            <div>
+                <strong id="unit-price"></strong>
+                <span id="apply-quantity"></span>
+            </div>
+            <div class="total-point-wrap">
+                <p>총 결제 포인트</p>
+                <strong id="total-paid-point"></strong>
+            </div>
+        </div>
+    </section>
+
+    <section id="progress-section" class="card-section">
+        <h3>진행 상태</h3>
+        <ul id="progress-list">
+        </ul>
+    </section>
+
+    <!-- 만남 일정 카드 -->
+    <section id="meeting-section" class="card-section">
+        <h3>🗓 만남 일정</h3>
+        <div class="meeting-row">
+            <span class="meeting-label">일시</span>
+            <span id="meeting-time-text" class="meeting-value"></span>
+        </div>
+        <div class="meeting-row">
+            <span class="meeting-label">장소</span>
+            <span id="meeting-address-text" class="meeting-value"></span>
+        </div>
+    </section>
+
+</main>
+
+<script th:inline="javascript">
+    window.onload = function() {
+        const pathSegments = window.location.pathname.split('/');
+        const participationId = pathSegments[pathSegments.length - 1];
+
+        if (participationId && !isNaN(participationId)) {
+            fetchParticipationDetail(participationId);
+        } else {
+            alert("잘못된 접근입니다. 유효한 참여 ID가 없습니다.");
+        }
+
+        document.getElementById('btn-back').addEventListener('click', function() {
+            if (document.referrer) {
+                location.href = document.referrer;
+            } else {
+                history.back();
+            }
+        });
+    };
+
+    function fetchParticipationDetail(id) {
+        const apiUrl = `/api/mypage/participations/${id}`;
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status == 200) {
+                    const detail = data.data;
+                    renderDetail(detail);
+                } else {
+                    alert("정보를 불러오는데 실패했습니다: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+            });
+    }
+
+    function renderDetail(detail) {
+        document.getElementById('group-buying-status-badge').innerText = detail.groupBuyingStatus || '';
+        document.getElementById('product-content').innerText = detail.productContent || '';
+        document.getElementById('group-buying-title').innerText = detail.title || '';
+        document.getElementById('product-name').innerText = detail.productName || '';
+
+        if (detail.totalPrice !== undefined) {
+            document.getElementById('unit-price').innerText = detail.totalPrice.toLocaleString() + '원';
+        }
+        if (detail.applyQuantity !== undefined) {
+            document.getElementById('apply-quantity').innerText = ` × ${detail.applyQuantity}개`;
+        }
+        if (detail.paidPoint !== undefined) {
+            document.getElementById('total-paid-point').innerText = detail.paidPoint.toLocaleString() + 'P';
+        }
+
+        document.getElementById('summary-section').addEventListener('click', function () {
+            if (detail.groupBuyingId) {
+                location.href = `/group-buying/${detail.groupBuyingId}`;
+            } else {
+                alert("해당 공구 원본 정보를 찾을 수 없습니다.");
+            }
+        });
+
+        const progressList = document.getElementById('progress-list');
+        progressList.innerHTML = '';
+
+        if (detail.progressSteps && detail.progressSteps.length > 0) {
+            detail.progressSteps.forEach(step => {
+                const li = document.createElement('li');
+                li.className = 'progress-item'; // CSS 클래스 적용
+
+                const marker = document.createElement('span');
+                marker.className = 'progress-marker'; // CSS 클래스 적용
+                if (step.completed) {
+                    marker.innerText = '✅';
+                } else if (step.active) {
+                    marker.innerText = '🔄';
+                } else {
+                    marker.innerText = '⚪';
+                }
+
+                const textDiv = document.createElement('div');
+                const labelStr = document.createElement('strong');
+                labelStr.className = 'progress-label'; // CSS 클래스 적용
+                labelStr.innerText = step.label;
+
+                // 글씨 색상은 상태(completed, active)에 따라 다르게 변하므로 JS 인라인 유지
+                labelStr.style.color = step.completed || step.active ? 'black' : 'gray';
+
+                textDiv.appendChild(labelStr);
+
+                if (step.active) {
+                    const currentText = document.createElement('span');
+                    currentText.innerText = '현재';
+                    currentText.className = 'progress-current-text'; // CSS 클래스 적용
+                    textDiv.appendChild(currentText);
+                }
+
+                li.appendChild(marker);
+                li.appendChild(textDiv);
+                progressList.appendChild(li);
+            });
+        }
+
+        if (detail.meetingAt) {
+            const dateObj = new Date(detail.meetingAt);
+            const month = dateObj.getMonth() + 1;
+            const date = dateObj.getDate();
+            const hours = dateObj.getHours();
+
+            const ampm = hours >= 12 ? '오후' : '오전';
+            const displayHour = hours % 12 || 12;
+
+            document.getElementById('meeting-time-text').innerText = `${month}월 ${date}일 ${ampm} ${displayHour}시`;
+        } else {
+            document.getElementById('meeting-time-text').innerText = "일정 미정";
+        }
+
+        if (detail.meetingAddress) {
+            document.getElementById('meeting-address-text').innerText = detail.meetingAddress;
+        } else {
+            document.getElementById('meeting-address-text').innerText = "장소 미정";
+        }
+    }
+</script>
+
+</body>
+</html>
