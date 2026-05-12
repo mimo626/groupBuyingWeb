@@ -33,9 +33,13 @@ public class GroupBuyingController {
     private String kakaoJsKey;
 
     @GetMapping("/create")
-    public String createForm(Model model) {
+    public String createForm(Model model,
+                HttpSession session) {
+        String memberId = loginSessionManager.requireLoginUserId(session);
+        String memberAddress = groupBuyingService.getMemberAddress(memberId);
         model.addAttribute("categories", GroupBuyingCategory.values());
         model.addAttribute("kakaoJsKey", kakaoJsKey);
+        model.addAttribute("memberAddress", memberAddress);
         return "groupbuying/create";
     }
 
@@ -44,15 +48,17 @@ public class GroupBuyingController {
             @Valid @ModelAttribute GroupBuyingRequest.Create request,
             @RequestParam("images") List<MultipartFile> images,
             HttpSession session) { // 폼의 name="images" 와 매핑
-
         String memberId = loginSessionManager.requireLoginUserId(session);
 
+        System.out.println(request.toString());
         GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, memberId);
         return "redirect:/group-buying/" + res.groupBuyingId();
     }
     @GetMapping("/{id}")
     public String getGroupBuyingById(@PathVariable("id") Long groupBuyingId, Model model) {
         GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId);
+        System.out.println(res.toString());
+
         model.addAttribute("groupBuying", res);return "groupBuying/detail";
     }
 
