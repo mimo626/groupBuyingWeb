@@ -74,8 +74,6 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findByGroupBuyingId(groupBuyingId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_CHAT_ROOM));
 
-        Member host = chatRoom.getGroupBuying().getMember();
-
         String content = switch (status) {
             case START -> "채팅방이 개설되었습니다. 주최자는 물품 구매를 완료해주세요.";
             case PURCHASED -> "주최자가 물품 구매를 완료했습니다. 주최자는 운송장 번호를 입력해주세요.";
@@ -88,7 +86,6 @@ public class ChatRoomService {
 
         ChatMessage systemMessage = ChatMessage.builder()
                 .chatRoom(chatRoom)
-                .sender(host)
                 .messageType(MessageType.SYSTEM)
                 .content(content)
                 .build();
@@ -142,7 +139,7 @@ public class ChatRoomService {
         List<ChatRoomResponse.Message> messageDtos = messages.stream()
                 .map(m -> new ChatRoomResponse.Message(
                         m.getId(),
-                        m.getSender().getId(),   // SYSTEM 메시지라도 sender는 항상 존재 (시스템 발송 회원)
+                        m.getSender() != null ? m.getSender().getId() : null,
                         m.getMessageType().name(),
                         m.getContent(),
                         m.getCreateAt()
