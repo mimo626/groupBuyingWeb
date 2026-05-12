@@ -31,11 +31,12 @@ public enum ErrorCode {
     TEST_ZERO_POINT(400, "포인트는 0이 못된당"),
 
     // 공동구매 생성
-    NOT_CREATE_GROUP_BUYING(400, "존재하지 않는 공동구매 게시글입니다."),
+    NOT_EXIST_GROUP_BUYING(400, "존재하지 않는 공동구매 게시글입니다."),
 
     // 공동구매 참여
     EXCEED_TARGET_QUANTITY(400, "모집 수량을 초과하여 신청할 수 없습니다.");
 
     private final int status;
     private final String message;
+
 }

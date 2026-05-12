@@ -143,7 +143,7 @@ public class GroupBuyingService {
 
         // 공구 참여 엔티티 생성
         GroupBuyingParticipation participation = createParticipation(
-                member, groupBuying, UserRole.PARTICIPANT, applyQuantity, PaymentStatus.Complete
+                member, groupBuying, UserRole.PARTICIPANT, applyQuantity, PaymentStatus.Incomplete
         );
 
         // 단가 계산 (총액 / 목표수량)
@@ -176,8 +176,6 @@ public class GroupBuyingService {
     // 공구 진행 상태 변경
     @Transactional
     public GroupBuyingResponse.UpdateStatus updateStatusFromRequest(Long groupBuyingId, GroupBuyingRequest.UpdateStatus request) {
-        // 권한 체크 로직
-
         // 상태 변경 로직 호출 (DTO의 값들을 풀어서 전달)
         GroupBuying updatedGroupBuying = processStatusChange(
                 groupBuyingId, request.status(), request.trackingNumber(), request.meetingAt()
@@ -190,7 +188,7 @@ public class GroupBuyingService {
     @Transactional
     public GroupBuying processStatusChange(Long groupBuyingId, GroupBuyingStatus newStatus, String trackingNumber, LocalDateTime meetingAt) {
         GroupBuying groupBuying = groupBuyingRepository.findById(groupBuyingId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공구입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_GROUP_BUYING));
 
         groupBuying.updateStatus(newStatus);
 
@@ -209,7 +207,7 @@ public class GroupBuyingService {
                 if (meetingAt != null) groupBuying.updateMeetingAt(meetingAt);
             }
             case SETTLING -> {
-                //TODO 정산 진행
+                //TODO 공구 참여자의 포인트 정산 상태 완료로 변경(공구 참여할 땐 미완료가 맞는지)
                 pointService.settlePoint(groupBuyingId);
             }
             case CLOSED -> {
@@ -262,7 +260,7 @@ public class GroupBuyingService {
     // 공구 엔티티 조회
     private GroupBuying getGroupBuying(Long groupBuyingId) {
         return groupBuyingRepository.findById(groupBuyingId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_CREATE_GROUP_BUYING));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_GROUP_BUYING));
     }
 
     // 멤버 조회 (임시 로직 격리)
