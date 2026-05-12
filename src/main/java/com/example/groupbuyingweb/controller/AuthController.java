@@ -65,4 +65,14 @@ public class AuthController {
         AuthResponse.LoginResult response = authService.login(request, session);
         return ApiResponse.success(response);
     }
+
+    @ResponseBody
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(
+            HttpSession session
+    ) {
+
+        authService.logout(session);
+        return ApiResponse.success(null);
+    }
 }
