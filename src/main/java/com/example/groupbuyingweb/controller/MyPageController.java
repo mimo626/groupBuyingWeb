@@ -70,8 +70,16 @@ public class MyPageController {
         return ApiResponse.success(dto);
     }
 
-
-
+    @ResponseBody
+    @GetMapping("/participations/{participationID}")
+    public ApiResponse<MyPageResponse.MyParticipationDetail> getParticipationDetail(
+            @PathVariable MyPageRequest.ParticipationId request,
+            HttpSession session) {
+        String memberId = loginSessionManager.requireLoginUserId(session);
+        MyPageResponse.MyParticipationDetail dto =
+                myPageService.getParticipationDetail(memberId, request.participationId());
+        return ApiResponse.success(dto);
+    }
 
 
 }

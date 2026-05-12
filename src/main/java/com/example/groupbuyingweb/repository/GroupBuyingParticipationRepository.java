@@ -16,11 +16,13 @@ public interface GroupBuyingParticipationRepository extends JpaRepository<GroupB
     @Query("SELECT SUM(g.paidPoint) FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :gbpId")
     Double sumSettlePay(@Param("gbpId") long groupBuyingId);
 
-
     @Query("SELECT g.member FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :groupBuyingId AND g.role = :role")
     Member findMemberByGroupBuyingIdAndRole(long groupBuyingId, UserRole role);
 
     GroupBuyingParticipation findByGroupBuyingIdAndMemberId(long groupBuyingId, String memberId);
 
     List<GroupBuyingParticipation> findAllByGroupBuyingId(long groupBuyingId);
+
+    @Query("SELECT SUM(g.applyQuantity) FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :gbpId")
+    Integer sumQuantity(@Param("gbpId") long groupBuyingId);
 }
