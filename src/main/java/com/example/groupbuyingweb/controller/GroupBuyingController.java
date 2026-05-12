@@ -1,10 +1,12 @@
 package com.example.groupbuyingweb.controller;
 
 import com.example.groupbuyingweb.core.api.ApiResponse;
+import com.example.groupbuyingweb.core.session.LoginSessionManager;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
 import com.example.groupbuyingweb.service.GroupBuyingService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,9 +25,12 @@ import java.util.List;
 public class GroupBuyingController {
     @Autowired
     private GroupBuyingService groupBuyingService;
+    @Autowired
+    private LoginSessionManager loginSessionManager;
 
     @GetMapping("/create")
     public String createForm(Model model) {
+
         model.addAttribute("categories", GroupBuyingCategory.values());
 
         return "groupbuying/create";
@@ -34,9 +39,10 @@ public class GroupBuyingController {
     @PostMapping("/create")
     public String addGroupBuying(
             @Valid @ModelAttribute GroupBuyingRequest.Create request,
-            @RequestParam("images") List<MultipartFile> images) { // ✨ 폼의 name="images" 와 매핑
+            @RequestParam("images") List<MultipartFile> images,
+            HttpSession session) { // 폼의 name="images" 와 매핑
 
-        String memberId = "testUser";
+        String memberId = loginSessionManager.requireLoginUserId(session);
 
         GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, memberId);
         return "redirect:/group-buying/" + res.groupBuyingId();
