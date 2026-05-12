@@ -9,6 +9,7 @@ import com.example.groupbuyingweb.service.GroupBuyingService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,11 +29,13 @@ public class GroupBuyingController {
     @Autowired
     private LoginSessionManager loginSessionManager;
 
+    @Value("${kakao.local.javascript-key}")
+    private String kakaoJsKey;
+
     @GetMapping("/create")
     public String createForm(Model model) {
-
         model.addAttribute("categories", GroupBuyingCategory.values());
-
+        model.addAttribute("kakaoJsKey", kakaoJsKey);
         return "groupbuying/create";
     }
 
