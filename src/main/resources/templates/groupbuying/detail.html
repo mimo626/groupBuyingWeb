@@ -104,14 +104,59 @@
             border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
             z-index: 100;
         }
-        .chat-notice {
-            text-align: center; font-size: 13px; color: #666;
-            background-color: #f5f6f8; padding: 8px; border-radius: 6px; margin-bottom: 10px;
-        }
+
+        /* 버튼 기본 스타일 (공통) */
         .submit-btn {
             width: 100%; padding: 16px; background-color: #92533c; /* 갈색 버튼 */
             color: white; border: none; border-radius: 8px; font-size: 16px;
-            font-weight: bold; cursor: pointer;
+            font-weight: bold; cursor: pointer; transition: background-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        /* 버튼 호버 시 약간 진해지는 효과 */
+        .submit-btn:hover:not(:disabled) {
+            background-color: #7a4430;
+        }
+
+        /* 비활성화된 버튼 (모집 마감) */
+        .submit-btn:disabled {
+            background-color: #e0e0e0;
+            color: #999999;
+            cursor: not-allowed;
+        }
+
+        /* --- 버튼 두 개 나란히 배치 --- */
+        .button-group {
+            display: flex;
+            gap: 12px; /* 버튼 사이 간격 설정 */
+            width: 100%;
+        }
+
+        /* flex 컨테이너 안의 버튼들이 동일한 너비를 가지도록 설정 */
+        .button-group .submit-btn {
+            flex: 1;
+        }
+
+        /* (선택 사항) 수정 / 삭제 등 특정 버튼 색상 변경 */
+        .submit-btn.danger-btn {
+            background-color: #d84339; /* 삭제 버튼은 경고 의미로 붉은 계열 */
+        }
+        .submit-btn.danger-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .submit-btn.sub-btn {
+            background-color: #666666; /* 수정 버튼은 무채색 계열 */
+        }
+        .submit-btn.sub-btn:hover {
+            background-color: #555555;
+        }
+
+        /* 참여 불가 안내 문구 (버튼과 같은 볼륨감으로 조정) */
+        .chat-notice {
+            text-align: center; font-size: 14px; color: #666; font-weight: bold;
+            background-color: #f5f6f8; padding: 16px; border-radius: 8px; margin: 0;
+            width: 100%; box-sizing: border-box;
         }
     </style>
 </head>
@@ -188,13 +233,48 @@
     </div>
 
     <div class="bottom-bar">
-        <div class="chat-notice">💬 모집 완료 후 채팅방이 열려요</div>
-        <button class="submit-btn" th:data-id="${groupBuying.id}" onclick="participate(this.getAttribute('data-id'))">
-            참여 신청하기
-        </button>
+        <!-- 주최자 -->
+        <div th:if="${groupBuying.isOrganizer}">
+            <div th:if="${groupBuying.status.name() == 'RECRUITING'}">
+                <!-- 버튼 2개 나란히 배치 (button-group) -->
+                <div th:if="${!groupBuying.hasParticipants}" class="button-group">
+                    <button id="btn-edit" class="submit-btn sub-btn">수정</button>
+                    <button id="btn-delete" class="submit-btn danger-btn">삭제</button>
+                </div>
+                <!-- <span> 안에 <div>가 들어가면 HTML 표준에 어긋나므로 <div>만 사용 -->
+                <div th:if="${groupBuying.hasParticipants}" class="chat-notice">
+                    참여자가 있어 수정/삭제가 불가함
+                </div>
+            </div>
+            <div th:if="${groupBuying.status.name() == 'STARTED'}">
+                <button id="btn-chat-org" class="submit-btn">채팅방 이동</button>
+            </div>
+        </div>
+
+        <!-- 참여자 -->
+        <div th:if="${groupBuying.isParticipant}">
+            <button th:if="${groupBuying.status.name() == 'RECRUITING'}"
+                    id="btn-cancel" class="submit-btn danger-btn"
+                    onclick="confirmCancel()">참여 취소</button>
+            <button th:if="${groupBuying.status.name() == 'STARTED'}"
+                    id="btn-chat-part" class="submit-btn">채팅방 이동</button>
+        </div>
+
+        <!-- 일반 사용자 -->
+        <div th:if="${!groupBuying.isOrganizer && !groupBuying.isParticipant}">
+            <button th:if="${groupBuying.status.name() == 'RECRUITING'}"
+                    id="btn-participate" class="submit-btn"
+                    th:data-id="${groupBuying.id}"
+                    onclick="participate(this.getAttribute('data-id'))">공구 참여</button>
+            <button th:if="${groupBuying.status.name() == 'STARTED'}"
+                    id="btn-closed" class="submit-btn" disabled>모집 마감</button>
+        </div>
     </div>
 
 </div>
+<script th:if="${participateSuccess}">
+    alert("참여 신청이 완료되었습니다!");
+</script>
 <script type="text/javascript"
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
 </script>
@@ -257,7 +337,7 @@
 
     // --- 참여 신청 API 통신 로직 ---
     function participate(groupBuyingId) {
-        // 1. 사용자에게 수량 입력받기 (간단한 prompt 사용)
+        // 1. 사용자에게 수량 입력받기
         const quantityStr = prompt("신청할 수량을 입력해주세요. (숫자만 입력)");
 
         // 취소를 누르거나 입력하지 않은 경우 종료
@@ -269,31 +349,22 @@
             return;
         }
 
-        // 2. 서버가 Form Data를 기대하므로 URLSearchParams로 데이터 세팅
-        const formData = new URLSearchParams();
-        formData.append("applyQuantity", applyQuantity);
+        // 2. JS에서 동적으로 폼(Form) 생성하여 제출 (리다이렉트를 위해)
+        const form = document.createElement("form");
 
-        // 3. 컨트롤러로 POST 요청 쏘기
-        fetch(`/group-buying/${groupBuyingId}/participate`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded" // 폼 데이터 전송 방식
-            },
-            body: formData.toString()
-        })
-        .then(response => response.json()) // ApiResponse 반환을 JSON으로 파싱
-        .then(data => {
-            if (data.status === 'SUCCESS' || data.code === 200) {
-                alert("참여 신청이 완료되었습니다!");
-                window.location.reload(); // 성공 시 화면 새로고침하여 모집 현황 반영
-            } else {
-                alert("신청 실패: " + (data.message || "오류가 발생했습니다."));
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("서버와 통신 중 문제가 발생했습니다.");
-        });
+        form.setAttribute("action", `/group-buying/${groupBuyingId}/participate`);
+        form.setAttribute("method", "POST");
+
+        // 3. 폼 안에 수량 데이터 넣기
+        const inputQuantity = document.createElement("input");
+        inputQuantity.setAttribute("type", "hidden");
+        inputQuantity.setAttribute("name", "applyQuantity");
+        inputQuantity.setAttribute("value", applyQuantity);
+        form.appendChild(inputQuantity);
+
+        // 4. 문서에 폼을 추가하고 전송
+        document.body.appendChild(form);
+        form.submit(); // 컨트롤러로 POST 요청이 가고, 처리가 끝나면 리다이렉트 됨
     }
 </script>
 
