@@ -46,6 +46,8 @@ public class GroupBuying {
     private String productContent;
 
     @Column(nullable = false)
+    private String meetingAddress;
+    @Column(nullable = false)
     private String neighborhoodName;
     @Column(nullable = false)
     private String meetingPlace;

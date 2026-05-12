@@ -183,9 +183,7 @@
         <div class="location-card">
             <div class="info-label">수령 장소</div>
             <div class="info-value" th:text="${groupBuying.meetingPlace}">상봉역 1번 출구</div>
-            <div class="map-placeholder">
-                📍 지도 영역 (API 연동 예정)
-            </div>
+            <div id="map" style="width:100%;height:350px;"></div>
         </div>
     </div>
 
@@ -197,8 +195,50 @@
     </div>
 
 </div>
+<script type="text/javascript"
+        th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
+</script>
+<script type="text/javascript" th:inline="javascript">
+    // KakaoMap API 로직
+    var mapContainer = document.getElementById('map');
+    var geocoder = new kakao.maps.services.Geocoder();
+    var map;
+    var marker;
+    var infowindow;
 
-<script>
+    var groupBuying = [[${groupBuying}]];
+
+    // 초기 주소 검색
+    geocoder.addressSearch(groupBuying.meetingAddress, function(result, status) {
+
+        // 정상적으로 검색이 완료됐으면
+        if (status === kakao.maps.services.Status.OK) {
+            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+            // 지도 생성
+            var mapOption = {
+                center: coords,
+                level: 3
+            };
+            map = new kakao.maps.Map(mapContainer, mapOption);
+
+            // 마커 생성 및 할당
+            marker = new kakao.maps.Marker({
+                map: map,
+                position: coords
+            });
+
+            // 인포윈도우 생성 및 할당
+            infowindow = new kakao.maps.InfoWindow({
+                content: '<div style="width:150px;text-align:center;padding:6px 0;">만남 장소</div>'
+            });
+            infowindow.open(map, marker);
+        } else {
+            alert("기본 주소를 찾을 수 없습니다.");
+            // 예외처리
+        }
+    });
+
     // --- 이미지 슬라이드 로직 ---
     let currentIndex = 0;
     function moveSlide(direction) {

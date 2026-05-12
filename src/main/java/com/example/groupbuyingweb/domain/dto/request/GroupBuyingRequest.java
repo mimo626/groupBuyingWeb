@@ -31,11 +31,12 @@ public class GroupBuyingRequest {
             @NotNull(message = "신청 수량을 입력해주세요.")
             Integer organizerQuantity,
 
+            @NotBlank(message = "전체 주소 정보가 필요합니다.")
+            String meetingAddress,
             @NotNull(message = "만남 장소의 위치 정보가 필요합니다.")
             Double entX,
             @NotNull(message = "만남 장소의 위치 정보가 필요합니다.")
             Double entY,
-
             @NotBlank(message = "만남 장소에 대한 설명을 입력해주세요. ex) \"강남역 1번 출구 앞\"")
             String meetingPlace,
 

@@ -15,6 +15,10 @@ public class LoginSessionManager {
         session.setAttribute(SessionConst.LOGIN_USER_ID, userId);
     }
 
+    public void logout(HttpSession session) {
+        session.invalidate();
+    }
+
     public String getLoginUserId(HttpSession session) {
         Object value = session.getAttribute(SessionConst.LOGIN_USER_ID);
 

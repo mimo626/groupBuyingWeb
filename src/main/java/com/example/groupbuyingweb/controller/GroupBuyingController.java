@@ -9,6 +9,7 @@ import com.example.groupbuyingweb.service.GroupBuyingService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,11 +29,17 @@ public class GroupBuyingController {
     @Autowired
     private LoginSessionManager loginSessionManager;
 
+    @Value("${kakao.local.javascript-key}")
+    private String kakaoJsKey;
+
     @GetMapping("/create")
-    public String createForm(Model model) {
-
+    public String createForm(Model model,
+                HttpSession session) {
+        String memberId = loginSessionManager.requireLoginUserId(session);
+        String memberAddress = groupBuyingService.getMemberAddress(memberId);
         model.addAttribute("categories", GroupBuyingCategory.values());
-
+        model.addAttribute("kakaoJsKey", kakaoJsKey);
+        model.addAttribute("memberAddress", memberAddress);
         return "groupbuying/create";
     }
 
@@ -41,16 +48,18 @@ public class GroupBuyingController {
             @Valid @ModelAttribute GroupBuyingRequest.Create request,
             @RequestParam("images") List<MultipartFile> images,
             HttpSession session) { // 폼의 name="images" 와 매핑
-
         String memberId = loginSessionManager.requireLoginUserId(session);
 
+        System.out.println(request.toString());
         GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, memberId);
         return "redirect:/group-buying/" + res.groupBuyingId();
     }
     @GetMapping("/{id}")
     public String getGroupBuyingById(@PathVariable("id") Long groupBuyingId, Model model) {
         GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId);
-        model.addAttribute("groupBuying", res);return "groupBuying/detail";
+        model.addAttribute("kakaoJsKey", kakaoJsKey);
+        model.addAttribute("groupBuying", res);
+        return "groupBuying/detail";
     }
 
     @PostMapping("/{id}/participate")
