@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 상세</title>
+</head>
+<body>
+
+<h2>채팅 상세</h2>
+<p>현재 로그인된 세션 ID: <strong th:text="${session.loginUserId}"></strong></p>
+<input type="hidden" id="currentUserId" th:value="${session.loginUserId}">
+<p>채팅방 ID: <strong id="roomIdDisplay"></strong></p>
+
+<hr>
+<div id="roomInfo"><p>채팅방 정보 로딩 중...</p></div>
+
+<hr>
+<h3>메시지 목록</h3>
+<div id="messageList" style="height:400px; overflow-y:auto; border:1px solid #ccc; padding:8px;">
+    <p>메시지 로딩 중...</p>
+</div>
+
+<hr>
+<div id="sendForm">
+    <input type="text" id="messageInput" placeholder="메시지 입력" size="50" onkeydown="handleKeyDown(event)">
+    <button onclick="sendMessage()">전송</button>
+    <span id="connectionStatus" style="color:red;">연결 중...</span>
+</div>
+
+<hr>
+<a href="/chat/rooms-test">목록으로 돌아가기</a>
+
+<!-- SockJS + STOMP -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+    const pathParts = window.location.pathname.split('/');
+    const roomId = pathParts[pathParts.length - 1];
+    document.getElementById('roomIdDisplay').innerText = roomId;
+
+    const currentUserId = document.getElementById('currentUserId').value;
+    let stompClient = null;
+
+    window.onload = function () {
+        loadChatRoomDetail();
+        connectWebSocket();
+    };
+
+    /* 채팅방 상세 조회  */
+    function loadChatRoomDetail() {
+        fetch(`/chat/api/rooms/${roomId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 200) {
+                    alert('오류: ' + data.message);
+                    return;
+                }
+                renderRoomInfo(data.data);
+                renderMessages(data.data.messages);
+                scrollToBottom();
+            })
+            .catch(err => {
+                document.getElementById('roomInfo').innerHTML = '<p>채팅방 정보를 불러오지 못했습니다.</p>';
+                console.error('loadChatRoomDetail 오류:', err);
+            });
+    }
+
+    function renderRoomInfo(detail) {
+        const statusLabel = {
+            START: '채팅 개설',
+            PURCHASED: '물품 구매 완료',
+            SHIPPING: '배송 중',
+            MEETING_SCHEDULED: '만남 일정 확정',
+            SETTLING: '정산 중',
+            CLOSED: '종료'
+        };
+
+        let rows = `
+            <tr><th>공구 제목</th><td><a href="/groupBuying/${detail.groupPurchaseId}">${escapeHtml(detail.groupPurchaseTitle)}</a></td></tr>
+            <tr><th>상태</th><td>${statusLabel[detail.status] || detail.status}</td></tr>
+        `;
+        if (detail.trackingNumber) {
+            rows += `<tr><th>운송장 번호</th><td>${escapeHtml(detail.trackingNumber)}</td></tr>`;
+        }
+        if (detail.meetingAt) {
+            rows += `<tr><th>만남 일정</th><td>${formatDateTime(detail.meetingAt)}</td></tr>`;
+        }
+        if (detail.meetingLocation) {
+            rows += `<tr><th>만남 장소</th><td>${escapeHtml(detail.meetingLocation)}</td></tr>`;
+        }
+        rows += `<tr><th>안읽은 메시지</th><td>${detail.unreadCount}</td></tr>`;
+
+        document.getElementById('roomInfo').innerHTML = `<table border="1" cellpadding="6">${rows}</table>`;
+    }
+
+    function renderMessages(messages) {
+        const container = document.getElementById('messageList');
+        if (!messages || messages.length === 0) {
+            container.innerHTML = '<p>메시지가 없습니다.</p>';
+            return;
+        }
+        container.innerHTML = messages.map(buildMessageHTML).join('');
+    }
+
+    /*  WebSocket 연결  */
+    function connectWebSocket() {
+        const socket = new SockJS('/ws-chat');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        stompClient.connect({}, function () {
+            document.getElementById('connectionStatus').innerText = '연결됨';
+            document.getElementById('connectionStatus').style.color = 'green';
+
+            stompClient.subscribe(`/topic/chat/room/${roomId}`, function (frame) {
+                const msg = JSON.parse(frame.body);
+                appendMessage(msg);
+                scrollToBottom();
+            });
+        }, function (error) {
+            document.getElementById('connectionStatus').innerText = '연결 끊김';
+            document.getElementById('connectionStatus').style.color = 'red';
+            console.error('WebSocket 오류:', error);
+        });
+    }
+
+    /* 메시지 전송 */
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const content = input.value.trim();
+        if (!content) return;
+        if (!stompClient || !stompClient.connected) {
+            alert('WebSocket이 연결되지 않았습니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+        stompClient.send(
+            `/app/chat/room/${roomId}`,
+            {},
+            JSON.stringify({ content: content })
+        );
+        input.value = '';
+    }
+
+    function handleKeyDown(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    /*  메시지 렌더링 헬퍼 */
+    function appendMessage(msg) {
+        const container = document.getElementById('messageList');
+        const placeholder = container.querySelector('p');
+        if (placeholder) placeholder.remove();
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = buildMessageHTML(msg);
+        container.appendChild(wrapper.firstElementChild);
+    }
+
+    function buildMessageHTML(msg) {
+        if (msg.messageType === 'SYSTEM') {
+            return `<div style="text-align:center; color:#888; margin:6px 0;"><em>${escapeHtml(msg.content)}</em></div>`;
+        }
+
+        const isMine = msg.senderId === currentUserId;
+        const align = isMine ? 'right' : 'left';
+        const senderLabel = isMine ? '나' : shortenId(msg.senderId);
+
+        return `<div style="text-align:${align}; margin:4px 0;">
+                    <div style="font-size:0.8em; color:#555;">${escapeHtml(senderLabel)}</div>
+                    <div>${escapeHtml(msg.content)}</div>
+                    <div style="font-size:0.75em; color:#999;">${formatDateTime(msg.sentAt)}</div>
+                </div>`;
+    }
+
+    /* 유틸 */
+    function scrollToBottom() {
+        const c = document.getElementById('messageList');
+        c.scrollTop = c.scrollHeight;
+    }
+
+    function formatDateTime(str) {
+        if (!str) return '';
+        return new Date(str).toLocaleString('ko-KR');
+    }
+
+    function shortenId(id) {
+        if (!id) return '알 수 없음';
+        return id.length > 8 ? id.substring(0, 8) + '…' : id;
+    }
+
+    // 채팅 입력을 HTML에 직접 삽입할 때, XSS 공격 방지
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+</script>
+
+</body>
+</html>
