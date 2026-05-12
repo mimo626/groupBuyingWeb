@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -48,29 +49,40 @@ public class GroupBuyingController {
             @Valid @ModelAttribute GroupBuyingRequest.Create request,
             @RequestParam("images") List<MultipartFile> images,
             HttpSession session) { // 폼의 name="images" 와 매핑
-        String memberId = loginSessionManager.requireLoginUserId(session);
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
         System.out.println(request.toString());
-        GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, memberId);
+        GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, loggedInUserId);
         return "redirect:/group-buying/" + res.groupBuyingId();
     }
     @GetMapping("/{id}")
-    public String getGroupBuyingById(@PathVariable("id") Long groupBuyingId, Model model) {
-        GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId);
+    public String getGroupBuyingById(@PathVariable("id") Long groupBuyingId, Model model, HttpSession session) {
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
+
+        GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId, loggedInUserId);
+        System.out.println(res.toString());
         model.addAttribute("kakaoJsKey", kakaoJsKey);
         model.addAttribute("groupBuying", res);
         return "groupBuying/detail";
     }
 
     @PostMapping("/{id}/participate")
-    public ApiResponse<GroupBuyingResponse.Participate> participateGroupBuying(@PathVariable("id") Long groupBuyingId,
-                                                                               @Valid GroupBuyingRequest.Participate groupBuyingRequest) {
-        String memberId = "";
+    public String participateGroupBuying(@PathVariable("id") Long groupBuyingId,
+                                         @Valid GroupBuyingRequest.Participate groupBuyingRequest,
+                                         HttpSession session,
+                                         RedirectAttributes redirectAttributes) {
+
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
         GroupBuyingResponse.Participate res = groupBuyingService.participateGroupBuying(
                 groupBuyingRequest.applyQuantity(),
-                memberId,
+                loggedInUserId,
                 groupBuyingId);
-        return ApiResponse.success(res);
+
+        // 화면에서 성공 alert을 띄우기 위한 1회성 플래그 전달
+        redirectAttributes.addFlashAttribute("participateSuccess", true);
+
+        // 리다이렉트 경로
+        return "redirect:/group-buying/" + groupBuyingId;
     }
 
     @GetMapping("/list")
