@@ -53,6 +53,7 @@ public class GroupBuyingResponse {
             int targetQuantity,
             int currentQuantity,
             String meetingPlace, // 만남 장소 텍스트
+            String meetingAddress,
             int viewCount,
             GroupBuyingStatus status,
             LocalDateTime deadline,
@@ -72,6 +73,7 @@ public class GroupBuyingResponse {
                     groupBuying.getTargetQuantity(),
                     currentQuantity,
                     groupBuying.getMeetingPlace(),
+                    groupBuying.getMeetingAddress(),
                     groupBuying.getViewCount(),
                     groupBuying.getStatus(),
                     groupBuying.getDeadline(),

@@ -59,6 +59,7 @@ public class GroupBuyingService {
                 .entX(request.entX())
                 .entY(request.entY())
                 .meetingPlace(request.meetingPlace())
+                .meetingAddress(request.meetingAddress())
                 .productUrl(request.productUrl())
                 .deadline(request.deadline())
                 .neighborhoodName(addressService.createNeighborhoodName(request.entX(), request.entY()))
@@ -228,6 +229,11 @@ public class GroupBuyingService {
         return groupBuying; // 변경된 엔티티 반환
     }
 
+    @Transactional
+    public String getMemberAddress(String memberId) {
+        Member member = getMember(memberId);
+        return member.getAddress();
+    }
     /* ================= 공통 로직 ================= */
 
     // 공구 상세 Dto 생성
