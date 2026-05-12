@@ -200,6 +200,7 @@
 
                     <input type="hidden" id="entX" name="entX">
                     <input type="hidden" id="entY" name="entY">
+                    <input type="hidden" id="meetingAddress" name="meetingAddress">
 
                 </div>
                 <span class="icon">📍</span>
@@ -213,7 +214,7 @@
 <script type="text/javascript"
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
 </script>
-<script>
+<script type="text/javascript" th:inline="javascript">
     // JS 3개 제한 로직
     document.getElementById('imageInput').addEventListener('change', function() {
         if (this.files.length > 3) {
@@ -222,73 +223,71 @@
         }
     });
 
-
-    // 지도 초기화 (임의의 중심 좌표 설정)
-    var mapContainer = document.getElementById('map'); // 지도를 표시할 div
-    var mapOption = {
-        center: new kakao.maps.LatLng(37.566826, 126.978656), // 서울 시청 좌표
-        level: 3 // 지도의 확대 레벨
-    };
-    var map = new kakao.maps.Map(mapContainer, mapOption);
-
-    // 주소-좌표 변환 객체 생성 및 마커 준비
+    var mapContainer = document.getElementById('map');
     var geocoder = new kakao.maps.services.Geocoder();
-    var marker = new kakao.maps.Marker();
-    var infowindow = new kakao.maps.InfoWindow();
+    var map;
+    var marker;
+    var infowindow;
 
-    geocoder.addressSearch('기흥구 구갈동 409-3', function(result, status) {
+    var userAddress = [[${memberAddress}]];
+
+    // 초기 주소 검색
+    geocoder.addressSearch(userAddress, function(result, status) {
 
         // 정상적으로 검색이 완료됐으면
-         if (status === kakao.maps.services.Status.OK) {
-
+        if (status === kakao.maps.services.Status.OK) {
             var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
 
-            // 결과값으로 받은 위치를 마커로 표시합니다
+            // 지도 생성
+            var mapOption = {
+                center: coords,
+                level: 3
+            };
+            map = new kakao.maps.Map(mapContainer, mapOption);
+
+            // 마커 생성 및 할당
             marker = new kakao.maps.Marker({
                 map: map,
                 position: coords
             });
 
-            // 인포윈도우로 장소에 대한 설명을 표시합니다
+            // 인포윈도우 생성 및 할당
             infowindow = new kakao.maps.InfoWindow({
                 content: '<div style="width:150px;text-align:center;padding:6px 0;">우리집</div>'
             });
             infowindow.open(map, marker);
 
-            // 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
-            map.setCenter(coords);
+            // 초기 화면 로딩 시 기본 주소와 좌표도 폼에 세팅
+            document.getElementById('entX').value = coords.getLng();
+            document.getElementById('entY').value = coords.getLat();
+
+            // 지도가 성공적으로 만들어졌으므로, 이 시점에 클릭 이벤트 지정
+            kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+                var latlng = mouseEvent.latLng;
+
+                marker.setPosition(latlng);
+
+                infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">만남 장소</div>');
+                infowindow.open(map, marker);
+
+                // 위도, 경도를 hidden input에 저장
+                document.getElementById('entX').value = latlng.getLng();
+                document.getElementById('entY').value = latlng.getLat();
+
+                // 좌표로 법정동 상세 주소 가져오기
+                geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+                        // 만남 장소 주소 저장
+                        document.getElementById('meetingAddress').value = detailAddr;
+                    }
+                });
+            });
+
+        } else {
+            alert("기본 주소를 찾을 수 없습니다.");
+            // 예외처리
         }
-    });
-    // 지도 클릭 이벤트 리스너
-    kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
-        // 클릭한 위도, 경도 정보 가져오기
-        var latlng = mouseEvent.latLng;
-
-        // 마커 위치를 클릭한 위치로 옮기기
-        marker.setPosition(latlng);
-        marker.setMap(map);
-
-        // 기존 인포윈도우 제거
-        infowindow.close();
-
-        // 만남 장소의 인포윈도우 새로 생성
-        infowindow = new kakao.maps.InfoWindow({
-            content: '<div style="width:150px;text-align:center;padding:6px 0;">만남 장소</div>'
-        });
-        infowindow.open(map, marker);
-
-        // 위도, 경도를 hidden input에 저장 (백엔드 전송용)
-        document.getElementById('entX').value = latlng.getLat();
-        document.getElementById('entY').value = latlng.getLng();
-
-        // 좌표로 법정동 상세 주소 가져오기
-        geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
-            if (status === kakao.maps.services.Status.OK) {
-                var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
-                // 사용자 화면에 주소 표시
-                document.getElementById('meetingPlace').value = detailAddr;
-            }
-        });
     });
 </script>
 </body>
