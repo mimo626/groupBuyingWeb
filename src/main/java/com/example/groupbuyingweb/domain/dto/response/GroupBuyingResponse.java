@@ -43,7 +43,7 @@ public class GroupBuyingResponse {
     // 공구 상세 조회
     public record Detail(
             Long id,
-            Member member,
+            MemberInfo member, // 엔티티(Member) 대신 DTO(MemberInfo)로 변경
             String title,
             String productName,
             String productContent,
@@ -58,12 +58,23 @@ public class GroupBuyingResponse {
             GroupBuyingStatus status,
             LocalDateTime deadline,
             List<ImageDetail> images,
-            LocalDateTime createAt
+            LocalDateTime createAt,
+            boolean isOrganizer,     // 현재 로그인한 사용자가 주최자인지 여부
+            boolean isParticipant,   // 현재 로그인한 사용자가 참여자인지 여부
+            boolean hasParticipants  // 현재 이 공구에 참여자가 1명이라도 있는지 (수정/삭제 제한용)
     ) {
-        public static Detail of(GroupBuying groupBuying, int currentQuantity) {
+        public record MemberInfo(String memberId, String nickname) {
+            // 엔티티를 받아서 DTO로 변환해주는 메서드
+            public static MemberInfo from(Member member) {
+                return new MemberInfo(member.getId(), member.getNickname());
+            }
+        }
+
+        public static Detail of(GroupBuying groupBuying, int currentQuantity,
+                                boolean isOrganizer, boolean isParticipant, boolean hasParticipants) {
             return new Detail(
                     groupBuying.getId(),
-                    groupBuying.getMember(),
+                    MemberInfo.from(groupBuying.getMember()), // 👈 엔티티를 DTO로 변환해서 넣음
                     groupBuying.getTitle(),
                     groupBuying.getProductName(),
                     groupBuying.getProductContent(),
@@ -80,7 +91,10 @@ public class GroupBuyingResponse {
                     groupBuying.getImages().stream()
                             .map(ImageDetail::of)
                             .toList(),
-                    groupBuying.getCreatedAt()
+                    groupBuying.getCreatedAt(),
+                    isOrganizer,
+                    isParticipant,
+                    hasParticipants
             );
         }
     }
@@ -101,7 +115,8 @@ public class GroupBuyingResponse {
 
     public record Participate(
             Long groupBuyingId,
-            Long groupBuyingPartiId
+            Long groupBuyingPartiId,
+            Integer applyQuantity
     ) {}
 
     public record UpdateStatus(

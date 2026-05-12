@@ -158,7 +158,7 @@ public class GroupBuyingService {
             processStatusChange(groupBuyingId, GroupBuyingStatus.START, null, null);
         }
 
-        return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId());
+        return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId(), applyQuantity);
     }
 
     // 공구 목록 조회(검색/필터링)
@@ -197,6 +197,7 @@ public class GroupBuyingService {
             case START -> {
                 // 채팅방 생성
                 chatRoomService.createChatRoom(groupBuying);
+
             }
             case PURCHASED -> {
 
@@ -237,10 +238,33 @@ public class GroupBuyingService {
     /* ================= 공통 로직 ================= */
 
     // 공구 상세 Dto 생성
-    public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId) {
+    public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId, String loggedInUserId) {
+        // 1. 공동구매 엔티티 조회 (예외 처리 생략)
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+
+        // 현재 모집된 수량
         int currentQuantity = calculateCurrentQuantity(groupBuyingId);
-        return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity);
+
+        // 권한 및 상태 체크 로직 ✨
+        boolean isOrganizer = false;
+        boolean isParticipant = false;
+
+        // 주최자를 제외한 참여자가 존재하는지 DB에서 확인
+        boolean hasParticipants = participationRepository
+                .existsByGroupBuyingIdAndRole(groupBuyingId, UserRole.PARTICIPANT);
+
+        if (loggedInUserId != null) {
+            // 주최자 여부 확인: 게시글 작성자 ID와 로그인 유저 ID 비교
+            isOrganizer = groupBuying.getMember().getId().equals(loggedInUserId);
+
+            // 주최자가 아니라면, 참여자 엔티티에서 현재 유저가 있는지 확인
+            if (!isOrganizer) {
+                isParticipant = participationRepository
+                        .existsByGroupBuyingIdAndMemberIdAndRole(groupBuyingId, loggedInUserId, UserRole.PARTICIPANT);
+            }
+        }
+
+        return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity, isOrganizer, isParticipant, hasParticipants);
     }
 
     // 공구 참여 엔티티 생성
