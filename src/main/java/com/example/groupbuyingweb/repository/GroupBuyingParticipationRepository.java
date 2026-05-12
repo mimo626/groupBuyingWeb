@@ -23,4 +23,8 @@ public interface GroupBuyingParticipationRepository extends JpaRepository<GroupB
     GroupBuyingParticipation findByGroupBuyingIdAndMemberId(long groupBuyingId, String memberId);
 
     List<GroupBuyingParticipation> findAllByGroupBuyingId(long groupBuyingId);
+
+    boolean existsByGroupBuyingIdAndRole(Long groupBuyingId, UserRole role);
+
+    boolean existsByGroupBuyingIdAndMemberIdAndRole(Long groupBuyingId, String memberId, UserRole role);
 }
