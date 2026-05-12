@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>포인트 충전 api</title>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+<h2>포인트 충전 API 테스트 화면</h2>
+
+<p>현재 로그인된 세션 ID: <strong th:text="${session.loginUserId}"></strong></p>
+
+<hr>
+
+<div>
+    <input type="number" id="pointInput">
+    <button onclick="requestCharge()">충전 요청하기</button>
+</div>
+
+<div>
+    <button onclick="requestProfile('profile')">내정보 조회 요청하기</button>
+</div>
+<div>
+    <button onclick="requestProfile('neighborhood')">내주변 동네 요청하기</button>
+</div>
+<div>
+    <p>선택 주소: <input type="text" id="address" readonly></p>
+    <p>경도 entX: <input type="text" id="entX" readonly></p>
+    <p>위도 entY: <input type="text" id="entY" readonly></p>
+    <button onclick="openAddressPopup()">동네 수정하기</button>
+</div>
+
+<div class="result-box">
+    <h3>서버 응답 결과 (JSON):</h3>
+    <p id="jsonResult">응답 대기 중...</p>
+</div>
+
+<script th:inline="javascript">
+    const kakaoJavaScriptKey = [[${kakaoJavaScriptKey}]];
+    let addressGeocoder = null;
+    let kakaoSdkReadyPromise = null;
+
+    function loadKakaoMapSdk() {
+        if (kakaoSdkReadyPromise) {
+            return kakaoSdkReadyPromise;
+        }
+
+        kakaoSdkReadyPromise = new Promise(function(resolve, reject) {
+            if (!kakaoJavaScriptKey) {
+                reject(new Error("카카오 JavaScript 키가 비어 있습니다."));
+                return;
+            }
+
+            if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+                addressGeocoder = new kakao.maps.services.Geocoder();
+                resolve(addressGeocoder);
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey="
+                + encodeURIComponent(kakaoJavaScriptKey)
+                + "&libraries=services&autoload=false";
+
+            script.onload = function() {
+                if (!window.kakao || !kakao.maps) {
+                    reject(new Error("카카오 지도 SDK가 정상적으로 로드되지 않았습니다."));
+                    return;
+                }
+
+                kakao.maps.load(function() {
+                    if (!kakao.maps.services) {
+                        reject(new Error("카카오 services 라이브러리가 로드되지 않았습니다."));
+                        return;
+                    }
+
+                    addressGeocoder = new kakao.maps.services.Geocoder();
+                    console.log("카카오 지도 SDK 로드 완료");
+                    resolve(addressGeocoder);
+                });
+            };
+
+            script.onerror = function() {
+                reject(new Error("카카오 지도 SDK 스크립트 로드에 실패했습니다."));
+            };
+
+            document.head.appendChild(script);
+        });
+
+        return kakaoSdkReadyPromise;
+    }
+
+    window.addEventListener("load", function() {
+        loadKakaoMapSdk().catch(function(error) {
+            console.error(error);
+            alert(error.message);
+        });
+    });
+
+    function openAddressPopup() {
+        if (!window.daum || !daum.Postcode) {
+            alert("다음 우편번호 서비스가 정상적으로 로드되지 않았습니다.");
+            return;
+        }
+
+        new daum.Postcode({
+            oncomplete: async function(data) {
+                const selectedAddress = data.roadAddress || data.jibunAddress || data.address;
+
+                if (!selectedAddress) {
+                    alert("선택된 주소가 없습니다.");
+                    return;
+                }
+
+                document.getElementById("address").value = selectedAddress;
+                document.getElementById("entX").value = "";
+                document.getElementById("entY").value = "";
+
+                try {
+                    const geocoder = await loadKakaoMapSdk();
+
+                    geocoder.addressSearch(selectedAddress, function(result, status) {
+                        if (status === kakao.maps.services.Status.OK && result.length > 0) {
+                            const x = Number(result[0].x); // 경도
+                            const y = Number(result[0].y); // 위도
+
+                            document.getElementById("entX").value = x;
+                            document.getElementById("entY").value = y;
+                            patchNeighborhood(selectedAddress, x, y);
+                        } else {
+                            alert("주소 좌표를 찾을 수 없어 수정에 실패했습니다.")
+                        }
+
+                    });
+                } catch (error) {
+                    console.error(error);
+                    alert("카카오 SDK 로드 중 오류: " + error.message);
+                }
+            }
+        }).open();
+    }
+
+    function requestCharge() {
+
+        const pointValue = document.getElementById("pointInput").value;
+
+        const apiUrl = `/api/point/charge?point=${pointValue}`;
+
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                point: pointValue
+            })
+        };
+
+        fetch(apiUrl, requestOptions)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+
+                if (data.status === 400){
+                    alert("문제가 있어용 : " + data.message);
+                    document.getElementById("jsonResult").style.color = "red";
+                } else {
+                    document.getElementById("jsonResult").style.color = "blue";
+                }
+                document.getElementById("jsonResult").innerText = JSON.stringify(data);
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+                document.getElementById("jsonResult").innerText = "오류 발생: " + error.message;
+            });
+    }
+
+    function requestProfile(target){
+        const apiUrl = `/api/mypage/`+target;
+
+        fetch(apiUrl)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+
+                if (data.status === 400){
+                    alert(data.message);
+                    location.href = `/loginTest.html`;
+                } else {
+                    document.getElementById("jsonResult").style.color = "blue";
+                    document.getElementById("jsonResult").innerText = JSON.stringify(data);
+                }
+                //document.getElementById("jsonResult").innerText = JSON.stringify(data);
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+                document.getElementById("jsonResult").innerText = "오류 발생: " + error.message;
+            });
+    }
+
+    function patchNeighborhood(address, entX, entY){
+        const data = {
+            address: address || document.getElementById("address").value,
+            entX: entX || document.getElementById("entX").value,
+            entY: entY || document.getElementById("entY").value
+        };
+
+        if (!data.address || !data.entX) {
+            alert("수정할 주소 정보가 없습니다.");
+            return;
+        }
+
+        const apiUrl = `/api/mypage/neighborhood`;
+        const requestOptions = {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+        fetch(apiUrl, requestOptions)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+
+                if (data.status === 400){
+                    alert("수정 실패 : " + data.message);
+                    //location.href = `/loginTest.html`;
+                } else {
+                    document.getElementById("jsonResult").style.color = "blue";
+                    document.getElementById("jsonResult").innerText = JSON.stringify(data);
+                }
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+                document.getElementById("jsonResult").innerText = "오류 발생: " + error.message;
+            });
+    }
+
+</script>
+</body>
+</html>

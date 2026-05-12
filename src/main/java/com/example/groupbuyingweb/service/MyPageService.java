@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
@@ -43,12 +44,22 @@ public class MyPageService {
                 .orElseThrow();
         List<UserNearbyAddress> nearbyAddressList = userNearbyAddressRepository.findAllByMemberId(memberId);
 
+        List<MyPageResponse.NearbyAddress> nearbyAddressDto = nearbyAddressList.stream()
+                .map(entity -> new MyPageResponse.NearbyAddress(
+                        entity.getCityName(),
+                        entity.getDistrictName(),
+                        entity.getNeighborhoodName(),
+                        entity.getEntX(),
+                        entity.getEntY()
+                ))
+                .toList();
+
         return new MyPageResponse.Neighborhood(
                 location.getAddress(),
                 location.getRadius(),
                 location.getEntX(),
                 location.getEntX(),
-                nearbyAddressList);
+                nearbyAddressDto);
     }
 
 
@@ -56,8 +67,8 @@ public class MyPageService {
     public MyPageResponse.Neighborhood patchNeighborhood(String memberId, MyPageRequest.UpdateNeighborhood request) {
         Member member = memberRepository.findById(memberId).orElseThrow();
         member.patchAddress(request);
-
         userNearbyAddressRepository.deleteAllByMemberId(memberId);
+
 
         // 변경된
         List<UserNearbyAddress> nearbyAddressList =
@@ -69,12 +80,23 @@ public class MyPageService {
 
         userNearbyAddressRepository.saveAll(nearbyAddressList);
 
+        // 2. 엔티티결과-> RESPONSEDTO
+        List<MyPageResponse.NearbyAddress> nearbyAddressDto = nearbyAddressList.stream()
+                .map(entity -> new MyPageResponse.NearbyAddress(
+                        entity.getCityName(),
+                        entity.getDistrictName(),
+                        entity.getNeighborhoodName(),
+                        entity.getEntX(),
+                        entity.getEntY()
+                ))
+                .toList();
+
         return new MyPageResponse.Neighborhood(
                 member.getAddress(),
                 member.getRadius(),
                 member.getEntX(),
                 member.getEntY(),
-                nearbyAddressList
+                nearbyAddressDto
         );
     }
 }
