@@ -18,10 +18,10 @@ public class AuthPageController {
         return "signupTest";
     }
 
-    @GetMapping("/auth/charge-test")
+    @GetMapping("/auth/mypage")
     public String myPageTest(HttpSession session) {
         String login = (String) session.getAttribute("member_id");
         System.out.println(login);
-        return "chargeTest";
+        return "myPageTest";
     }
 }
