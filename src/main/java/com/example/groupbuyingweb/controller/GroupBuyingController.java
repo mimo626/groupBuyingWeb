@@ -60,7 +60,7 @@ public class GroupBuyingController {
         String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
         GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId, loggedInUserId);
-        System.out.println(res.toString());
+
         model.addAttribute("kakaoJsKey", kakaoJsKey);
         model.addAttribute("groupBuying", res);
         return "groupBuying/detail";
