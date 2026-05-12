@@ -1,6 +1,8 @@
 package com.example.groupbuyingweb.service;
 
+import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.domain.entity.ChatRoomParticipant;
+import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.repository.ChatRoomParticipantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +29,7 @@ public class ChatRoomParticipantService {
      */
     public void validateParticipant(Long chatRoomId, String memberId) {
         if (!participantRepository.existsByChatRoomIdAndUserId(chatRoomId, memberId)) {
-            throw new IllegalArgumentException("채팅방 참여자가 아닙니다.");
+            throw new BusinessException(ErrorCode.NOT_CHAT_PARTICIPANT);
         }
     }
 
@@ -52,7 +54,7 @@ public class ChatRoomParticipantService {
         // 참여자 정보 조회 - lastReadMessageId를 수정해야 하므로 엔티티를 직접 가져옴
         ChatRoomParticipant participant = participantRepository
                 .findByChatRoomIdAndUserId(chatRoomId, memberId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방 참여자가 아닙니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_CHAT_PARTICIPANT));
 
         // 엔티티의 updateLastReadMessageId() 호출
         participant.updateLastReadMessageId(lastMessageId);

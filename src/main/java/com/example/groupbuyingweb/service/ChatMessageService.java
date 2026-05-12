@@ -1,9 +1,11 @@
 package com.example.groupbuyingweb.service;
 
+import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.domain.dto.response.ChatRoomResponse;
 import com.example.groupbuyingweb.domain.entity.ChatMessage;
 import com.example.groupbuyingweb.domain.entity.ChatRoom;
 import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.domain.enums.MessageType;
 import com.example.groupbuyingweb.repository.ChatMessageRepository;
 import com.example.groupbuyingweb.repository.ChatRoomRepository;
@@ -37,11 +39,11 @@ public class ChatMessageService {
     public ChatRoomResponse.Message sendMessage(Long chatRoomId, String memberId, String content) {
         // 채팅방 존재 여부 확인 (없으면 예외)
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_CHAT_ROOM));
 
         // 발신자 존재 여부 확인 (없으면 예외)
         Member sender = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 메시지 엔티티 생성 및 저장
         ChatMessage saved = chatMessageRepository.save(

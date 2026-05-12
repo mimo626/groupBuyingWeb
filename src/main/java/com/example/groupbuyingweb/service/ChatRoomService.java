@@ -6,8 +6,10 @@ import com.example.groupbuyingweb.domain.entity.ChatMessage;
 import com.example.groupbuyingweb.domain.entity.ChatRoom;
 import com.example.groupbuyingweb.domain.entity.ChatRoomParticipant;
 import com.example.groupbuyingweb.domain.entity.GroupBuying;
+import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.MessageType;
 import com.example.groupbuyingweb.repository.ChatMessageRepository;
@@ -70,7 +72,7 @@ public class ChatRoomService {
     @Transactional
     public void sendSystemMessage(Long groupBuyingId, GroupBuyingStatus status) {
         ChatRoom chatRoom = chatRoomRepository.findByGroupBuyingId(groupBuyingId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_CHAT_ROOM));
 
         Member host = chatRoom.getGroupBuying().getMember();
 
@@ -110,7 +112,7 @@ public class ChatRoomService {
 
         // 2. 채팅방 조회 (없으면 예외)
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_CHAT_ROOM));
 
         // GroupBuying 정보는 ChatRoom의 연관 필드에서 접근
         GroupBuying groupBuying = chatRoom.getGroupBuying();
@@ -118,7 +120,7 @@ public class ChatRoomService {
         // 3. 현재 사용자의 참여 정보 조회 (lastReadMessageId 확인용)
         ChatRoomParticipant participant = participantRepository
                 .findByChatRoomIdAndUserId(chatRoomId, memberId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방 참여자가 아닙니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_CHAT_PARTICIPANT));
 
         // 4. 채팅방의 전체 메시지 목록을 시간 오름차순으로 조회
         List<ChatMessage> messages = chatMessageRepository
@@ -223,7 +225,7 @@ public class ChatRoomService {
         // 현재 사용자의 lastReadMessageId 조회
         ChatRoomParticipant participant = participantRepository
                 .findByChatRoomIdAndUserId(chatRoomId, memberId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방 참여자가 아닙니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_CHAT_PARTICIPANT));
 
         Long lastReadMessageId = participant.getLastReadMessageId();
 
