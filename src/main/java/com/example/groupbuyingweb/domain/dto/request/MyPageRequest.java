@@ -24,4 +24,8 @@ public class MyPageRequest {
     public record ParticipationSearchCondition(
             GroupBuyingStatus status
     ) {}
+
+    public record ParticipationId(
+        Long participationId
+    ) {}
 }

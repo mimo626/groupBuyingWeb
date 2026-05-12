@@ -67,8 +67,6 @@ public class MyPageResponse {
             Long groupBuyingId,
             String title,
             String productName,
-            String productImageUrl,
-            String productUrl,
             String productContent,
             Double totalPrice,
             Integer targetQuantity,
@@ -80,7 +78,6 @@ public class MyPageResponse {
             String trackingNumber,
             String meetingAddress,
             LocalDateTime meetingAt,
-            LocalDateTime deadline,
             List<ProgressStep> progressSteps
     ) {}
 
