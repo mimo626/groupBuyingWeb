@@ -57,9 +57,9 @@ public class GroupBuyingController {
     @GetMapping("/{id}")
     public String getGroupBuyingById(@PathVariable("id") Long groupBuyingId, Model model) {
         GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId);
-        System.out.println(res.toString());
-
-        model.addAttribute("groupBuying", res);return "groupBuying/detail";
+        model.addAttribute("kakaoJsKey", kakaoJsKey);
+        model.addAttribute("groupBuying", res);
+        return "groupBuying/detail";
     }
 
     @PostMapping("/{id}/participate")
