@@ -71,13 +71,13 @@ public class MyPageController {
     }
 
     @ResponseBody
-    @GetMapping("/participations/{participationID}")
+    @GetMapping("/participations/{participationId}")
     public ApiResponse<MyPageResponse.MyParticipationDetail> getParticipationDetail(
-            @PathVariable MyPageRequest.ParticipationId request,
+            @PathVariable("participationId") Long participationId,
             HttpSession session) {
         String memberId = loginSessionManager.requireLoginUserId(session);
         MyPageResponse.MyParticipationDetail dto =
-                myPageService.getParticipationDetail(memberId, request.participationId());
+                myPageService.getParticipationDetail(memberId, participationId);
         return ApiResponse.success(dto);
     }
 
