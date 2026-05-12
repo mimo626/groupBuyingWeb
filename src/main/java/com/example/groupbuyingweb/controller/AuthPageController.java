@@ -19,10 +19,22 @@ public class AuthPageController {
     }
 
     @GetMapping("/auth/mypage")
-    public String myPageTest(Model model, HttpSession session) {
+    public String myPage(Model model) {
         model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
-        String login = (String) session.getAttribute("member_id");
-        System.out.println(login);
-        return "myPageTest";
+
+        return "myPage";
+    }
+
+//    @GetMapping("/auth/mypage")
+//    public String myPageTest(Model model, HttpSession session) {
+//        model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
+//        String login = (String) session.getAttribute("member_id");
+//        System.out.println(login);
+//        return "myPageTest";
+//    }
+
+    @GetMapping("/auth/mypage/charge")
+    public String chargePage() {
+        return "pointCharge";
     }
 }

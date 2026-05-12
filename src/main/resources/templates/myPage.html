@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>도토리 창고 - 마이페이지</title>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+<!-- 글로벌 내비게이션 바 (헤더) -->
+<header id="header">
+    <h1 id="logo">🌰 도토리 창고</h1>
+    <nav>
+        <ul id="gnb-list">
+            <li><a href="/main.html" id="link-home">홈</a></li>
+            <li><a href="#" id="link-chat">채팅방</a></li>
+            <li><a href="#" id="link-mypage">마이</a></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- 메인 콘텐츠 영역 -->
+<main id="main-content">
+    <h2 id="page-title">마이페이지</h2>
+
+    <!-- 사용자 프로필 및 경험치 섹션 -->
+    <section id="user-profile-section">
+        <div class="user-info">
+            <!-- JS에서 이름과 레벨 텍스트를 변경할 수 있도록 id 부여 -->
+            <h3 id="user-nickname"></h3>
+            <p id="user-level-desc"></p>
+        </div>
+
+        <div class="exp-container">
+            <div class="exp-header">
+                <span>도토리 경험치</span>
+                <!-- 경험치 수치 업데이트용 -->
+                <span id="exp-score-text">0 / 10</span>
+            </div>
+
+            <!-- 경험치 바: JS에서 value 값을 조정하여 게이지 변경 -->
+            <progress id="exp-progress-bar" value="0" max="10"></progress>
+
+            <div class="exp-footer">
+                <span id="current-level-text">Lv.x</span>
+                <span id="exp-guide-message">도토리 x개 더 모으면 Lv.y</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 마이페이지 메뉴 리스트 섹션 -->
+    <section id="mypage-menu-section">
+        <div id="menu-list">
+
+            <!-- 1. 내가 개설한 공구 -->
+            <div class="menu-item" id="menu-my-groupbuy">
+                <span class="menu-icon">📄</span>
+                <span class="menu-title">내가 개설한 공구</span>
+                <!-- 뱃지 카운트 업데이트용 -->
+                <span class="badge" id="badge-my-groupbuy-count">3</span>
+                <span class="arrow-icon">&gt;</span>
+            </div>
+
+            <!-- 2. 참여한 공구 이력 -->
+            <div class="menu-item" id="menu-participated-groupbuy">
+                <span class="menu-icon">🛍️</span>
+                <span class="menu-title">참여한 공구 이력</span>
+                <!-- 뱃지 카운트 업데이트용 -->
+                <span class="badge" id="badge-participated-count">5</span>
+                <span class="arrow-icon">&gt;</span>
+            </div>
+
+            <!-- 3. 주소 및 변경 설정 -->
+            <div class="menu-item" id="menu-address-setting">
+                <span class="menu-icon">📍</span>
+                <div class="menu-text-group">
+                    <span class="menu-title">주소 · 변경 설정</span>
+                    <!-- 주소 텍스트 업데이트용 -->
+                    <span class="menu-subtext" id="user-address-text"></span>
+                </div>
+                <span class="arrow-icon">&gt;</span>
+            </div>
+
+            <!-- 4. 포인트 잔액 및 충전 -->
+            <div class="menu-item" id="menu-point-setting">
+                <span class="menu-icon">🅿️</span>
+                <div class="menu-text-group">
+                    <span class="menu-title">포인트 잔액 및 충전</span>
+                    <!-- 포인트 잔액 텍스트 업데이트용 -->
+                    <span class="menu-subtext" id="user-point-text"></span>
+                </div>
+                <span class="arrow-icon">&gt;</span>
+            </div>
+
+            <!-- 5. 로그아웃 -->
+            <div class="menu-item" id="menu-logout">
+                <span class="menu-icon">🚪</span>
+                <span class="menu-title" style="color: red;">로그아웃</span>
+                <span class="arrow-icon">&gt;</span>
+            </div>
+
+        </div>
+    </section>
+</main>
+
+<script th:inline="javascript">
+    // 카카오 SDK 관련 전역 변수
+    const kakaoJavaScriptKey = [[${kakaoJavaScriptKey}]];
+    let addressGeocoder = null;
+    let kakaoSdkReadyPromise = null;
+
+    window.onload = function() {
+        // 페이지 로드 시 내 정보(profile) 조회 요청
+        requestProfile('profile');
+
+        // 페이지 로드 시 내 주소(neighborhood) 조회 요청
+        requestProfile('neighborhood');
+
+        // 카카오 지도 SDK 비동기 로드
+        loadKakaoMapSdk().catch(function(error) {
+            console.error(error);
+        });
+
+        // 주소 변경 설정 버튼 클릭 이벤트 연결
+        document.getElementById('menu-address-setting').addEventListener('click', function() {
+            openAddressPopup();
+        });
+
+        // 포인트 메뉴 클릭 시 임의의 템플릿으로 이동
+        document.getElementById('menu-point-setting').addEventListener('click', function() {
+            // 실제 이동할 URL로 나중에 변경해주세요
+            location.href = '/auth/mypage/charge';
+        });
+
+        // 추가: 로그아웃 버튼 클릭 이벤트 연결
+        document.getElementById('menu-logout').addEventListener('click', function() {
+            requestLogout();
+        });
+    };
+
+    function requestProfile(target) {
+        const apiUrl = `/api/mypage/` + target;
+
+        fetch(apiUrl)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 400 || data.status === 401) {
+                    alert(data.message);
+                    location.href = `/loginTest.html`;
+                } else {
+                    // 프로필 요청인 경우 DOM 요소 업데이트
+                    if (target === 'profile') {
+                        const profile = data.data;
+
+                        if (profile.nickname) {
+                            document.getElementById("user-nickname").innerText = profile.nickname;
+                        }
+
+                        // 레벨 텍스트 처리
+                        if (profile.acornLevel !== undefined) {
+                            document.getElementById("user-level-desc").innerText = `Lv ` + profile.acornLevel;
+                            document.getElementById("current-level-text").innerText = `Lv.` + profile.acornLevel;
+                        }
+
+                        // 경험치 프로그레스 바 및 가이드 메시지 처리
+                        if (profile.acornExp !== undefined && profile.acornLevel !== undefined) {
+                            const currentExp = profile.acornExp;
+                            const maxExp = 10; // 최대 경험치 10으로 설정 (필요시 서버 데이터로 변경)
+                            const remainExp = maxExp - currentExp;
+                            const nextLevel = profile.acornLevel + 1;
+
+                            // 1. 경험치 점수 텍스트 (예: 7 / 10)
+                            document.getElementById("exp-score-text").innerText = `${currentExp} / ${maxExp}`;
+
+                            // 2. 프로그레스 바 value 및 max 업데이트
+                            const progressBar = document.getElementById("exp-progress-bar");
+                            progressBar.value = currentExp;
+                            progressBar.max = maxExp;
+
+                            // 3. 하단 안내 문구 업데이트
+                            document.getElementById("exp-guide-message").innerText = `도토리 ${remainExp}개 더 모으면 Lv.${nextLevel}`;
+                        }
+
+                        // 보유 포인트 업데이트
+                        if (profile.point !== undefined) {
+                            // toLocaleString()을 사용해 1000단위 콤마 추가
+                            document.getElementById("user-point-text").innerText = profile.point.toLocaleString() + "P";
+                        }
+                    }
+                    // 동네(주소) 요청인 경우 DOM 요소 업데이트
+                    else if (target === 'neighborhood') {
+                        const neighborhood = data.data;
+                        if (neighborhood && neighborhood.address) {
+                            document.getElementById("user-address-text").innerText = neighborhood.address;
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+            });
+    }
+
+    // --- 로그아웃 스크립트 ---
+    function requestLogout() {
+        if (!confirm("로그아웃 하시겠습니까?")) {
+            return;
+        }
+
+        fetch("/auth/logout", {
+            method: "POST",
+            credentials: "same-origin"
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 200) {
+                    alert("로그아웃되었습니다.");
+                    location.href = "/main.html"; // 메인페이지로 이동
+                } else {
+                    alert("로그아웃 실패: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("로그아웃 요청 에러:", error);
+                alert("오류 발생: " + error.message);
+            });
+    }
+
+    // --- 주소 변경 관련 스크립트 ---
+
+    function loadKakaoMapSdk() {
+        if (kakaoSdkReadyPromise) {
+            return kakaoSdkReadyPromise;
+        }
+
+        kakaoSdkReadyPromise = new Promise(function(resolve, reject) {
+            if (!kakaoJavaScriptKey) {
+                reject(new Error("카카오 JavaScript 키가 비어 있습니다."));
+                return;
+            }
+
+            if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+                addressGeocoder = new kakao.maps.services.Geocoder();
+                resolve(addressGeocoder);
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey="
+                + encodeURIComponent(kakaoJavaScriptKey)
+                + "&libraries=services&autoload=false";
+
+            script.onload = function() {
+                if (!window.kakao || !kakao.maps) {
+                    reject(new Error("카카오 지도 SDK가 정상적으로 로드되지 않았습니다."));
+                    return;
+                }
+
+                kakao.maps.load(function() {
+                    if (!kakao.maps.services) {
+                        reject(new Error("카카오 services 라이브러리가 로드되지 않았습니다."));
+                        return;
+                    }
+
+                    addressGeocoder = new kakao.maps.services.Geocoder();
+                    console.log("카카오 지도 SDK 로드 완료");
+                    resolve(addressGeocoder);
+                });
+            };
+
+            script.onerror = function() {
+                reject(new Error("카카오 지도 SDK 스크립트 로드에 실패했습니다."));
+            };
+
+            document.head.appendChild(script);
+        });
+
+        return kakaoSdkReadyPromise;
+    }
+
+    function openAddressPopup() {
+        if (!window.daum || !daum.Postcode) {
+            alert("다음 우편번호 서비스가 정상적으로 로드되지 않았습니다.");
+            return;
+        }
+
+        new daum.Postcode({
+            oncomplete: async function(data) {
+                const selectedAddress = data.roadAddress || data.jibunAddress || data.address;
+
+                if (!selectedAddress) {
+                    alert("선택된 주소가 없습니다.");
+                    return;
+                }
+
+                try {
+                    const geocoder = await loadKakaoMapSdk();
+
+                    geocoder.addressSearch(selectedAddress, function(result, status) {
+                        if (status === kakao.maps.services.Status.OK && result.length > 0) {
+                            const x = Number(result[0].x); // 경도
+                            const y = Number(result[0].y); // 위도
+
+                            // 구한 주소와 좌표를 서버로 PATCH 전송
+                            patchNeighborhood(selectedAddress, x, y);
+                        } else {
+                            alert("주소 좌표를 찾을 수 없어 수정에 실패했습니다.")
+                        }
+
+                    });
+                } catch (error) {
+                    console.error(error);
+                    alert("카카오 SDK 로드 중 오류: " + error.message);
+                }
+            }
+        }).open();
+    }
+
+    function patchNeighborhood(address, entX, entY){
+        const data = {
+            address: address,
+            entX: entX,
+            entY: entY
+        };
+
+        const apiUrl = `/api/mypage/neighborhood`;
+        const requestOptions = {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+
+        fetch(apiUrl, requestOptions)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 400){
+                    alert("수정 실패 : " + data.message);
+                } else {
+                    // API 통신 성공 시 화면의 주소 텍스트 업데이트
+                    document.getElementById("user-address-text").innerText = address;
+                    alert("주소가 성공적으로 변경되었습니다.");
+                }
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+                alert("오류 발생: " + error.message);
+            });
+    }
+</script>
+
+</body>
+</html>
