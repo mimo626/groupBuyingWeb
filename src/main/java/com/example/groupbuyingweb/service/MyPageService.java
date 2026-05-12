@@ -2,8 +2,11 @@ package com.example.groupbuyingweb.service;
 
 import com.example.groupbuyingweb.domain.dto.request.MyPageRequest;
 import com.example.groupbuyingweb.domain.dto.response.MyPageResponse;
+import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.entity.UserNearbyAddress;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
+import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
 import com.example.groupbuyingweb.repository.UserNearbyAddressRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ public class MyPageService {
     private final UserNearbyAddressRepository userNearbyAddressRepository;
 
     private final AddressService addressService;
+    private final GroupBuyingRepository groupBuyingRepository;
 
     public MyPageResponse.Profile getProfile(String memberId) {
         Member member = memberRepository.findById(memberId)
@@ -98,5 +102,13 @@ public class MyPageService {
                 member.getEntY(),
                 nearbyAddressDto
         );
+    }
+
+    public List<MyPageResponse.MyGroupBuyingListItem> getHostedGroupBuyings(String memberId, GroupBuyingStatus status) {
+        // 1. 리포지토리 호출 (status가 null이면 전체, 값이 있으면 필터링해서 엔티티를 가져옴)
+        List<MyPageResponse.MyGroupBuyingListItem> dtoList = null;//groupBuyingRepository.findMyGroupBuyings(memberId, status);
+
+        // 2. 엔티티 리스트를 DTO 리스트로 변환하여 반환
+        return dtoList;
     }
 }
