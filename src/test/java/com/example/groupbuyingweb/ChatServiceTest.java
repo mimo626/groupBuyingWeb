@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ class ChatServiceTest {
     @Autowired private GroupBuyingParticipationRepository participationRepository;
     @Autowired private ChatRoomRepository chatRoomRepository;
     @Autowired private ChatRoomParticipantRepository chatRoomParticipantRepository;
+    @Autowired private ChatMessageRepository chatMessageRepository;
 
     private Member organizer;
     private Member participant;
@@ -39,6 +41,14 @@ class ChatServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 이전 테스트 데이터 정리 (FK 순서 준수)
+        chatMessageRepository.deleteAll();
+        chatRoomParticipantRepository.deleteAll();
+        chatRoomRepository.deleteAll();
+        participationRepository.deleteAll();
+        groupBuyingRepository.deleteAll();
+        memberRepository.deleteAll();
+
         // 주최자 멤버 생성
         organizer = memberRepository.saveAndFlush(Member.builder()
                 .loginId("chat_organizer")
