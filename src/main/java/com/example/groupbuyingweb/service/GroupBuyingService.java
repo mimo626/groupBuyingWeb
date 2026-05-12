@@ -265,7 +265,8 @@ public class GroupBuyingService {
 
     // 멤버 조회 (임시 로직 격리)
     private Member getMember(String memberId) {
-        // TODO: 나중에 findById(memberId) 로 변경
-        return memberRepository.findAll().get(0);
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_MEMBER)
+        );
     }
 }
