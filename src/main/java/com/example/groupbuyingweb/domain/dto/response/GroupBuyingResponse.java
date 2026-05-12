@@ -43,7 +43,7 @@ public class GroupBuyingResponse {
     // 공구 상세 조회
     public record Detail(
             Long id,
-            Member member,
+            MemberInfo member, // 엔티티(Member) 대신 DTO(MemberInfo)로 변경
             String title,
             String productName,
             String productContent,
@@ -60,10 +60,17 @@ public class GroupBuyingResponse {
             List<ImageDetail> images,
             LocalDateTime createAt
     ) {
+        public record MemberInfo(String memberId, String nickname) {
+            // 엔티티를 받아서 DTO로 변환해주는 메서드
+            public static MemberInfo from(Member member) {
+                return new MemberInfo(member.getId(), member.getNickname());
+            }
+        }
+
         public static Detail of(GroupBuying groupBuying, int currentQuantity) {
             return new Detail(
                     groupBuying.getId(),
-                    groupBuying.getMember(),
+                    MemberInfo.from(groupBuying.getMember()), // 👈 엔티티를 DTO로 변환해서 넣음
                     groupBuying.getTitle(),
                     groupBuying.getProductName(),
                     groupBuying.getProductContent(),
