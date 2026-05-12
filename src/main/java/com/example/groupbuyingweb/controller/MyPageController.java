@@ -7,6 +7,7 @@ import com.example.groupbuyingweb.domain.dto.request.MyPageRequest;
 import com.example.groupbuyingweb.domain.dto.response.MyPageResponse;
 import com.example.groupbuyingweb.domain.entity.UserNearbyAddress;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.service.AddressService;
 import com.example.groupbuyingweb.service.MyPageService;
 import com.example.groupbuyingweb.service.PointService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,8 +59,27 @@ public class MyPageController {
         return ApiResponse.success(dto);
     }
 
+    @ResponseBody
+    @GetMapping("/group-buys")
+    public ApiResponse<List<MyPageResponse.MyGroupBuyingListItem>> getHostedGroupBuyings(
+            @RequestParam(required = false) MyPageRequest.MyGroupBuyingSearchCondition request,
+            HttpSession session){
+        String memberId = loginSessionManager.requireLoginUserId(session);
+        List<MyPageResponse.MyGroupBuyingListItem> dto =
+                myPageService.getHostedGroupBuyings(memberId, request.status());
+        return ApiResponse.success(dto);
+    }
 
-
+    @ResponseBody
+    @GetMapping("/participations/{participationID}")
+    public ApiResponse<MyPageResponse.MyParticipationDetail> getParticipationDetail(
+            @PathVariable MyPageRequest.ParticipationId request,
+            HttpSession session) {
+        String memberId = loginSessionManager.requireLoginUserId(session);
+        MyPageResponse.MyParticipationDetail dto =
+                myPageService.getParticipationDetail(memberId, request.participationId());
+        return ApiResponse.success(dto);
+    }
 
 
 }
