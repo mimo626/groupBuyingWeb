@@ -256,7 +256,7 @@
             <button th:if="${groupBuying.status.name() == 'RECRUITING'}"
                     id="btn-cancel" class="submit-btn danger-btn"
                     onclick="confirmCancel()">참여 취소</button>
-            <button th:if="${groupBuying.status.name() == 'STARTED'}"
+            <button th:if="${groupBuying.status.name() == 'START'}"
                     id="btn-chat-part" class="submit-btn">채팅방 이동</button>
         </div>
 
@@ -266,7 +266,7 @@
                     id="btn-participate" class="submit-btn"
                     th:data-id="${groupBuying.id}"
                     onclick="participate(this.getAttribute('data-id'))">공구 참여</button>
-            <button th:if="${groupBuying.status.name() == 'STARTED'}"
+            <button th:if="${groupBuying.status.name() == 'START'}"
                     id="btn-closed" class="submit-btn" disabled>모집 마감</button>
         </div>
     </div>
