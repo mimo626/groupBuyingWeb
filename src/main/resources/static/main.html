@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메인 화면</title>
+    <style>
+        /* 깔끔한 UI를 위한 간단한 스타일 적용 */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+        .create-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .create-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<h1>메인 화면</h1>
+
+<!-- 공구 개설 버튼 -->
+<button id="createGroupBtn" class="create-btn">공구 개설하기</button>
+
+<script>
+    // 버튼 클릭 시 공구 개설 화면으로 이동
+    const createGroupBtn = document.getElementById("createGroupBtn");
+
+    createGroupBtn.addEventListener("click", () => {
+        // 지정해주신 로컬호스트 주소로 이동
+        window.location.href = "http://localhost:8088/group-buying/create";
+    });
+</script>
+
+</body>
+</html>
