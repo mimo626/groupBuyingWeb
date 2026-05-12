@@ -1,11 +1,13 @@
 package com.example.groupbuyingweb.controller;
 
 import com.example.groupbuyingweb.core.api.ApiResponse;
+import com.example.groupbuyingweb.core.session.LoginSessionManager;
 import com.example.groupbuyingweb.domain.dto.response.ChatMessageResponse;
 import com.example.groupbuyingweb.domain.dto.response.ChatRoomResponse;
 import com.example.groupbuyingweb.service.ChatRoomService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
+    @Autowired
+    private LoginSessionManager loginSessionManager;
 
     // ──────────────── 페이지 렌더링 ────────────────
 
@@ -47,7 +51,7 @@ public class ChatRoomController {
     @ResponseBody
     @GetMapping("/api/rooms")
     public ApiResponse<ChatRoomResponse.ListResponse> getChatRoomList(HttpSession session) {
-        String memberId = (String) session.getAttribute("member_id");
+        String memberId = loginSessionManager.requireLoginUserId(session);
         ChatRoomResponse.ListResponse response = chatRoomService.getChatRoomList(memberId);
         return ApiResponse.success(response);
     }
