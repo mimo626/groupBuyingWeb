@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 목록</title>
+</head>
+<body>
+<h2>내 채팅방 목록</h2>
+
+<p>현재 로그인된 세션 ID: <strong th:text="${session.loginUserId}"></strong></p>
+
+<hr>
+
+<div>
+    <button onclick="loadChatRooms()">채팅방 목록 불러오기</button>
+</div>
+
+<hr>
+
+<div id="chatRoomList">
+    <p>목록을 불러오려면 위 버튼을 클릭하세요.</p>
+</div>
+
+<hr>
+
+<div>
+    <h3>서버 응답 결과 (JSON):</h3>
+    <p id="jsonResult">응답 대기 중...</p>
+</div>
+
+<script>
+    function loadChatRooms() {
+        fetch('/chat/api/rooms')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('jsonResult').innerText = JSON.stringify(data, null, 2);
+
+                if (data.status !== 200) {
+                    alert('오류: ' + data.message);
+                    return;
+                }
+
+                const chatRooms = data.data.chatRooms;
+                renderChatRooms(chatRooms);
+            })
+            .catch(error => {
+                console.error('API 호출 에러:', error);
+                document.getElementById('jsonResult').innerText = '오류 발생: ' + error.message;
+            });
+    }
+
+    function renderChatRooms(chatRooms) {
+        const container = document.getElementById('chatRoomList');
+
+        if (!chatRooms || chatRooms.length === 0) {
+            container.innerHTML = '<p>참여 중인 채팅방이 없습니다.</p>';
+            return;
+        }
+
+        let html = '<table border="1" cellpadding="8">';
+        html += '<thead><tr>';
+        html += '<th>채팅방 ID</th>';
+        html += '<th>공구 제목</th>';
+        html += '<th>상태</th>';
+        html += '<th>마지막 메시지</th>';
+        html += '<th>마지막 메시지 시간</th>';
+        html += '<th>안읽은 메시지</th>';
+        html += '<th>이동</th>';
+        html += '</tr></thead><tbody>';
+
+        chatRooms.forEach(room => {
+            html += '<tr>';
+            html += `<td>${room.chatRoomId}</td>`;
+            html += `<td>${room.groupPurchaseTitle}</td>`;
+            html += `<td>${room.status}</td>`;
+            html += `<td>${room.lastMessage || '-'}</td>`;
+            html += `<td>${room.lastMessageAt ? room.lastMessageAt : '-'}</td>`;
+            html += `<td>${room.unreadCount > 0 ? '[' + room.unreadCount + ']' : '0'}</td>`;
+            html += `<td><a href="/chat/rooms-test/${room.chatRoomId}">입장</a></td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+</script>
+</body>
+</html>
