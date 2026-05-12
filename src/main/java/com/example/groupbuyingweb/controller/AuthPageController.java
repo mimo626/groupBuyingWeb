@@ -18,10 +18,11 @@ public class AuthPageController {
         return "signupTest";
     }
 
-    @GetMapping("/auth/charge-test")
-    public String myPageTest(HttpSession session) {
+    @GetMapping("/auth/mypage")
+    public String myPageTest(Model model, HttpSession session) {
+        model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
         String login = (String) session.getAttribute("member_id");
         System.out.println(login);
-        return "chargeTest";
+        return "myPageTest";
     }
 }
