@@ -77,7 +77,7 @@
         };
 
         let rows = `
-            <tr><th>공구 제목</th><td><a href="/groupBuying/${detail.groupPurchaseId}">${escapeHtml(detail.groupPurchaseTitle)}</a></td></tr>
+            <tr><th>공구 제목</th><td><a href="/group-buying/${detail.groupPurchaseId}">${escapeHtml(detail.groupPurchaseTitle)}</a></td></tr>
             <tr><th>상태</th><td>${statusLabel[detail.status] || detail.status}</td></tr>
         `;
         if (detail.trackingNumber) {

@@ -38,7 +38,7 @@ public class SessionHandshakeInterceptor implements HandshakeInterceptor {
             // getSession(false): 세션이 없으면 새로 만들지 말고 null 반환
             HttpSession session = servletRequest.getServletRequest().getSession(false);
             if (session != null) {
-                String memberId = (String) session.getAttribute("member_id");
+                String memberId = (String) session.getAttribute("loginUserId");
                 if (memberId != null) {
                     // WebSocket 속성에 저장 -> MemberPrincipalHandshakeHandler에서 꺼내 Principal로 변환
                     attributes.put("member_id", memberId);
