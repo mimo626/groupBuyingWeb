@@ -16,6 +16,8 @@ public enum ErrorCode {
 
     UNAUTHORIZED(400, "로그인이 필요합니다"),
 
+    NOT_EXIST_MEMBER(400, "존재하지 않는 회원 ID입니다."),
+
     // 주소 / 카카오 API
     ADDRESS_REGION_NOT_FOUND(400, "좌표의 행정동 정보를 찾을 수 없습니다."),
     KAKAO_LOCAL_API_ERROR(500, "카카오 로컬 API 호출 중 오류가 발생했습니다."),
