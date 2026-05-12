@@ -71,7 +71,7 @@ public class ChatRoomController {
     public ApiResponse<ChatRoomResponse.Detail> getChatRoomDetail(
             @PathVariable Long roomId,
             HttpSession session) {
-        String memberId = (String) session.getAttribute("member_id");
+        String memberId = loginSessionManager.requireLoginUserId(session);
         ChatRoomResponse.Detail response = chatRoomService.getChatRoomDetail(roomId, memberId);
         return ApiResponse.success(response);
     }
@@ -91,7 +91,7 @@ public class ChatRoomController {
     public ApiResponse<ChatMessageResponse.UnreadCount> getUnreadCount(
             @PathVariable Long roomId,
             HttpSession session) {
-        String memberId = (String) session.getAttribute("member_id");
+        String memberId = loginSessionManager.requireLoginUserId(session);
         ChatMessageResponse.UnreadCount response = chatRoomService.getUnreadCount(roomId, memberId);
         return ApiResponse.success(response);
     }
