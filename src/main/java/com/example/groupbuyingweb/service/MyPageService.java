@@ -7,6 +7,7 @@ import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.entity.UserNearbyAddress;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
+import com.example.groupbuyingweb.domain.enums.UserRole;
 import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
@@ -108,19 +109,85 @@ public class MyPageService {
         );
     }
 
-    public List<MyPageResponse.MyGroupBuyingListItem> getHostedGroupBuyings(String memberId, GroupBuyingStatus status) {
-        // 1. 리포지토리 호출 (status가 null이면 전체, 값이 있으면 필터링해서 엔티티를 가져옴)
-        List<MyPageResponse.MyGroupBuyingListItem> dtoList = null;//groupBuyingRepository.findMyGroupBuyings(memberId, status);
+    public List<MyPageResponse.MyGroupBuyingListItem> getHostedGroupBuyings(
+            String memberId,
+            GroupBuyingStatus status
+    ) {
+        // 현재 로그인한 사용자가 개설한 공구 중 선택한 진행 상태의 공구만 조회한다.
+        List<GroupBuying> groupBuyings =
+                groupBuyingRepository.findAllByMember_IdAndStatusOrderByIdDesc(memberId, status);
 
-        // 2. 엔티티 리스트를 DTO 리스트로 변환하여 반환
-        return dtoList;
+        // 조회된 GroupBuying Entity 목록을 화면에 내려줄 Response DTO 목록으로 변환한다.
+        return groupBuyings.stream()
+                .map(this::toMyGroupBuyingListItem)
+                .toList();
     }
 
+    public List<MyPageResponse.MyParticipationListItem> getParticipatedGroupBuyings(
+            String memberId,
+            GroupBuyingStatus status
+    ) {
+        // 현재 로그인한 사용자가 참여자로 등록된 공구 이력 중 선택한 진행 상태의 이력만 조회한다.
+        List<GroupBuyingParticipation> participations =
+                participationRepository.findAllByMember_IdAndRoleAndGroupBuying_StatusOrderByIdDesc(
+                        memberId,
+                        UserRole.PARTICIPANT,
+                        status
+                );
 
+        // 조회된 GroupBuyingParticipation Entity 목록을 화면에 내려줄 Response DTO 목록으로 변환한다.
+        return participations.stream()
+                .map(this::toMyParticipationListItem)
+                .toList();
+    }
 
+    private MyPageResponse.MyGroupBuyingListItem toMyGroupBuyingListItem(GroupBuying groupBuying) {
+        // 현재 참여 수량은 참여 이력의 신청 수량 합계로 계산한다.
+        Long currentQuantity =
+                participationRepository.sumApplyQuantityByGroupBuyingIdAndRole(
+                        groupBuying.getId(),
+                        UserRole.PARTICIPANT
+                );
 
+        return new MyPageResponse.MyGroupBuyingListItem(
+                groupBuying.getId(),
+                groupBuying.getTitle(),
+                groupBuying.getTotalPrice(),
+                groupBuying.getTargetQuantity(),
+                toIntegerCurrentQuantity(currentQuantity),
+                groupBuying.getStatus(),
+                groupBuying.getDeadline()
+        );
+    }
 
+    private MyPageResponse.MyParticipationListItem toMyParticipationListItem(
+            GroupBuyingParticipation participation
+    ) {
+        // 참여 이력과 연결된 공구 정보를 가져온다.
+        GroupBuying groupBuying = participation.getGroupBuying();
 
+        return new MyPageResponse.MyParticipationListItem(
+                participation.getId(),
+                groupBuying.getId(),
+                groupBuying.getTitle(),
+                groupBuying.getTotalPrice(),
+                participation.getApplyQuantity(),
+                participation.getPaidPoint(),
+                participation.getPaymentStatus(),
+                groupBuying.getStatus(),
+                groupBuying.getMeetingAt(),
+                groupBuying.getMeetingAddress(),
+                groupBuying.getDeadline()
+        );
+    }
+
+    private Integer toIntegerCurrentQuantity(Long currentQuantity) {
+        if (currentQuantity == null) {
+            return 0;
+        }
+
+        return Math.toIntExact(currentQuantity);
+    }
 
 
 

@@ -2,6 +2,7 @@ package com.example.groupbuyingweb.repository;
 
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,4 +29,27 @@ public interface GroupBuyingParticipationRepository extends JpaRepository<GroupB
     boolean existsByGroupBuyingIdAndMemberIdAndRole(Long groupBuyingId, String memberId, UserRole role);
     @Query("SELECT SUM(g.applyQuantity) FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :gbpId")
     Integer sumQuantity(@Param("gbpId") long groupBuyingId);
+
+    // 현재 로그인한 사용자가 참여한 공구 이력을 공구 진행 상태 기준으로 조회한다.
+    // role=PARTICIPANT일 때 사용한다.
+    // id 최신순으로 조회한다.
+    List<GroupBuyingParticipation> findAllByMember_IdAndRoleAndGroupBuying_StatusOrderByIdDesc(
+            String memberId,
+            UserRole role,
+            GroupBuyingStatus status
+    );
+
+    // 특정 공구의 현재 참여 수량 합계 계산
+    // currentQuantity는 GroupBuying에 저장된 값이 아니므로 참여 이력의 applyQuantity 합계로 구한다.
+    // applyQuantity는 Integer지만 SUM 결과는 Long으로 받는 것이 안전하다.
+    @Query("""
+            SELECT COALESCE(SUM(p.applyQuantity), 0)
+            FROM GroupBuyingParticipation p
+            WHERE p.groupBuying.id = :groupBuyingId
+            AND p.role = :role
+            """)
+    Long sumApplyQuantityByGroupBuyingIdAndRole(
+            @Param("groupBuyingId") Long groupBuyingId,
+            @Param("role") UserRole role
+    );
 }
