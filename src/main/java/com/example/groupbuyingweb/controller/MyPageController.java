@@ -12,6 +12,7 @@ import com.example.groupbuyingweb.service.AddressService;
 import com.example.groupbuyingweb.service.MyPageService;
 import com.example.groupbuyingweb.service.PointService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -62,11 +63,32 @@ public class MyPageController {
     @ResponseBody
     @GetMapping("/group-buys")
     public ApiResponse<List<MyPageResponse.MyGroupBuyingListItem>> getHostedGroupBuyings(
-            @RequestParam(required = false) MyPageRequest.MyGroupBuyingSearchCondition request,
-            HttpSession session){
+            @Valid @ModelAttribute MyPageRequest.MyGroupBuyingSearchCondition request,
+            HttpSession session
+    ) {
+        // 세션에서 현재 로그인한 사용자 ID를 꺼낸다.
         String memberId = loginSessionManager.requireLoginUserId(session);
+
+        // Service에 로그인 사용자 ID와 진행 상태를 넘겨 내가 개설한 공구 목록을 조회한다.
         List<MyPageResponse.MyGroupBuyingListItem> dto =
                 myPageService.getHostedGroupBuyings(memberId, request.status());
+
+        return ApiResponse.success(dto);
+    }
+
+    @ResponseBody
+    @GetMapping("/participations")
+    public ApiResponse<List<MyPageResponse.MyParticipationListItem>> getParticipatedGroupBuyings(
+            @Valid @ModelAttribute MyPageRequest.MyGroupBuyingSearchCondition request,
+            HttpSession session
+    ) {
+        // 세션에서 현재 로그인한 사용자 ID를 꺼낸다.
+        String memberId = loginSessionManager.requireLoginUserId(session);
+
+        // Service에 로그인 사용자 ID와 진행 상태를 넘겨 내가 참여한 공구 이력 목록을 조회한다.
+        List<MyPageResponse.MyParticipationListItem> dto =
+                myPageService.getParticipatedGroupBuyings(memberId, request.status());
+
         return ApiResponse.success(dto);
     }
 
