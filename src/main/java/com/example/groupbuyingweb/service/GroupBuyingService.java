@@ -11,6 +11,7 @@ import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
+import com.example.groupbuyingweb.repository.GroupBuyingImageRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingRepository;
 import com.example.groupbuyingweb.repository.MemberRepository;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -39,6 +41,7 @@ public class GroupBuyingService {
     private final PointService pointService;
     private final AddressService addressService;
     private final ChatRoomService chatRoomService;
+    private  final GroupBuyingImageRepository groupBuyingImageRepository;
 
     @Value("${file.upload.dir}")
     private String uploadDir;
@@ -166,14 +169,22 @@ public class GroupBuyingService {
 
         // Repository에서 Page<GroupBuying> 조회
         return groupBuyingRepository.searchGroupBuyings(condition.category(), condition.keyword(), pageable)
-                // 메서드 참조(::) 대신 람다식(->)을 사용
                 .map(groupBuying -> {
                     int currentQuantity = calculateCurrentQuantity(groupBuying.getId());
 
-                    return GroupBuyingResponse.GroupBuyings.of(groupBuying, currentQuantity);
+                    // map을 통해 엔티티 객체에서 URL만 추출
+                    String thumbnailUrl = groupBuyingImageRepository
+                            .findByGroupBuyingIdAndIsThumbnailTrue(groupBuying.getId())
+                            .map(GroupBuyingImage::getImageUrl)
+                            .orElse(null);
+
+                    // D-Day 계산
+                    String dDayString = calculateDday(groupBuying.getDeadline());
+
+                    // DTO 변환 시 thumbnailUrl 추가
+                    return GroupBuyingResponse.GroupBuyings.of(groupBuying, thumbnailUrl, currentQuantity, dDayString);
                 });
     }
-
     // 공구 진행 상태 변경
     @Transactional
     public GroupBuyingResponse.UpdateStatus updateStatusFromRequest(Long groupBuyingId, GroupBuyingRequest.UpdateStatus request) {
@@ -242,6 +253,9 @@ public class GroupBuyingService {
         // 공동구매 엔티티 조회 (예외 처리 생략)
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
 
+        // 조회수 증가
+        groupBuying.incrementViewCount();
+
         // 현재 모집된 수량
         int currentQuantity = calculateCurrentQuantity(groupBuyingId);
 
@@ -297,5 +311,31 @@ public class GroupBuyingService {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_MEMBER)
         );
+    }
+
+    // 디데이 계산
+    private String calculateDday(LocalDateTime deadline) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1. 이미 마감 기한이 지난 경우
+        if (now.isAfter(deadline)) {
+            return "마감";
+        }
+
+        Duration duration = Duration.between(now, deadline);
+        long hours = duration.toHours();
+
+        // 2. 하루(24시간) 미만으로 남은 경우
+        if (hours < 24) {
+            if (hours == 0) {
+                long minutes = duration.toMinutes();
+                return minutes + "분 남음";
+            }
+            return hours + "시간 남음";
+        }
+
+        // 3. 하루(24시간) 이상 남은 경우
+        long days = duration.toDays();
+        return "D-" + days;
     }
 }
