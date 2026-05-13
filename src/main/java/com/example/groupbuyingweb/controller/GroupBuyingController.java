@@ -89,9 +89,11 @@ public class GroupBuyingController {
     public String groupBuyingList(
             GroupBuyingRequest.SearchCondition condition,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            HttpSession session,
             Model model) {
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
-        Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable);
+        Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable, loggedInUserId);
         model.addAttribute("groupBuyings", list);
         return "main";
     }
