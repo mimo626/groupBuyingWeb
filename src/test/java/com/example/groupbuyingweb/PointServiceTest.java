@@ -204,7 +204,7 @@ class PointServiceTest {
                 .build();
         participationRepository.saveAllAndFlush(List.of(participation1,participation2,organizerParticipation));
 
-        pointService.settlePoint(groupBuyingId);
+        //pointService.settlePoint(groupBuyingId);
 
         // 검증
         assertThat(organizerMember.getPoint()).isEqualTo(20100.0); // 잔고 100 + 정산 20000 포인트

@@ -228,7 +228,7 @@ public class GroupBuyingService {
             }
             case SETTLING -> {
                 //TODO 공구 참여자의 포인트 정산 상태 완료로 변경(공구 참여할 땐 미완료가 맞는지)
-                pointService.settlePoint(groupBuyingId);
+                //pointService.settlePoint(groupBuyingId);
             }
             case CLOSED -> {
                 //TODO 공구 종료

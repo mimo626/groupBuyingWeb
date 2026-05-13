@@ -22,8 +22,4 @@ public class MyPageRequest {
             @NotNull(message = "공구 진행 상태는 필수입니다.")
             GroupBuyingStatus status
     ) {}
-
-    public record ParticipationId(
-        Long participationId
-    ) {}
 }
