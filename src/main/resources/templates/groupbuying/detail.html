@@ -8,14 +8,32 @@
         body {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
             background-color: #f5f6f8; /* 바깥 배경은 약간 어두운 회색 */
-            display: flex;
-            justify-content: center;
+            /* 기존의 display: flex; justify-content: center; 제거 */
             margin: 0;
             padding: 0;
         }
 
-        /* 모바일 화면 컨테이너 */
+        /* 헤더 (상단 네비게이션) - 상단 고정 적용 */
+        .header {
+            background-color: #a0522d;
+            color: white;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            /* 스크롤 시 상단 고정 */
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-logo { font-size: 24px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .header-nav { display: flex; gap: 30px; font-size: 16px; font-weight: 500; }
+        .header-nav span { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        /* 모바일 화면 컨테이너 - 가운데 정렬 적용 */
         .mobile-container {
+            margin: 0 auto; /* body 대신 여기서 가운데 정렬 */
             width: 100%;
             max-width: 720px;
             background-color: #ffffff;
@@ -25,7 +43,7 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
 
-        /* --- 상단 이미지 슬라이드 (기존 코드 개선) --- */
+        /* --- 상단 이미지 슬라이드 --- */
         .carousel-wrapper { position: relative; width: 100%; overflow: hidden; }
         .carousel-track { display: flex; transition: transform 0.3s ease-in-out; }
         .carousel-slide { min-width: 100%; box-sizing: border-box; }
@@ -93,7 +111,6 @@
             width: 100%; height: 120px; background-color: #e9ecef;
             border-radius: 8px; margin-top: 10px; display: flex;
             align-items: center; justify-content: center; color: #999; font-size: 13px;
-            /* 추후 카카오맵 API 연동 위치 */
         }
 
         /* --- 하단 고정 바 --- */
@@ -107,18 +124,16 @@
 
         /* 버튼 기본 스타일 (공통) */
         .submit-btn {
-            width: 100%; padding: 16px; background-color: #92533c; /* 갈색 버튼 */
+            width: 100%; padding: 16px; background-color: #92533c;
             color: white; border: none; border-radius: 8px; font-size: 16px;
             font-weight: bold; cursor: pointer; transition: background-color 0.2s;
             box-sizing: border-box;
         }
 
-        /* 버튼 호버 시 약간 진해지는 효과 */
         .submit-btn:hover:not(:disabled) {
             background-color: #7a4430;
         }
 
-        /* 비활성화된 버튼 (모집 마감) */
         .submit-btn:disabled {
             background-color: #e0e0e0;
             color: #999999;
@@ -128,31 +143,28 @@
         /* --- 버튼 두 개 나란히 배치 --- */
         .button-group {
             display: flex;
-            gap: 12px; /* 버튼 사이 간격 설정 */
+            gap: 12px;
             width: 100%;
         }
 
-        /* flex 컨테이너 안의 버튼들이 동일한 너비를 가지도록 설정 */
         .button-group .submit-btn {
             flex: 1;
         }
 
-        /* (선택 사항) 수정 / 삭제 등 특정 버튼 색상 변경 */
         .submit-btn.danger-btn {
-            background-color: #d84339; /* 삭제 버튼은 경고 의미로 붉은 계열 */
+            background-color: #d84339;
         }
         .submit-btn.danger-btn:hover {
             background-color: #c0392b;
         }
 
         .submit-btn.sub-btn {
-            background-color: #666666; /* 수정 버튼은 무채색 계열 */
+            background-color: #666666;
         }
         .submit-btn.sub-btn:hover {
             background-color: #555555;
         }
 
-        /* 참여 불가 안내 문구 (버튼과 같은 볼륨감으로 조정) */
         .chat-notice {
             text-align: center; font-size: 14px; color: #666; font-weight: bold;
             background-color: #f5f6f8; padding: 16px; border-radius: 8px; margin: 0;
@@ -161,6 +173,18 @@
     </style>
 </head>
 <body>
+
+<!-- 상단 헤더 -->
+<header class="header">
+    <div class="header-logo">
+        🌰 도토리 창고
+    </div>
+    <div class="header-nav">
+        <span id="homeBtn">🏠 홈</span>
+        <span id="chattingBtn">💬 채팅방</span>
+        <span id="myPageBtn">👤 마이</span>
+    </div>
+</header>
 
 <div class="mobile-container">
 
@@ -241,7 +265,6 @@
                     <button id="btn-edit" class="submit-btn sub-btn">수정</button>
                     <button id="btn-delete" class="submit-btn danger-btn">삭제</button>
                 </div>
-                <!-- <span> 안에 <div>가 들어가면 HTML 표준에 어긋나므로 <div>만 사용 -->
                 <div th:if="${groupBuying.hasParticipants}" class="chat-notice">
                     참여자가 있어 수정/삭제가 불가함
                 </div>
@@ -272,6 +295,7 @@
     </div>
 
 </div>
+
 <script th:if="${participateSuccess}">
     alert("참여 신청이 완료되었습니다!");
 </script>
@@ -279,6 +303,17 @@
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
 </script>
 <script type="text/javascript" th:inline="javascript">
+    // 헤더 버튼 라우팅 (메인과 동일하게 추가)
+    document.getElementById("homeBtn").addEventListener("click", () => {
+        window.location.href = "/group-buying/list";
+    });
+    document.getElementById("chattingBtn").addEventListener("click", () => {
+        window.location.href = "/chat/rooms-test";
+    });
+    document.getElementById("myPageBtn").addEventListener("click", () => {
+        window.location.href = "/auth/mypage";
+    });
+
     // KakaoMap API 로직
     var mapContainer = document.getElementById('map');
     var geocoder = new kakao.maps.services.Geocoder();
@@ -289,35 +324,24 @@
     var groupBuying = [[${groupBuying}]];
 
     // 초기 주소 검색
-    geocoder.addressSearch(groupBuying.meetingAddress, function(result, status) {
+    if (groupBuying && groupBuying.meetingAddress) {
+        geocoder.addressSearch(groupBuying.meetingAddress, function(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                var mapOption = { center: coords, level: 3 };
+                map = new kakao.maps.Map(mapContainer, mapOption);
 
-        // 정상적으로 검색이 완료됐으면
-        if (status === kakao.maps.services.Status.OK) {
-            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                marker = new kakao.maps.Marker({ map: map, position: coords });
 
-            // 지도 생성
-            var mapOption = {
-                center: coords,
-                level: 3
-            };
-            map = new kakao.maps.Map(mapContainer, mapOption);
-
-            // 마커 생성 및 할당
-            marker = new kakao.maps.Marker({
-                map: map,
-                position: coords
-            });
-
-            // 인포윈도우 생성 및 할당
-            infowindow = new kakao.maps.InfoWindow({
-                content: '<div style="width:150px;text-align:center;padding:6px 0;">만남 장소</div>'
-            });
-            infowindow.open(map, marker);
-        } else {
-            alert("기본 주소를 찾을 수 없습니다.");
-            // 예외처리
-        }
-    });
+                infowindow = new kakao.maps.InfoWindow({
+                    content: '<div style="width:150px;text-align:center;padding:6px 0;">만남 장소</div>'
+                });
+                infowindow.open(map, marker);
+            } else {
+                alert("기본 주소를 찾을 수 없습니다.");
+            }
+        });
+    }
 
     // --- 이미지 슬라이드 로직 ---
     let currentIndex = 0;
@@ -337,10 +361,8 @@
 
     // --- 참여 신청 API 통신 로직 ---
     function participate(groupBuyingId) {
-        // 1. 사용자에게 수량 입력받기
         const quantityStr = prompt("신청할 수량을 입력해주세요. (숫자만 입력)");
 
-        // 취소를 누르거나 입력하지 않은 경우 종료
         if (quantityStr === null || quantityStr.trim() === "") return;
 
         const applyQuantity = parseInt(quantityStr, 10);
@@ -349,22 +371,18 @@
             return;
         }
 
-        // 2. JS에서 동적으로 폼(Form) 생성하여 제출 (리다이렉트를 위해)
         const form = document.createElement("form");
-
         form.setAttribute("action", `/group-buying/${groupBuyingId}/participate`);
         form.setAttribute("method", "POST");
 
-        // 3. 폼 안에 수량 데이터 넣기
         const inputQuantity = document.createElement("input");
         inputQuantity.setAttribute("type", "hidden");
         inputQuantity.setAttribute("name", "applyQuantity");
         inputQuantity.setAttribute("value", applyQuantity);
         form.appendChild(inputQuantity);
 
-        // 4. 문서에 폼을 추가하고 전송
         document.body.appendChild(form);
-        form.submit(); // 컨트롤러로 POST 요청이 가고, 처리가 끝나면 리다이렉트 됨
+        form.submit();
     }
 </script>
 
