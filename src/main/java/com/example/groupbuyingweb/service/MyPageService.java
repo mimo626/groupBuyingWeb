@@ -196,7 +196,6 @@ public class MyPageService {
         GroupBuyingParticipation participation = participationRepository.findById(participationId)
                 .orElseThrow();
         GroupBuying groupBuying = participation.getGroupBuying();
-        MyPageResponse.MyParticipationDetail dto = null;
 
         int CurrentQuantity = participationRepository.sumQuantity(groupBuying.getId()); // 공구 현재 수량
 

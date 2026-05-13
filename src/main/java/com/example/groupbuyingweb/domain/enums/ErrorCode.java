@@ -30,7 +30,7 @@ public enum ErrorCode {
     INSUFFICIENT_POINT(400, "포인트 잔액이 부족합니다."),
 
     // test 용 - 충전 포인트 0 이면 반환해볼예정
-    TEST_ZERO_POINT(400, "포인트는 0이 못된당"),
+    TEST_ZERO_POINT(400, "올바른 충전 포인트를 입력하세요"),
 
     // 공동구매 생성
     NOT_EXIST_GROUP_BUYING(400, "존재하지 않는 공동구매 게시글입니다."),
