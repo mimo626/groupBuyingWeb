@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -201,6 +202,8 @@ public class ChatRoomService {
                             (int) unreadCount
                     );
                 })
+                .sorted(Comparator.comparing(ChatRoomResponse.ListItem::lastMessageAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
 
         return new ChatRoomResponse.ListResponse(items);
