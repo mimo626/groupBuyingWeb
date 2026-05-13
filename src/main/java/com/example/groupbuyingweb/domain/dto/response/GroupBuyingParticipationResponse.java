@@ -6,5 +6,5 @@ public class GroupBuyingParticipationResponse {
     public record UserResult(String memberId){}
 
     // 정산 시 결과값 : 정산한 공구id
-    public record SettleResult(Long groupBuyingId){}
+    public record SettleResult(Long groupBuyingId, Boolean isCompleteAll){}
 }

@@ -3,6 +3,7 @@ package com.example.groupbuyingweb.repository;
 import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
+import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,8 +15,8 @@ import java.util.List;
 @Repository
 public interface GroupBuyingParticipationRepository extends JpaRepository<GroupBuyingParticipation, Long> {
 
-    @Query("SELECT SUM(g.paidPoint) FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :gbpId")
-    Double sumSettlePay(@Param("gbpId") long groupBuyingId);
+//    @Query("SELECT SUM(g.paidPoint) FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :gbpId")
+//    Double sumSettlePay(@Param("gbpId") long groupBuyingId);
 
     @Query("SELECT g.member FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :groupBuyingId AND g.role = :role")
     Member findMemberByGroupBuyingIdAndRole(long groupBuyingId, UserRole role);
@@ -52,4 +53,7 @@ public interface GroupBuyingParticipationRepository extends JpaRepository<GroupB
             @Param("groupBuyingId") Long groupBuyingId,
             @Param("role") UserRole role
     );
+
+    // 공구에 InComplete 가 존재하는지 체크
+    boolean existsByGroupBuyingIdAndPaymentStatus(long groupBuyingId, PaymentStatus paymentStatus);
 }
