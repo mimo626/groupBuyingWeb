@@ -36,6 +36,7 @@ public class MyPageResponse {
 
     public record MyGroupBuyingListItem(
             Long groupBuyingId,
+            Long participationId,
             String title,
             Double totalPrice,
             Integer targetQuantity,
