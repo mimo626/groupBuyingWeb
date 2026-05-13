@@ -51,7 +51,7 @@
       resultBox.textContent = JSON.stringify(data, null, 2);
 
       // 로그인 성공 여부 확인 (HTTP 상태 코드 200번대)
-      if (response.ok) {
+      if (data.status == 200) {
         alert("로그인에 성공했습니다. 메인 화면으로 이동합니다.");
         // 메인 화면으로 이동 (서버의 라우팅 설정에 맞게 경로를 수정해 주세요. 예: /main)
         window.location.href = "/main.html";

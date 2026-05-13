@@ -202,6 +202,16 @@
             });
     }
 
+    // 내가 개설한 공구 목록 화면으로 이동
+document.getElementById('menu-my-groupbuy').addEventListener('click', function() {
+    location.href = '/mypage/group-buys';
+});
+
+// 내가 참여한 공구 이력 목록 화면으로 이동
+document.getElementById('menu-participated-groupbuy').addEventListener('click', function() {
+    location.href = '/mypage/participations';
+});
+
     // --- 로그아웃 스크립트 ---
     function requestLogout() {
         if (!confirm("로그아웃 하시겠습니까?")) {

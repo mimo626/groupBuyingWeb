@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>도토리 창고 - 참여한 공구 이력</title>
+</head>
+<body>
+<header>
+    <h1>🌰 도토리 창고</h1>
+    <a href="/auth/mypage">마이페이지로 돌아가기</a>
+</header>
+
+<main>
+    <h2>참여한 공구 이력</h2>
+
+    <section>
+        <button type="button" onclick="changeStatus('RECRUITING')">모집 중</button>
+        <button type="button" onclick="changeStatus('START')">공구 시작</button>
+        <button type="button" onclick="changeStatus('PURCHASED')">물품 구매 완료</button>
+        <button type="button" onclick="changeStatus('SHIPPING')">배송 중</button>
+        <button type="button" onclick="changeStatus('MEETING_SCHEDULED')">만남 날짜 입력 완료</button>
+        <button type="button" onclick="changeStatus('SETTLING')">정산 진행 중</button>
+        <button type="button" onclick="changeStatus('CLOSED')">공구 종료</button>
+    </section>
+
+    <section id="participation-list">
+        <!-- JS에서 목록을 렌더링한다. -->
+    </section>
+</main>
+
+<script>
+    let currentStatus = 'RECRUITING';
+
+    window.onload = function() {
+        requestParticipatedGroupBuyings(currentStatus);
+    };
+
+    function changeStatus(status) {
+        currentStatus = status;
+        requestParticipatedGroupBuyings(currentStatus);
+    }
+
+    function requestParticipatedGroupBuyings(status) {
+        fetch('/api/mypage/participations?status=' + encodeURIComponent(status))
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 400 || data.status === 401) {
+                    alert(data.message);
+                    location.href = '/loginTest.html';
+                    return;
+                }
+
+                renderParticipatedGroupBuyings(data.data || []);
+            })
+            .catch(error => {
+                console.error('참여한 공구 이력 목록 조회 실패:', error);
+                alert('참여한 공구 이력 목록을 불러오지 못했습니다.');
+            });
+    }
+
+    function renderParticipatedGroupBuyings(items) {
+        const list = document.getElementById('participation-list');
+        list.innerHTML = '';
+
+        if (items.length === 0) {
+            list.innerHTML = '<p>조회된 참여 이력이 없습니다.</p>';
+            return;
+        }
+
+        items.forEach(item => {
+            const card = document.createElement('article');
+            card.innerHTML = `
+                <h3>${item.title}</h3>
+                <p>가격: ${item.totalPrice}</p>
+                <p>신청 수량: ${item.applyQuantity}</p>
+                <p>결제 포인트: ${item.paidPoint}</p>
+                <p>정산 상태: ${item.paymentStatus}</p>
+                <p>공구 상태: ${item.groupBuyingStatus}</p>
+                <p>만남 일시: ${item.meetingAt}</p>
+                <p>만남 장소: ${item.meetingAddress}</p>
+                <p>마감일: ${item.deadline}</p>
+            `;
+            list.appendChild(card);
+        });
+    }
+</script>
+</body>
+</html>

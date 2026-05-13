@@ -1,6 +1,7 @@
 package com.example.groupbuyingweb.domain.dto.request;
 
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
+import com.example.groupbuyingweb.domain.enums.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -18,10 +19,7 @@ public class MyPageRequest {
     ) {}
 
     public record MyGroupBuyingSearchCondition(
-            GroupBuyingStatus status
-    ) {}
-
-    public record ParticipationSearchCondition(
+            @NotNull(message = "공구 진행 상태는 필수입니다.")
             GroupBuyingStatus status
     ) {}
 

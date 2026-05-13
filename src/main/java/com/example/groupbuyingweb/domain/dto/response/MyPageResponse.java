@@ -37,28 +37,24 @@ public class MyPageResponse {
     public record MyGroupBuyingListItem(
             Long groupBuyingId,
             String title,
-            String productName,
-            String productImageUrl,
             Double totalPrice,
             Integer targetQuantity,
             Integer currentQuantity,
-            String neighborhoodName,
-            Integer viewCount,
             GroupBuyingStatus status,
-            LocalDateTime deadline,
-            LocalDateTime createdAt
+            LocalDateTime deadline
     ) {/**/}
 
     public record MyParticipationListItem(
             Long participationId,
             Long groupBuyingId,
             String title,
-            String productName,
-            String productImageUrl,
+            Double totalPrice,
             Integer applyQuantity,
             Double paidPoint,
             PaymentStatus paymentStatus,
             GroupBuyingStatus groupBuyingStatus,
+            LocalDateTime meetingAt,
+            String meetingAddress,
             LocalDateTime deadline
     ) {}
 
