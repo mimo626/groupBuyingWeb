@@ -12,9 +12,9 @@ public class AuthPageController {
     @Value("${kakao.local.javascript-key}")
     private String kakaoJavaScriptKey;
 
-    @GetMapping("/auth/signup-test")
+    @GetMapping("/auth/signup")
     public String signupTest(Model model) {
         model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
-        return "signupTest";
+        return "signup";
     }
 }
