@@ -60,6 +60,7 @@ public class ChatMessageService {
         return new ChatRoomResponse.Message(
                 saved.getId(),
                 saved.getSender().getId(),
+                saved.getSender().getNickname(),
                 saved.getMessageType().name(),
                 saved.getContent(),
                 saved.getCreateAt()
