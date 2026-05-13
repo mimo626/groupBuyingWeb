@@ -3,18 +3,12 @@ package com.example.groupbuyingweb.service;
 import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
-import com.example.groupbuyingweb.domain.entity.GroupBuying;
-import com.example.groupbuyingweb.domain.entity.GroupBuyingImage;
-import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
-import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.entity.*;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
-import com.example.groupbuyingweb.repository.GroupBuyingImageRepository;
-import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
-import com.example.groupbuyingweb.repository.GroupBuyingRepository;
-import com.example.groupbuyingweb.repository.MemberRepository;
+import com.example.groupbuyingweb.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -27,8 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor // @Autowired 대신 생성자 주입 (권장 방식)
@@ -42,6 +38,7 @@ public class GroupBuyingService {
     private final AddressService addressService;
     private final ChatRoomService chatRoomService;
     private  final GroupBuyingImageRepository groupBuyingImageRepository;
+    private  final UserNearbyAddressRepository userNearbyAddressRepository;
 
     @Value("${file.upload.dir}")
     private String uploadDir;
@@ -165,7 +162,17 @@ public class GroupBuyingService {
     }
 
     // 공구 목록 조회(검색/필터링)
-    public Page<GroupBuyingResponse.GroupBuyings> getGroupBuyings(GroupBuyingRequest.SearchCondition condition, Pageable pageable) {
+    public Page<GroupBuyingResponse.GroupBuyings> getGroupBuyings(GroupBuyingRequest.SearchCondition condition, Pageable pageable, String loggedInUserId) {
+
+        List<UserNearbyAddress> addressEntities = userNearbyAddressRepository.findAllByMemberId(loggedInUserId);
+
+        List<String> userNearbyAddressList = addressEntities.stream()
+                .map(UserNearbyAddress::getNeighborhoodName)
+                .collect(Collectors.toList());
+
+        for (String neighborhoodName : userNearbyAddressList) {
+            System.out.println("주변 주소: " + neighborhoodName);
+        }
 
         // Repository에서 Page<GroupBuying> 조회
         return groupBuyingRepository.searchGroupBuyings(condition.category(), condition.keyword(), pageable)
