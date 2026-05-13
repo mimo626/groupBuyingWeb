@@ -1,0 +1,203 @@
+/* 전역 설정 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: #FFFBF7; /* 마이페이지 베이지 톤 배경 */
+    color: #333;
+}
+
+/* 상단 네비게이션 */
+.top-nav {
+    background-color: #B25A2C;
+    color: white;
+    padding: 15px 0;
+}
+
+.nav-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.nav-content h1 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.back-btn {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* 메인 컨테이너 */
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* 페이지 제목 & 상태 버튼 영역 */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-arrow {
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+}
+
+/* 상태 필터 버튼 */
+.status-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.status-btn {
+    padding: 6px 14px;
+    border: 1px solid #E0E0E0;
+    background-color: #FFF;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.2s ease-in-out;
+}
+
+.status-btn:hover {
+    background-color: #f9f9f9;
+}
+
+.status-btn.active {
+    background-color: #B25A2C;
+    color: white;
+    border-color: #B25A2C;
+    font-weight: 600;
+}
+
+/* 빈 목록 상태 */
+.empty-state {
+    text-align: center;
+    padding: 60px 0;
+    color: #888;
+    background-color: #FFF;
+    border-radius: 12px;
+    border: 1px solid #EFEFEF;
+}
+
+/* 공구 리스트 카드 UI */
+.gb-card {
+    background: #FFFFFF;
+    border: 1px solid #F0F0F0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gb-card:hover {
+    border-color: #D6C4B8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    margin-bottom: 8px;
+}
+
+/* 동적 상태 뱃지 디자인 (피그마 컬러 반영) */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.theme-mint { background-color: #E6F4EA; color: #1E8E3E; } /* 모집 중 / 확인 완료 */
+.theme-orange { background-color: #FFF4E5; color: #E65100; } /* 수락대기 / 만남예정 */
+.theme-blue { background-color: #E8F0FE; color: #1967D2; } /* 배송중 */
+.theme-yellow { background-color: #FFF8E1; color: #FBC02D; } /* 정산중 */
+.theme-gray { background-color: #F1F3F4; color: #5F6368; } /* 공구종료 등 기본 */
+
+
+.title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    margin: 0 0 4px 0;
+}
+
+.deadline {
+    color: #999;
+    font-size: 13px;
+    margin: 0 0 10px 0;
+}
+
+/* 만남 정보 (피그마의 보라색 텍스트 포인트) */
+.meeting-info {
+    color: #8A2BE2; /* 피그마 보라색 톤 */
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    background: #FAFAFA;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* 하단 가격 및 수량 정보 */
+.info-row {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #555;
+}
+
+.price {
+    font-weight: 700;
+    color: #333;
+}
+
+.quantity {
+    color: #666;
+}
+
+/* 결제 포인트 강조 */
+.point {
+    color: #333;
+}
+.point strong {
+    color: #D84315; /* 피그마에서 강조된 포인트 컬러 */
+    font-weight: 700;
+}
+
+.divider {
+    color: #E0E0E0;
+    margin: 0 10px;
+    font-size: 12px;
+}

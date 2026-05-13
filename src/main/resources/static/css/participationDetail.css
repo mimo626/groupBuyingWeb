@@ -1,108 +1,298 @@
-/* 상단 헤더 */
-#btn-back {
-    cursor: pointer;
-}
-header h1 {
-    display: inline-block;
-}
-#group-buying-status-badge {
-    color: coral;
-    font-weight: bold;
-    margin-left: 10px;
+/* 전역 설정 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* 공통 섹션 카드 스타일 */
+body {
+    background-color: #FFFBF7; /* 피그마 배경색 (베이지) */
+    color: #333;
+}
+
+/* 상단 헤더 */
+#header {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    gap: 12px;
+}
+
+#btn-back {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #555;
+}
+
+#header h1 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* 상태 뱃지 (주황색 테마) */
+#group-buying-status-badge {
+    background-color: #FFF4E5;
+    color: #E65100;
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* 메인 컨텐츠 영역 */
+#main-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px 40px 20px;
+}
+
+/* 공통 카드 스타일 */
 .card-section {
-    border: 1px solid #ddd;
-    padding: 15px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    border: 1px solid #F0F0F0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+/* --- 1. 요약 정보 카드 (클릭 유도 UX 반영) --- */
+.clickable-card {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clickable-card:hover {
+    border-color: #D6C4B8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    background-color: #FDFDFD;
+}
+
+.clickable-card .click-indicator {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #ccc;
+    transition: color 0.2s;
+}
+
+.clickable-card:hover .click-indicator {
+    color: #A67B5B;
+}
+
+.summary-top {
     margin-bottom: 20px;
 }
 
-/* 1. 요약 정보 섹션 */
-#summary-section {
-    cursor: pointer; /* 클릭 가능한 느낌을 주기 위해 추가 */
+#product-content, #product-name {
+    color: #999;
+    font-size: 13px;
+    margin-bottom: 4px;
 }
-#product-content {
-    color: gray;
-    font-size: 14px;
-    margin-bottom: 5px;
-}
+
 #group-buying-title {
-    margin-top: 0;
-    margin-bottom: 5px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
 }
-#product-name {
-    color: gray;
-    font-size: 14px;
-    margin-top: 0;
-}
+
 .summary-price-wrap {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #F0F0F0;
+    padding-right: 24px; /* 화살표 아이콘 영역 확보 */
 }
+
+.price-info {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
 #unit-price {
-    font-size: 24px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
 }
+
 #apply-quantity {
-    color: gray;
+    color: #999;
     font-size: 14px;
 }
+
 .total-point-wrap {
     text-align: right;
 }
+
 .total-point-wrap p {
-    color: gray;
-    font-size: 12px;
-    margin: 0;
-}
-#total-paid-point {
-    font-size: 20px;
-    color: coral;
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 4px;
 }
 
-/* 2. 진행 상태 리스트 */
+#total-paid-point {
+    font-size: 18px;
+    font-weight: 700;
+    color: #D84315; /* 피그마 포인트 컬러 강조 */
+}
+
+
+/* --- 2. 진행 상태 타임라인 --- */
+#progress-section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #222;
+}
+
 #progress-list {
     list-style: none;
-    padding-left: 0;
-}
-.progress-item {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: flex-start;
-}
-.progress-marker {
-    margin-right: 10px;
-}
-.progress-label {
-    display: block;
-}
-.progress-current-text {
-    color: red;
-    font-size: 12px;
+    position: relative;
 }
 
-/* 3. 만남 일정 섹션 */
+.progress-item {
+    display: flex;
+    position: relative;
+    padding-bottom: 28px;
+}
+
+.progress-item:last-child {
+    padding-bottom: 0;
+}
+
+/* 수직 연결선 */
+.progress-item::before {
+    content: '';
+    position: absolute;
+    left: 13px; /* 마커의 중앙 */
+    top: 28px;
+    bottom: 0;
+    width: 2px;
+    background-color: #EEEEEE;
+    z-index: 1;
+}
+
+.progress-item:last-child::before {
+    display: none;
+}
+
+/* 완료 및 진행중인 상태의 연결선 진하게 */
+.progress-item.completed::before,
+.progress-item.active::before {
+    background-color: #8E5A3B; /* 피그마 갈색 */
+}
+
+/* 마커(동그라미) 기본 (예정 상태) */
+.progress-marker {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #E0E4E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+/* 1. 완료 상태 마커 (갈색 바탕 + V 체크 표시) */
+.progress-item.completed .progress-marker {
+    background-color: #8E5A3B;
+    color: white;
+}
+
+.progress-item.completed .progress-marker::after {
+    content: '✓';
+    font-size: 14px;
+    font-weight: 900;
+}
+
+/* 2. 현재 진행 중 상태 마커 (갈색 테두리 + 돌아가는 애니메이션) */
+.progress-item.active .progress-marker {
+    background-color: #FFFFFF;
+    border: 2px solid #8E5A3B;
+    color: #8E5A3B;
+}
+
+.progress-item.active .progress-marker::after {
+    content: '↻'; /* 진행 중을 의미하는 회전 아이콘 */
+    font-size: 16px;
+    font-weight: 900;
+    display: inline-block;
+    animation: spin 1.5s linear infinite; /* 빙글빙글 도는 애니메이션 */
+}
+
+/* 회전 애니메이션 키프레임 */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 타임라인 텍스트 영역 */
+.progress-text-wrap {
+    margin-left: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.progress-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    margin-top: 3px;
+}
+
+.progress-item.upcoming .progress-label {
+    color: #A0A0A0; /* 다가올 일정은 회색 처리 */
+}
+
+.progress-current-text {
+    font-size: 12px;
+    color: #D32F2F; /* 피그마 붉은색 현재 표시 */
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+
+/* --- 3. 만남 일정 카드 (보라색 테마) --- */
 #meeting-section {
-    background-color: #fdfafb;
+    background-color: #F8F4FF; /* 연보라 배경 */
+    border: 1px solid #EBE4FF;
 }
+
 #meeting-section h3 {
-    color: purple;
-    margin-top: 0;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #8A2BE2; /* 보라색 텍스트 */
 }
+
 .meeting-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #8A2BE2;
 }
+
 .meeting-row:last-child {
     margin-bottom: 0;
 }
+
 .meeting-label {
-    color: purple;
-}
-.meeting-value {
-    color: purple;
-    font-weight: bold;
+    opacity: 0.7;
+    font-weight: 500;
 }

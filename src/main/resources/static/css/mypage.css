@@ -1,0 +1,223 @@
+/* /resources/static/auth/mypage.css */
+
+/* --- 기본 초기화 및 폰트 설정 --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+body {
+    background-color: #FFFBF6; /* 피그마 배경색 (따뜻한 크림색) */
+    color: #333;
+}
+
+/* --- 헤더 (글로벌 내비게이션 바) --- */
+#header {
+    background-color: #A3542C; /* 헤더 브라운 컬러 */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    height: 60px;
+}
+
+#header h1 {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+#header nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+#header nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+#header nav a:hover {
+    text-decoration: underline;
+}
+
+/* --- 메인 콘텐츠 레이아웃 --- */
+#main-content {
+    max-width: 600px; /* 피그마 디자인처럼 중앙으로 모이는 너비 */
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+#page-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #111;
+}
+
+/* --- 공통 카드 스타일 (프로필, 메뉴) --- */
+section {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+    overflow: hidden;
+    border: 1px solid #F0E8E1;
+}
+
+/* --- 1. 사용자 프로필 및 경험치 섹션 --- */
+#user-profile-section {
+    padding: 24px;
+}
+
+.user-info {
+    margin-bottom: 24px;
+}
+
+#user-nickname {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+#user-level-desc {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+/* 경험치 영역 */
+.exp-container {
+    background-color: #FFF9F5; /* 경험치 박스 미세한 배경색 */
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.exp-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+#exp-score-text {
+    color: #A3542C; /* 포인트 컬러 */
+}
+
+/* 프로그레스 바 스타일링 */
+#exp-progress-bar {
+    width: 100%;
+    height: 8px;
+    appearance: none; /* 기본 브라우저 스타일 제거 */
+    border: none;
+    border-radius: 4px;
+}
+
+/* 크롬, 사파리 등 WebKit 브라우저용 */
+#exp-progress-bar::-webkit-progress-bar {
+    background-color: #EADCD3;
+    border-radius: 4px;
+}
+#exp-progress-bar::-webkit-progress-value {
+    background-color: #B54213; /* 피그마의 진한 브라운/레드 컬러 */
+    border-radius: 4px;
+}
+
+/* 파이어폭스용 */
+#exp-progress-bar::-moz-progress-bar {
+    background-color: #B54213;
+    border-radius: 4px;
+}
+
+.exp-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 8px;
+}
+
+/* --- 2. 마이페이지 메뉴 리스트 섹션 --- */
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #F0E8E1; /* 리스트 구분선 */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:hover {
+    background-color: #FAFAFA;
+}
+
+/* 아이콘 */
+.menu-icon {
+    font-size: 1.2rem;
+    margin-right: 16px;
+    width: 24px;
+    text-align: center;
+}
+
+/* 텍스트 영역 (단일 텍스트 or 그룹 텍스트) */
+.menu-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    flex: 1; /* 남은 공간을 모두 차지하여 오른쪽 요소를 끝으로 밈 */
+}
+
+.menu-text-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.menu-text-group .menu-title {
+    flex: none; /* 그룹 내에서는 flex 해제 */
+}
+
+.menu-subtext {
+    font-size: 0.8rem;
+    color: #888;
+    font-weight: 400;
+}
+
+/* 뱃지 카운트 (검은색 원형) */
+.badge {
+    background-color: #222;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+/* 오른쪽 화살표 아이콘 */
+.arrow-icon {
+    font-size: 1rem;
+    color: #CCC;
+    font-family: monospace; /* > 기호 깔끔하게 보이도록 */
+}
+
+/* 로그아웃 버튼 특화 */
+#menu-logout .menu-title {
+    color: #E03E3E !important; /* 로그아웃 빨간색 유지 */
+}

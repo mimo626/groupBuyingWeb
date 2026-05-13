@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>도토리 창고 - 마이페이지</title>
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
@@ -11,9 +12,9 @@
     <h1 id="logo">🌰 도토리 창고</h1>
     <nav>
         <ul id="gnb-list">
-            <li><a href="/group-buying/list" id="link-home">홈</a></li>
-            <li><a href="/chat/rooms-test" id="link-chat">채팅방</a></li>
-            <li><a href="#" id="link-mypage">마이</a></li>
+            <li><a href="/group-buying/list" id="link-home">🏠 홈</a></li>
+            <li><a href="/chat/rooms-test" id="link-chat">💬 채팅방</a></li>
+            <li><a href="#" id="link-mypage">👤 마이</a></li>
         </ul>
     </nav>
 </header>
@@ -56,7 +57,7 @@
                 <span class="menu-icon">📄</span>
                 <span class="menu-title">내가 개설한 공구</span>
                 <!-- 뱃지 카운트 업데이트용 -->
-                <span class="badge" id="badge-my-groupbuy-count">3</span>
+<!--            <span class="badge" id="badge-my-groupbuy-count">3</span>-->
                 <span class="arrow-icon">&gt;</span>
             </div>
 
@@ -65,7 +66,7 @@
                 <span class="menu-icon">🛍️</span>
                 <span class="menu-title">참여한 공구 이력</span>
                 <!-- 뱃지 카운트 업데이트용 -->
-                <span class="badge" id="badge-participated-count">5</span>
+<!--            <span class="badge" id="badge-participated-count">5</span>-->
                 <span class="arrow-icon">&gt;</span>
             </div>
 
@@ -147,7 +148,7 @@
             .then(data => {
                 if (data.status === 400 || data.status === 401) {
                     alert(data.message);
-                    location.href = `/loginTest.html`;
+                    location.href = `/auth/login.html`;
                 } else {
                     // 프로필 요청인 경우 DOM 요소 업데이트
                     if (target === 'profile') {

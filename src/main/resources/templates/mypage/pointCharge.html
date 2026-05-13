@@ -2,51 +2,68 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>포인트 충전</title>
+    <title>도토리 창고 - 포인트 충전</title>
+    <!-- CSS 파일 연결 -->
+    <link rel="stylesheet" href="/css/pointCharge.css">
 </head>
 <body>
+
 <!-- 글로벌 내비게이션 바 (헤더) -->
-<header id="header">
-    <h1 id="logo">🌰 도토리 창고</h1>
-    <nav>
-        <ul id="gnb-list">
-            <li><a href="/main.html" id="link-home">홈</a></li>
-            <li><a href="#" id="link-chat">채팅방</a></li>
-            <!-- 마이페이지로 돌아가는 임시 링크 (실제 파일명에 맞게 수정 필요) -->
-            <li><a href="/mypage.html" id="link-mypage">마이</a></li>
-        </ul>
-    </nav>
+<header class="top-nav">
+    <div class="nav-content">
+        <h1 id="logo">🌰 도토리 창고</h1>
+        <nav>
+            <ul id="gnb-list">
+                <li><a href="/group-buying/list" id="link-home">홈</a></li>
+                <li><a href="#" id="link-chat">채팅방</a></li>
+                <li><a href="/mypage/mypage" id="link-mypage">마이</a></li>
+            </ul>
+        </nav>
+    </div>
 </header>
 
 <!-- 메인 콘텐츠 영역 -->
-<main id="main-content">
-    <h2 id="page-title">포인트 충전</h2>
+<main class="container">
+    <div class="page-header">
+        <h2 class="page-title">
+            <span class="back-arrow" id="btn-back-arrow">←</span>
+            포인트 충전
+        </h2>
+    </div>
 
-    <!-- 포인트 충전 입력 섹션 -->
-    <section id="point-charge-section">
-        <p>충전할 도토리 포인트를 입력해주세요. (임시 결제 화면)</p>
-
-        <div class="input-group">
-            <label for="pointInput"><strong>충전 금액: </strong></label>
-            <input type="number" id="pointInput" placeholder="예: 10000" step="1000" min="1000">
-            <span> P</span>
+    <!-- 포인트 충전 카드 섹션 -->
+    <section class="charge-card">
+        <div class="charge-header">
+            <h3>얼마를 충전할까요?</h3>
+            <p>충전할 도토리 포인트를 입력해주세요. (임시 결제 화면)</p>
         </div>
 
-        <div class="button-group" style="margin-top: 20px;">
-            <button type="button" id="btn-charge" style="background-color: #8B4513; color: white; padding: 10px 20px; border: none; cursor: pointer;">결제 및 충전하기</button>
-            <button type="button" id="btn-cancel" style="padding: 10px 20px; cursor: pointer;">취소</button>
+        <div class="input-wrap">
+            <input type="number" id="pointInput" placeholder="10000" step="1000" min="1000">
+            <span class="currency">P</span>
+        </div>
+        <p class="input-hint">* 최소 1,000P부터 충전 가능합니다.</p>
+
+        <div class="button-group">
+            <button type="button" id="btn-cancel" class="btn btn-secondary">취소</button>
+            <button type="button" id="btn-charge" class="btn btn-primary">결제 및 충전하기</button>
         </div>
     </section>
 </main>
 
 <script th:inline="javascript">
     window.onload = function() {
+        // 뒤로가기 화살표 이벤트 연결
+        document.getElementById('btn-back-arrow').addEventListener('click', function() {
+            goBack();
+        });
+
         // 충전하기 버튼 이벤트 연결
         document.getElementById('btn-charge').addEventListener('click', function() {
             requestCharge();
         });
 
-        // 취소 버튼 이벤트 연결 (이전 페이지로 돌아가기)
+        // 취소 버튼 이벤트 연결
         document.getElementById('btn-cancel').addEventListener('click', function() {
             goBack();
         });
@@ -57,17 +74,17 @@
         const pointValue = document.getElementById("pointInput").value;
 
         // 입력값 검증
-        if (!pointValue || pointValue <= 0) {
-            alert("충전할 금액을 올바르게 입력해주세요.");
+        if (!pointValue || pointValue < 1000) {
+            alert("최소 1,000P 이상 올바른 금액을 입력해주세요.");
             return;
         }
 
         // 실제 PG사 연동 전이므로 사용자에게 확인만 받음
-        if (!confirm(`정말 ${pointValue.toLocaleString()}P를 충전하시겠습니까?`)) {
+        if (!confirm(`정말 ${Number(pointValue).toLocaleString()}P를 충전하시겠습니까?`)) {
             return;
         }
 
-        // 테스트 코드에서 제공해주신 API 엔드포인트 및 방식
+        // API 엔드포인트 및 방식
         const apiUrl = `/api/point/charge?point=${pointValue}`;
         const requestOptions = {
             method: 'POST',
@@ -88,24 +105,22 @@
                     alert("충전 실패 : " + data.message);
                 } else {
                     alert(`${Number(pointValue).toLocaleString()}P 충전이 성공적으로 완료되었습니다!`);
-                    // 충전 성공 시 이전 페이지로 복귀
                     goBack();
                 }
             })
             .catch(error => {
                 console.error("API 호출 에러:", error);
-                alert("오류 발생: " + error.message);
+                // 테스트 시연용 임시 알럿 (실제 서버 없을 때 방지)
+                // alert("오류 발생: " + error.message);
             });
     }
 
-    // 이전 페이지로 돌아가는 로직 (Referrer 활용)
+    // 이전 페이지로 돌아가는 로직
     function goBack() {
-        // document.referrer가 존재하면 그곳(마이페이지)으로, 없으면 메인으로 이동
         if (document.referrer) {
             location.href = document.referrer;
         } else {
-            // 레퍼러를 알 수 없을 경우를 대비한 기본 라우팅
-            location.href = '/mypage/mypage'; // 실제 마이페이지 URL로 맞춰주세요.
+            location.href = '/mypage.html';
         }
     }
 </script>

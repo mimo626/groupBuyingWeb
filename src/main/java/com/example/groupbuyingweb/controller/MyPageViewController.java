@@ -40,6 +40,6 @@ public class MyPageViewController {
     public String myPage(Model model) {
         model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
 
-        return "mypage/myPage";
+        return "mypage/mypage";
     }
 }

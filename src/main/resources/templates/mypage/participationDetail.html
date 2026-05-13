@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>도토리 창고 - 공구 상세</title>
+    <!-- 새롭게 작성된 CSS 연결 -->
     <link rel="stylesheet" href="/css/participationDetail.css">
 </head>
 <body>
 
 <!-- 상단 헤더 -->
 <header id="header">
-    <button type="button" id="btn-back">↩</button>
+    <button type="button" id="btn-back">←</button>
     <h1>공구 상세</h1>
     <span id="group-buying-status-badge"></span>
 </header>
 
-<hr>
-
 <main id="main-content">
 
-    <!-- 공구 요약 정보 -->
-    <section id="summary-section" class="card-section">
-        <p id="product-content"></p>
-        <h2 id="group-buying-title"></h2>
-        <p id="product-name"></p>
+    <!-- 공구 요약 정보 (클릭 유도 UI 적용) -->
+    <section id="summary-section" class="card-section clickable-card" title="해당 공동구매 글로 이동합니다.">
+        <div class="summary-top">
+            <p id="product-content"></p>
+            <h2 id="group-buying-title"></h2>
+            <p id="product-name"></p>
+        </div>
 
         <div class="summary-price-wrap">
-            <div>
+            <div class="price-info">
                 <strong id="unit-price"></strong>
                 <span id="apply-quantity"></span>
             </div>
@@ -34,11 +35,16 @@
                 <strong id="total-paid-point"></strong>
             </div>
         </div>
+
+        <!-- 클릭 가능하다는 것을 알려주는 화살표 아이콘 -->
+        <div class="click-indicator">&gt;</div>
     </section>
 
+    <!-- 진행 상태 타임라인 -->
     <section id="progress-section" class="card-section">
         <h3>진행 상태</h3>
         <ul id="progress-list">
+            <!-- JS에서 동적 렌더링 -->
         </ul>
     </section>
 
@@ -125,32 +131,31 @@
         if (detail.progressSteps && detail.progressSteps.length > 0) {
             detail.progressSteps.forEach(step => {
                 const li = document.createElement('li');
-                li.className = 'progress-item'; // CSS 클래스 적용
+                li.className = 'progress-item';
 
+                // 상태에 따른 클래스 부여 (CSS 연동)
+                if (step.completed) li.classList.add('completed');
+                else if (step.active) li.classList.add('active');
+                else li.classList.add('upcoming');
+
+                // 마커 (동그라미 & 체크)
                 const marker = document.createElement('span');
-                marker.className = 'progress-marker'; // CSS 클래스 적용
-                if (step.completed) {
-                    marker.innerText = '✅';
-                } else if (step.active) {
-                    marker.innerText = '🔄';
-                } else {
-                    marker.innerText = '⚪';
-                }
+                marker.className = 'progress-marker';
 
+                // 텍스트 영역
                 const textDiv = document.createElement('div');
+                textDiv.className = 'progress-text-wrap';
+
                 const labelStr = document.createElement('strong');
-                labelStr.className = 'progress-label'; // CSS 클래스 적용
+                labelStr.className = 'progress-label';
                 labelStr.innerText = step.label;
-
-                // 글씨 색상은 상태(completed, active)에 따라 다르게 변하므로 JS 인라인 유지
-                labelStr.style.color = step.completed || step.active ? 'black' : 'gray';
-
                 textDiv.appendChild(labelStr);
 
+                // 현재 상태 강조 텍스트
                 if (step.active) {
                     const currentText = document.createElement('span');
                     currentText.innerText = '현재';
-                    currentText.className = 'progress-current-text'; // CSS 클래스 적용
+                    currentText.className = 'progress-current-text';
                     textDiv.appendChild(currentText);
                 }
 

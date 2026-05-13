@@ -47,11 +47,9 @@ public interface GroupBuyingParticipationRepository extends JpaRepository<GroupB
             SELECT COALESCE(SUM(p.applyQuantity), 0)
             FROM GroupBuyingParticipation p
             WHERE p.groupBuying.id = :groupBuyingId
-            AND p.role = :role
             """)
     Long sumApplyQuantityByGroupBuyingIdAndRole(
-            @Param("groupBuyingId") Long groupBuyingId,
-            @Param("role") UserRole role
+            @Param("groupBuyingId") Long groupBuyingId
     );
 
     // 공구에 InComplete 가 존재하는지 체크
