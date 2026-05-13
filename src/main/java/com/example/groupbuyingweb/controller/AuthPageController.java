@@ -34,12 +34,12 @@ public class AuthPageController {
 //        return "myPageTest";
 //    }
 
-    @GetMapping("/auth/mypage/charge")
+    @GetMapping("/mypage/charge")
     public String chargePage() {
         return "pointCharge";
     }
 
-    @GetMapping("/auth/mypage/gb-detail/{participationId}")
+    @GetMapping("/mypage/gb-detail/{participationId}")
     public String participationDetail(@PathVariable Long participationId) {
         return "participationDetail";
     }
