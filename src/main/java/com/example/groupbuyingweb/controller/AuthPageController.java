@@ -17,29 +17,4 @@ public class AuthPageController {
         model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
         return "signupTest";
     }
-
-    @GetMapping("/auth/mypage")
-    public String myPage(Model model) {
-        model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
-
-        return "mypage/myPage";
-    }
-
-//    @GetMapping("/auth/mypage")
-//    public String myPageTest(Model model, HttpSession session) {
-//        model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
-//        String login = (String) session.getAttribute("member_id");
-//        System.out.println(login);
-//        return "myPageTest";
-//    }
-
-    @GetMapping("/mypage/charge")
-    public String chargePage() {
-        return "mypage/pointCharge";
-    }
-
-    @GetMapping("/mypage/gb-detail/{participationId}")
-    public String participationDetail(@PathVariable Long participationId) {
-        return "mypage/participationDetail";
-    }
 }

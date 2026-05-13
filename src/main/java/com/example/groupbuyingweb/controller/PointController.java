@@ -16,14 +16,6 @@ public class PointController {
     @Autowired
     private PointService pointService;
 
-
-//    @GetMapping("/pay")
-//    public ApiResponse<?> payPoint(GroupBuyingParticipationRequest.Send request, HttpSession session){
-//        String userId = (String) session.getAttribute("user_id");
-//        GroupBuyingParticipationResponse.UserResult dto =  pointService.payPoint(userId, request);
-//        return ApiResponse.success(dto); // null -> errorHandler
-//    }
-
 //    @GetMapping("/refund")
 //    public ApiResponse<?> refundPoint(int 사용자id ,int 공구참여id, int 포인트){
 //
