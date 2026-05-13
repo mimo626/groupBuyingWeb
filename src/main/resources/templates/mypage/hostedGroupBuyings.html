@@ -69,6 +69,9 @@
 
         items.forEach(item => {
             const card = document.createElement('article');
+            card.onclick = () => {
+                location.href = `/mypage/gb-detail/${item.participationId}`;
+            };
             card.innerHTML = `
                 <h3>${item.title}</h3>
                 <p>참여 이력 ID: ${item.participationId}</p>

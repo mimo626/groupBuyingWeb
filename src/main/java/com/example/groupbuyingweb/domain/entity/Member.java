@@ -54,14 +54,14 @@ public class Member {
     }
 
     public void decreasePoint(double totalPay) {
-        if (this.point < totalPay){
-            //throw new Exception();
+        if (this.point < totalPay){ // 결제할것이 보유 포인트보다 많으면
+            throw new BusinessException(ErrorCode.INSUFFICIENT_POINT);
         }
         this.point -= totalPay;
     }
 
     public void chargePoint(Double charge) {
-        if (charge == 0.0){ // 충전금액 0 일 때 테스트
+        if (charge <= 0.0){ // 충전금액 0 일 때 테스트
             throw new BusinessException(ErrorCode.TEST_ZERO_POINT);
         }
         this.point += charge;
