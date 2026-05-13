@@ -120,6 +120,11 @@ public class ChatRoomService {
                 .findByChatRoomIdAndUserId(chatRoomId, memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_CHAT_PARTICIPANT));
 
+        // 현재 사용자의 공구 참여 role 조회 (ORGANIZER / PARTICIPANT)
+        GroupBuyingParticipation participation = groupBuyingParticipationRepository
+                .findByGroupBuyingIdAndMemberId(groupBuying.getId(), memberId);
+        String currentUserRole = participation != null ? participation.getRole().name() : null;
+
         // 4. 채팅방의 전체 메시지 목록을 시간 오름차순으로 조회
         List<ChatMessage> messages = chatMessageRepository
                 .findByChatRoomIdOrderByCreateAtAsc(chatRoomId);
@@ -157,8 +162,9 @@ public class ChatRoomService {
                 groupBuying.getTrackingNumber(),
                 groupBuying.getMeetingAt(),
                 groupBuying.getMeetingPlace(),
-                latestMessageId, // 클라이언트가 다음 읽음 처리 기준으로 사용
+                latestMessageId,
                 (int) unreadCount,
+                currentUserRole,
                 messageDtos
         );
     }

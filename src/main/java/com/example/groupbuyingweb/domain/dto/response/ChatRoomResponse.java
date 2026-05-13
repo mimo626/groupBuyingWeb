@@ -38,6 +38,7 @@ public class ChatRoomResponse {
             String meetingLocation,
             Long lastReadMessageId,
             int unreadCount,
+            String currentUserRole,
             List<Message> messages
     ) {}
 
