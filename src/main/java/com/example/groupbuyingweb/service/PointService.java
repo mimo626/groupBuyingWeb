@@ -22,6 +22,8 @@ public class PointService {
 
     @Transactional
     public void payPoint(Member member, GroupBuyingParticipation participation, double unitPrice) {
+        // 0. 결제 유저가 주최자라면 지불 x
+        if (participation.getGroupBuying().getMember().getId().equals(member.getId())) return;
         // 1. 총 결제 금액 계산 = 단가 * 내 신청 수량
         double totalPay = unitPrice * participation.getApplyQuantity();
 
