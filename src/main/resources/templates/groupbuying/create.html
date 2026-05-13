@@ -8,31 +8,50 @@
         body {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
             background-color: #f9f8f5; /* 이미지와 비슷한 따뜻한 배경색 */
-            display: flex;
-            justify-content: center;
-            padding: 20px;
+            /* 기존의 display: flex; justify-content: center; 제거 */
             margin: 0;
+            padding: 0;
         }
 
-        /* 폼 컨테이너 (모바일 화면 크기에 맞춤) */
+        /* 헤더 (상단 네비게이션) - 상단 고정 */
+        .header {
+            background-color: #a0522d;
+            color: white;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            /* 스크롤 시 상단 고정 */
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-logo { font-size: 24px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .header-nav { display: flex; gap: 30px; font-size: 16px; font-weight: 500; }
+        .header-nav span { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        /* 폼 컨테이너 (모바일 화면 크기에 맞춤) - 가운데 정렬 추가 */
         .form-container {
+            margin: 40px auto; /* body 대신 여기서 가운데 정렬 및 상하 여백 */
             width: 100%;
             max-width: 480px;
             background: #ffffff;
             padding: 30px 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-sizing: border-box; /* 패딩이 width에 포함되도록 설정 */
         }
 
         /* 헤더 스타일 */
-        .header {
+        .header2 {
             display: flex;
             align-items: center;
             margin-bottom: 25px;
             font-size: 20px;
             font-weight: bold;
         }
-        .header .close-btn {
+        .header2 .close-btn {
             color: #999;
             font-size: 24px;
             margin-right: 15px;
@@ -127,8 +146,21 @@
 </head>
 <body>
 
+<!-- 상단 헤더 -->
+<header class="header">
+    <div class="header-logo">
+        🌰 도토리 창고
+    </div>
+    <div class="header-nav">
+        <!-- JS로 라우팅 처리하기 위해 id 부여 -->
+        <span id="homeBtn">🏠 홈</span>
+        <span id="chattingBtn">💬 채팅방</span>
+        <span id="myPageBtn">👤 마이</span>
+    </div>
+</header>
+
 <div class="form-container">
-    <div class="header">
+    <div class="header2">
         <a href="javascript:history.back()" class="close-btn">✕</a>
         <span>공구 개설</span>
     </div>
@@ -211,10 +243,22 @@
         <button type="submit" class="btn-submit">공구 개설하기</button>
     </form>
 </div>
+
 <script type="text/javascript"
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
 </script>
 <script type="text/javascript" th:inline="javascript">
+    // 헤더 버튼 라우팅
+    document.getElementById("homeBtn").addEventListener("click", () => {
+        window.location.href = "/group-buying/list";
+    });
+    document.getElementById("chattingBtn").addEventListener("click", () => {
+        window.location.href = "/chat/rooms-test";
+    });
+    document.getElementById("myPageBtn").addEventListener("click", () => {
+        window.location.href = "/auth/mypage";
+    });
+
     // JS 3개 제한 로직
     document.getElementById('imageInput').addEventListener('change', function() {
         if (this.files.length > 3) {
