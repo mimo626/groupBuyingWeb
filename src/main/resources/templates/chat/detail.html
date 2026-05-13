@@ -2,275 +2,559 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>채팅 상세</title>
+    <title>채팅 상세 | 도토리 창고</title>
+    <link rel="stylesheet" href="/css/chat-detail.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 <body>
-
-<h2>채팅 상세</h2>
-<p>현재 로그인된 세션 ID: <strong th:text="${session.loginUserId}"></strong></p>
 <input type="hidden" id="currentUserId" th:value="${session.loginUserId}">
-<p>채팅방 ID: <strong id="roomIdDisplay"></strong></p>
 
-<hr>
-<div id="roomInfo"><p>채팅방 정보 로딩 중...</p></div>
+<main class="chat-detail-page">
+    <section class="chat-detail-shell">
+        <header class="chat-header">
+            <a href="/chat/rooms-test" class="back-btn">‹</a>
 
-<hr>
-<h3>메시지 목록</h3>
-<div id="messageList" style="height:400px; overflow-y:auto; border:1px solid #ccc; padding:8px;">
-    <p>메시지 로딩 중...</p>
+            <div class="chat-header-thumb">🌰</div>
+
+            <div class="chat-header-info">
+                <h1 id="chatRoomTitle">채팅방</h1>
+                <div class="chat-header-meta">
+                    <span id="statusBadge" class="status-badge">로딩 중</span>
+                    <span id="connectionStatus" class="connection-status connecting">연결 중...</span>
+                </div>
+            </div>
+
+            <button type="button" class="more-btn">⋮</button>
+        </header>
+
+        <div id="statusNotice" class="status-notice">
+            채팅방 정보를 불러오는 중입니다.
+        </div>
+
+        <section id="messageList" class="message-list">
+            <div class="empty-message">메시지 로딩 중...</div>
+        </section>
+
+        <section id="actionPanel" class="action-panel"></section>
+
+        <footer class="send-form">
+            <button type="button" class="plus-btn">+</button>
+            <input type="text" id="messageInput" placeholder="메시지를 입력하세요" onkeydown="handleKeyDown(event)">
+            <button type="button" class="send-btn" onclick="sendMessage()">➤</button>
+        </footer>
+    </section>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-box">
+        <div class="modal-icon" id="modalIcon">!</div>
+        <h2 id="modalTitle">알림</h2>
+        <p id="modalMessage">내용을 확인해 주세요.</p>
+
+        <div class="modal-actions" id="modalActions">
+            <button type="button" class="modal-btn cancel" id="modalCancelBtn">취소</button>
+            <button type="button" class="modal-btn confirm" id="modalConfirmBtn">확인</button>
+        </div>
+    </div>
 </div>
-
-<hr>
-<div id="actionPanel"></div>
-
-<div id="sendForm">
-    <input type="text" id="messageInput" placeholder="메시지 입력" size="50" onkeydown="handleKeyDown(event)">
-    <button onclick="sendMessage()">전송</button>
-    <span id="connectionStatus" style="color:red;">연결 중...</span>
-</div>
-
-<hr>
-<a href="/chat/rooms-test">목록으로 돌아가기</a>
-
-<!-- Flatpickr 달력 -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
-
-<!-- SockJS + STOMP -->
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
 <script>
-    const pathParts = window.location.pathname.split('/');
+    const pathParts = window.location.pathname.split("/");
     const roomId = pathParts[pathParts.length - 1];
-    document.getElementById('roomIdDisplay').innerText = roomId;
+    const currentUserId = document.getElementById("currentUserId").value;
 
-    const currentUserId = document.getElementById('currentUserId').value;
     let stompClient = null;
     let groupPurchaseId = null;
+    let modalConfirmAction = null;
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalIcon = document.getElementById("modalIcon");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMessage = document.getElementById("modalMessage");
+    const modalCancelBtn = document.getElementById("modalCancelBtn");
+    const modalConfirmBtn = document.getElementById("modalConfirmBtn");
 
     window.onload = function () {
-        loadChatRoomDetail();
-        connectWebSocket();
+      loadChatRoomDetail();
+      connectWebSocket();
     };
 
-    /* 채팅방 상세 조회  */
     function loadChatRoomDetail() {
-        fetch(`/chat/api/rooms/${roomId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status !== 200) {
-                    alert('오류: ' + data.message);
-                    return;
-                }
-                groupPurchaseId = data.data.groupPurchaseId;
-                renderRoomInfo(data.data);
-                renderActionPanel(data.data);
-                renderMessages(data.data.messages);
-                scrollToBottom();
-            })
-            .catch(err => {
-                document.getElementById('roomInfo').innerHTML = '<p>채팅방 정보를 불러오지 못했습니다.</p>';
-                console.error('loadChatRoomDetail 오류:', err);
-            });
-    }
-
-    function renderRoomInfo(detail) {
-        const statusLabel = {
-            START: '채팅 개설',
-            PURCHASED: '물품 구매 완료',
-            SHIPPING: '배송 중',
-            MEETING_SCHEDULED: '만남 일정 확정',
-            SETTLING: '정산 중',
-            CLOSED: '종료'
-        };
-
-        let rows = `
-            <tr><th>공구 제목</th><td><a href="/group-buying/${detail.groupPurchaseId}">${escapeHtml(detail.groupPurchaseTitle)}</a></td></tr>
-            <tr><th>상태</th><td>${statusLabel[detail.status] || detail.status}</td></tr>
-        `;
-        if (detail.trackingNumber) {
-            rows += `<tr><th>운송장 번호</th><td>${escapeHtml(detail.trackingNumber)}</td></tr>`;
-        }
-        if (detail.meetingAt) {
-            rows += `<tr><th>만남 일정</th><td>${formatDateTime(detail.meetingAt)}</td></tr>`;
-        }
-        if (detail.meetingLocation) {
-            rows += `<tr><th>만남 장소</th><td>${escapeHtml(detail.meetingLocation)}</td></tr>`;
-        }
-        rows += `<tr><th>안읽은 메시지</th><td>${detail.unreadCount}</td></tr>`;
-
-        document.getElementById('roomInfo').innerHTML = `<table border="1" cellpadding="6">${rows}</table>`;
-    }
-
-    function renderMessages(messages) {
-        const container = document.getElementById('messageList');
-        if (!messages || messages.length === 0) {
-            container.innerHTML = '<p>메시지가 없습니다.</p>';
+      fetch(`/chat/api/rooms/${roomId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status !== 200) {
+            openAlertModal("fail", "채팅방 조회 실패", data.message || "채팅방 정보를 불러오지 못했습니다.");
             return;
-        }
-        container.innerHTML = messages.map(buildMessageHTML).join('');
-    }
+          }
 
-    /*  WebSocket 연결  */
-    function connectWebSocket() {
-        const socket = new SockJS('/ws-chat');
-        stompClient = Stomp.over(socket);
-        stompClient.debug = null;
-
-        stompClient.connect({}, function () {
-            document.getElementById('connectionStatus').innerText = '연결됨';
-            document.getElementById('connectionStatus').style.color = 'green';
-
-            stompClient.subscribe(`/topic/chat/room/${roomId}`, function (frame) {
-                const msg = JSON.parse(frame.body);
-                appendMessage(msg);
-                scrollToBottom();
-            });
-        }, function (error) {
-            document.getElementById('connectionStatus').innerText = '연결 끊김';
-            document.getElementById('connectionStatus').style.color = 'red';
-            console.error('WebSocket 오류:', error);
+          groupPurchaseId = data.data.groupPurchaseId;
+          renderRoomHeader(data.data);
+          renderStatusNotice(data.data);
+          renderActionPanel(data.data);
+          renderMessages(data.data.messages);
+          scrollToBottom();
+        })
+        .catch(err => {
+          console.error("loadChatRoomDetail 오류:", err);
+          openAlertModal("fail", "서버 통신 오류", "채팅방 정보를 불러오는 중 문제가 발생했습니다.");
         });
     }
 
-    /* 메시지 전송 */
-    function sendMessage() {
-        const input = document.getElementById('messageInput');
-        const content = input.value.trim();
-        if (!content) return;
-        if (!stompClient || !stompClient.connected) {
-            alert('WebSocket이 연결되지 않았습니다. 잠시 후 다시 시도해주세요.');
-            return;
+    function renderRoomHeader(detail) {
+      document.getElementById("chatRoomTitle").innerText = detail.groupPurchaseTitle || "공동구매 채팅방";
+      document.getElementById("statusBadge").innerText = getStatusText(detail.status);
+    }
+
+    function renderStatusNotice(detail) {
+      const notice = document.getElementById("statusNotice");
+      const status = detail.status;
+
+      if (status === "START") {
+        notice.innerHTML = `✅ 공구가 시작되었습니다.`;
+        return;
+      }
+
+      if (status === "PURCHASED") {
+        notice.innerHTML = `✅ 공구 주최자가 상품 구매를 완료했습니다.`;
+        return;
+      }
+
+      if (status === "SHIPPING") {
+        notice.innerHTML = `📦 배송이 시작되었습니다.${detail.trackingNumber ? " 운송장 번호: " + escapeHtml(detail.trackingNumber) : ""}`;
+        return;
+      }
+
+      if (status === "MEETING_SCHEDULED") {
+        notice.innerHTML = `📍 만남 일정이 등록되었습니다.${detail.meetingAt ? " " + formatDateTime(detail.meetingAt) : ""}`;
+        return;
+      }
+
+      if (status === "SETTLING") {
+        notice.innerHTML = `💰 정산이 진행 중입니다.`;
+        return;
+      }
+
+      if (status === "CLOSED") {
+        notice.innerHTML = `✅ 공동구매가 종료되었습니다.`;
+        return;
+      }
+
+      notice.innerHTML = `현재 상태: ${escapeHtml(status || "상태 없음")}`;
+    }
+
+    function renderMessages(messages) {
+      const container = document.getElementById("messageList");
+
+      if (!messages || messages.length === 0) {
+        container.innerHTML = `<div class="empty-message">메시지가 없습니다.</div>`;
+        return;
+      }
+
+      let html = "";
+      let lastDateKey = "";
+
+      messages.forEach(message => {
+        const currentDateKey = getDateKey(message.sentAt);
+
+        if (currentDateKey && currentDateKey !== lastDateKey) {
+          html += `<div class="date-divider">${formatDateOnly(message.sentAt)}</div>`;
+          lastDateKey = currentDateKey;
         }
-        stompClient.send(
-            `/app/chat/room/${roomId}`,
-            {},
-            JSON.stringify({ content: content })
-        );
-        input.value = '';
-    }
 
-    function handleKeyDown(e) {
-        if (e.key === 'Enter') sendMessage();
-    }
+        html += buildMessageHTML(message);
+      });
 
-    /*  메시지 렌더링 헬퍼 */
-    function appendMessage(msg) {
-        const container = document.getElementById('messageList');
-        const placeholder = container.querySelector('p');
-        if (placeholder) placeholder.remove();
-
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = buildMessageHTML(msg);
-        container.appendChild(wrapper.firstElementChild);
+      container.innerHTML = html;
     }
 
     function buildMessageHTML(msg) {
-        if (msg.messageType === 'SYSTEM') {
-            return `<div style="text-align:center; color:#888; margin:6px 0;"><em>${escapeHtml(msg.content)}</em></div>`;
-        }
+      if (msg.messageType === "SYSTEM") {
+        return `
+          <div class="system-message">
+            ${escapeHtml(msg.content)}
+          </div>
+        `;
+      }
 
-        const isMine = msg.senderId === currentUserId;
-        const align = isMine ? 'right' : 'left';
-        const senderLabel = isMine ? '나' : (msg.senderNickname || shortenId(msg.senderId));
+      const isMine = String(msg.senderId) === String(currentUserId);
+      const senderLabel = isMine ? "나" : (msg.senderNickname || shortenId(msg.senderId));
+      const messageClass = isMine ? "message-row mine" : "message-row other";
 
-        return `<div style="text-align:${align}; margin:4px 0;">
-                    <div style="font-size:0.8em; color:#555;">${escapeHtml(senderLabel)}</div>
-                    <div>${escapeHtml(msg.content)}</div>
-                    <div style="font-size:0.75em; color:#999;">${formatDateTime(msg.sentAt)}</div>
-                </div>`;
+      return `
+        <div class="${messageClass}">
+          <div class="message-meta">
+            <span class="sender-name">${escapeHtml(senderLabel)}</span>
+          </div>
+          <div class="message-bubble-wrap">
+            <div class="message-bubble">${escapeHtml(msg.content)}</div>
+            <span class="message-time">${formatTimeOnly(msg.sentAt)}</span>
+          </div>
+        </div>
+      `;
     }
 
-    /* 액션 패널 */
+    function connectWebSocket() {
+      const socket = new SockJS("/ws-chat");
+      stompClient = Stomp.over(socket);
+      stompClient.debug = null;
+
+      stompClient.connect({}, function () {
+        const status = document.getElementById("connectionStatus");
+        status.innerText = "연결됨";
+        status.className = "connection-status connected";
+
+        stompClient.subscribe(`/topic/chat/room/${roomId}`, function (frame) {
+          const msg = JSON.parse(frame.body);
+          appendMessage(msg);
+          scrollToBottom();
+        });
+      }, function (error) {
+        const status = document.getElementById("connectionStatus");
+        status.innerText = "연결 끊김";
+        status.className = "connection-status disconnected";
+        console.error("WebSocket 오류:", error);
+      });
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const content = input.value.trim();
+
+      if (!content) {
+        return;
+      }
+
+      if (!stompClient || !stompClient.connected) {
+        openAlertModal("fail", "연결 오류", "채팅 서버가 연결되지 않았습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+
+      stompClient.send(
+        `/app/chat/room/${roomId}`,
+        {},
+        JSON.stringify({ content: content })
+      );
+
+      input.value = "";
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Enter") {
+        sendMessage();
+      }
+    }
+
+    function appendMessage(msg) {
+      const container = document.getElementById("messageList");
+      const emptyMessage = container.querySelector(".empty-message");
+
+      if (emptyMessage) {
+        emptyMessage.remove();
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = buildMessageHTML(msg);
+      container.appendChild(wrapper.firstElementChild);
+    }
+
     function renderActionPanel(detail) {
-        const panel = document.getElementById('actionPanel');
-        const { status, currentUserRole } = detail;
-        let html = '';
+      const panel = document.getElementById("actionPanel");
+      const status = detail.status;
+      const currentUserRole = detail.currentUserRole;
 
-        if (status === 'START' && currentUserRole === 'ORGANIZER') {
-            html = `<button onclick="updateStatus('PURCHASED')">상품 구매 완료</button>`;
-        } else if (status === 'PURCHASED' && currentUserRole === 'ORGANIZER') {
-            html = `
-                <input type="text" id="trackingInput" placeholder="운송장 번호 입력" size="30">
-                <button onclick="submitTracking()">배송 시작</button>`;
-        } else if (status === 'SHIPPING' && currentUserRole === 'ORGANIZER') {
-            html = `
-                <label>만남 일정: <input type="text" id="meetingAtInput" placeholder="날짜 및 시간 선택" readonly style="cursor:pointer; width:180px;"></label>
-                <button onclick="submitMeeting()">만남 일정 등록</button>`;
+      if (currentUserRole !== "ORGANIZER") {
+        panel.innerHTML = "";
+        return;
+      }
+
+      if (status === "START") {
+        panel.innerHTML = `
+          <button type="button" class="primary-action-btn" onclick="confirmPurchaseComplete()">
+            상품 구매 완료
+          </button>
+        `;
+        return;
+      }
+
+      if (status === "PURCHASED") {
+        panel.innerHTML = `
+          <div class="action-guide">📦 운송장 번호를 입력해 주세요.</div>
+
+          <select id="deliveryCompanySelect" class="action-input">
+            <option value="">택배사를 선택하세요</option>
+            <option value="CJ대한통운">CJ대한통운</option>
+            <option value="우체국택배">우체국택배</option>
+            <option value="한진택배">한진택배</option>
+            <option value="롯데택배">롯데택배</option>
+            <option value="로젠택배">로젠택배</option>
+          </select>
+
+          <input type="text" id="trackingInput" class="action-input" placeholder="운송장 번호를 입력하세요" oninput="checkTrackingForm()">
+
+          <button type="button" id="trackingSubmitBtn" class="primary-action-btn disabled" onclick="confirmTrackingSubmit()" disabled>
+            등록하기
+          </button>
+        `;
+        return;
+      }
+
+      if (status === "SHIPPING") {
+        panel.innerHTML = `
+          <div class="action-guide">📅 만남 일정을 입력해 주세요.</div>
+
+          <input type="text" id="meetingAtInput" class="action-input" placeholder="만남 날짜와 시간을 선택하세요" readonly>
+
+          <button type="button" id="meetingSubmitBtn" class="primary-action-btn disabled" onclick="confirmMeetingSubmit()" disabled>
+            일정 등록
+          </button>
+        `;
+
+        flatpickr("#meetingAtInput", {
+          locale: "ko",
+          enableTime: true,
+          dateFormat: "Y-m-dTH:i:S",
+          altInput: true,
+          altFormat: "Y년 m월 d일 H시 i분",
+          minDate: "today",
+          time_24hr: true,
+          minuteIncrement: 10,
+          onChange: function () {
+            checkMeetingForm();
+          }
+        });
+
+        return;
+      }
+
+      panel.innerHTML = "";
+    }
+
+    function checkTrackingForm() {
+      const deliveryCompany = document.getElementById("deliveryCompanySelect").value;
+      const trackingNumber = document.getElementById("trackingInput").value.trim();
+      const button = document.getElementById("trackingSubmitBtn");
+
+      if (deliveryCompany && trackingNumber) {
+        button.disabled = false;
+        button.classList.remove("disabled");
+        return;
+      }
+
+      button.disabled = true;
+      button.classList.add("disabled");
+    }
+
+    function checkMeetingForm() {
+      const meetingAt = document.getElementById("meetingAtInput").value;
+      const button = document.getElementById("meetingSubmitBtn");
+
+      if (meetingAt) {
+        button.disabled = false;
+        button.classList.remove("disabled");
+        return;
+      }
+
+      button.disabled = true;
+      button.classList.add("disabled");
+    }
+
+    function confirmPurchaseComplete() {
+      openConfirmModal(
+        "상품 구매 완료",
+        "공동구매 상품을 구매 완료 처리하시겠습니까?",
+        function () {
+          updateStatus("PURCHASED");
         }
+      );
+    }
 
-        panel.innerHTML = html;
+    function confirmTrackingSubmit() {
+      const trackingNumber = document.getElementById("trackingInput").value.trim();
 
-        if (status === 'SHIPPING' && currentUserRole === 'ORGANIZER') {
-            flatpickr('#meetingAtInput', {
-                locale: 'ko',
-                enableTime: true,
-                dateFormat: 'Y-m-dTH:i:S',
-                altInput: true,
-                altFormat: 'Y년 m월 d일 H:i',
-                minDate: 'today',
-                time_24hr: true
-            });
+      if (!trackingNumber) {
+        openAlertModal("fail", "입력값 확인", "운송장 번호를 입력해 주세요.");
+        return;
+      }
+
+      openConfirmModal(
+        "배송 시작",
+        "운송장 번호를 등록하고 배송 중 상태로 변경하시겠습니까?",
+        function () {
+          updateStatus("SHIPPING", { trackingNumber: trackingNumber });
         }
+      );
+    }
+
+    function confirmMeetingSubmit() {
+      const meetingAt = document.getElementById("meetingAtInput").value;
+
+      if (!meetingAt) {
+        openAlertModal("fail", "입력값 확인", "만남 일정을 선택해 주세요.");
+        return;
+      }
+
+      openConfirmModal(
+        "만남 일정 등록",
+        "만남 일정을 등록하시겠습니까?",
+        function () {
+          updateStatus("MEETING_SCHEDULED", { meetingAt: meetingAt });
+        }
+      );
     }
 
     function updateStatus(status, extra = {}) {
-        fetch(`/group-buying/${groupPurchaseId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status, ...extra })
-        })
+      fetch(`/group-buying/${groupPurchaseId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, ...extra })
+      })
         .then(res => res.json())
         .then(data => {
-            if (data.status === 200) {
-                location.reload();
-            } else {
-                alert('오류: ' + data.message);
-            }
+          if (data.status === 200) {
+            location.reload();
+            return;
+          }
+
+          openAlertModal("fail", "상태 변경 실패", data.message || "상태 변경을 처리하지 못했습니다.");
         })
-        .catch(err => console.error('상태 변경 오류:', err));
+        .catch(err => {
+          console.error("상태 변경 오류:", err);
+          openAlertModal("fail", "서버 통신 오류", "상태 변경 중 문제가 발생했습니다.");
+        });
     }
 
-    function submitTracking() {
-        const trackingNumber = document.getElementById('trackingInput').value.trim();
-        if (!trackingNumber) { alert('운송장 번호를 입력해주세요.'); return; }
-        updateStatus('SHIPPING', { trackingNumber });
+    function openAlertModal(type, title, message) {
+      modalIcon.className = "modal-icon " + type;
+      modalIcon.textContent = type === "success" ? "✓" : "!";
+      modalTitle.innerText = title;
+      modalMessage.innerText = message;
+      modalConfirmAction = null;
+
+      modalCancelBtn.style.display = "none";
+      modalConfirmBtn.innerText = "확인";
+      modalBackdrop.classList.add("is-open");
     }
 
-    function submitMeeting() {
-        const meetingAt = document.getElementById('meetingAtInput').value;
-        if (!meetingAt) { alert('만남 일정을 선택해주세요.'); return; }
-        updateStatus('MEETING_SCHEDULED', { meetingAt });
+    function openConfirmModal(title, message, confirmAction) {
+      modalIcon.className = "modal-icon confirm-icon";
+      modalIcon.textContent = "?";
+      modalTitle.innerText = title;
+      modalMessage.innerText = message;
+      modalConfirmAction = confirmAction;
+
+      modalCancelBtn.style.display = "block";
+      modalConfirmBtn.innerText = "확인";
+      modalBackdrop.classList.add("is-open");
     }
 
-    /* 유틸 */
+    function closeModal() {
+      modalBackdrop.classList.remove("is-open");
+      modalConfirmAction = null;
+    }
+
+    modalCancelBtn.addEventListener("click", closeModal);
+
+    modalConfirmBtn.addEventListener("click", function () {
+      if (modalConfirmAction) {
+        const action = modalConfirmAction;
+        closeModal();
+        action();
+        return;
+      }
+
+      closeModal();
+    });
+
+    modalBackdrop.addEventListener("click", function (event) {
+      if (event.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+
     function scrollToBottom() {
-        const c = document.getElementById('messageList');
-        c.scrollTop = c.scrollHeight;
+      const container = document.getElementById("messageList");
+      container.scrollTop = container.scrollHeight;
     }
 
-    function formatDateTime(str) {
-        if (!str) return '';
-        return new Date(str).toLocaleString('ko-KR');
+    function getStatusText(status) {
+      const statusLabel = {
+        START: "채팅 개설",
+        PURCHASED: "물품 구매 완료",
+        SHIPPING: "배송 중",
+        MEETING_SCHEDULED: "만남 일정 확정",
+        SETTLING: "정산 중",
+        CLOSED: "종료"
+      };
+
+      return statusLabel[status] || status || "상태 없음";
+    }
+
+    function formatDateTime(value) {
+      if (!value) {
+        return "";
+      }
+
+      return new Date(value).toLocaleString("ko-KR");
+    }
+
+    function formatTimeOnly(value) {
+      if (!value) {
+        return "";
+      }
+
+      return new Date(value).toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function formatDateOnly(value) {
+      if (!value) {
+        return "";
+      }
+
+      return new Date(value).toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    function getDateKey(value) {
+      if (!value) {
+        return "";
+      }
+
+      const date = new Date(value);
+      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     }
 
     function shortenId(id) {
-        if (!id) return '알 수 없음';
-        return id.length > 8 ? id.substring(0, 8) + '…' : id;
+      if (!id) {
+        return "알 수 없음";
+      }
+
+      return id.length > 8 ? id.substring(0, 8) + "…" : id;
     }
 
-    // 채팅 입력을 HTML에 직접 삽입할 때, XSS 공격 방지
-    function escapeHtml(str) {
-        if (str == null) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+    function escapeHtml(value) {
+      if (value == null) {
+        return "";
+      }
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
 </script>
-
 </body>
 </html>
