@@ -164,7 +164,7 @@
 
         const isMine = msg.senderId === currentUserId;
         const align = isMine ? 'right' : 'left';
-        const senderLabel = isMine ? '나' : shortenId(msg.senderId);
+        const senderLabel = isMine ? '나' : (msg.senderNickname || shortenId(msg.senderId));
 
         return `<div style="text-align:${align}; margin:4px 0;">
                     <div style="font-size:0.8em; color:#555;">${escapeHtml(senderLabel)}</div>
