@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입 | 도토리 창고</title>
+  <link rel="stylesheet" href="/css/signup.css">
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+<main class="signup-page">
+  <section class="signup-card">
+    <div class="signup-header">
+      <div class="signup-logo">🌰</div>
+      <h1>회원가입</h1>
+      <p>
+        동네 공동구매를 시작하기 위해<br>
+        필요한 정보를 입력해 주세요.
+      </p>
+    </div>
+
+    <div class="form-section">
+      <h2>기본 정보</h2>
+
+      <div class="form-group with-button">
+        <label for="loginId">아이디</label>
+        <div class="input-button-row">
+          <input type="text" id="loginId" placeholder="아이디 입력">
+          <button type="button" class="sub-btn" onclick="checkLoginId()">중복확인</button>
+        </div>
+        <p id="loginIdResult" class="message"></p>
+      </div>
+
+      <div class="form-group with-button">
+        <label for="nickname">닉네임</label>
+        <div class="input-button-row">
+          <input type="text" id="nickname" placeholder="닉네임 입력">
+          <button type="button" class="sub-btn" onclick="checkNickname()">중복확인</button>
+        </div>
+        <p id="nicknameResult" class="message"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" placeholder="비밀번호 입력" oninput="checkPasswordMatch()">
+      </div>
+
+      <div class="form-group">
+        <label for="passwordConfirm">비밀번호 확인</label>
+        <input type="password" id="passwordConfirm" placeholder="비밀번호 다시 입력" oninput="checkPasswordMatch()">
+        <p id="passwordMatchResult" class="message"></p>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>주소 정보</h2>
+
+      <button type="button" class="address-btn" onclick="openAddressPopup()">주소 선택하기</button>
+
+      <div class="form-group">
+        <label for="address">주소</label>
+        <input type="text" id="address" placeholder="주소 선택 시 자동 입력됩니다." readonly>
+      </div>
+
+      <input type="hidden" id="entX">
+      <input type="hidden" id="entY">
+    </div>
+
+    <div class="form-section">
+      <h2>약관 동의</h2>
+
+      <div class="terms-list">
+        <div class="terms-item">
+          <label>
+            <input type="checkbox" id="termsServiceAgreed">
+            <span>서비스 이용약관에 동의합니다. <strong>(필수)</strong></span>
+          </label>
+          <button type="button" class="terms-detail-btn" onclick="openTermsModal('service')">상세보기</button>
+        </div>
+
+        <div class="terms-item">
+          <label>
+            <input type="checkbox" id="termsPrivacyAgreed">
+            <span>개인정보 수집 및 이용에 동의합니다. <strong>(필수)</strong></span>
+          </label>
+          <button type="button" class="terms-detail-btn" onclick="openTermsModal('privacy')">상세보기</button>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="signup-btn" onclick="signup()">회원가입</button>
+
+    <div class="login-area">
+      이미 계정이 있나요?
+      <a href="/auth/login.html">로그인</a>
+    </div>
+  </section>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal-box">
+    <div class="modal-icon" id="modalIcon">✓</div>
+    <h2 id="modalTitle">알림</h2>
+    <p id="modalMessage">처리 결과를 확인해 주세요.</p>
+
+    <div class="modal-actions">
+      <button type="button" class="modal-btn confirm" id="modalConfirmBtn">확인</button>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  const kakaoJavaScriptKey = /*[[${kakaoJavaScriptKey}]]*/ "";
+  let addressGeocoder = null;
+  let kakaoSdkReadyPromise = null;
+  let modalConfirmAction = null;
+
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalIcon = document.getElementById("modalIcon");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalMessage = document.getElementById("modalMessage");
+  const modalConfirmBtn = document.getElementById("modalConfirmBtn");
+
+  function renderResult(data) {
+      console.log(data);
+  }
+
+  function openModal(type, title, message, confirmAction) {
+      modalIcon.className = "modal-icon " + type;
+      modalIcon.textContent = type === "success" ? "✓" : "!";
+      modalTitle.textContent = title;
+      modalMessage.innerText = message;
+      modalConfirmAction = confirmAction || null;
+      modalBackdrop.classList.add("is-open");
+  }
+
+  function closeModal() {
+      modalBackdrop.classList.remove("is-open");
+      modalConfirmAction = null;
+  }
+
+  modalConfirmBtn.addEventListener("click", function() {
+      if (modalConfirmAction) {
+          modalConfirmAction();
+          return;
+      }
+
+      closeModal();
+  });
+
+  function openTermsModal(type) {
+      if (type === "service") {
+          openModal(
+              "info",
+              "서비스 이용약관",
+              "도토리 창고는 동네 기반 공동구매 서비스를 제공합니다.\n\n회원은 정확한 정보를 입력해야 하며, 타인의 정보를 도용하거나 허위 정보를 등록해서는 안 됩니다.\n\n공동구매 게시글 작성, 참여, 채팅 등 서비스 이용 과정에서 다른 회원에게 피해를 주는 행위는 제한될 수 있습니다.\n\n회원은 서비스 이용 중 발생하는 거래 내용과 약속을 성실하게 지켜야 하며, 부정 이용이 확인될 경우 서비스 이용이 제한될 수 있습니다."
+          );
+          return;
+      }
+
+      openModal(
+          "info",
+          "개인정보 수집 및 이용 동의",
+          "도토리 창고는 회원가입과 서비스 제공을 위해 아이디, 비밀번호, 닉네임, 주소, 위치 좌표 정보를 수집합니다.\n\n주소와 위치 좌표는 사용자의 기준 주소와 주변 동네를 계산하기 위해 사용됩니다.\n\n수집된 개인정보는 회원 관리, 로그인 처리, 공동구매 서비스 제공, 사용자 주변 주소 설정 목적으로만 사용됩니다.\n\n회원은 개인정보 수집 및 이용에 동의하지 않을 수 있으나, 필수 정보 수집에 동의하지 않으면 회원가입이 제한될 수 있습니다."
+      );
+  }
+
+  function setMessage(elementId, text, type) {
+      const element = document.getElementById(elementId);
+      element.innerText = text;
+      element.className = "message " + type;
+  }
+
+  function loadKakaoMapSdk() {
+      if (kakaoSdkReadyPromise) {
+          return kakaoSdkReadyPromise;
+      }
+
+      kakaoSdkReadyPromise = new Promise(function(resolve, reject) {
+          if (!kakaoJavaScriptKey) {
+              reject(new Error("카카오 JavaScript 키가 비어 있습니다."));
+              return;
+          }
+
+          if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+              addressGeocoder = new kakao.maps.services.Geocoder();
+              resolve(addressGeocoder);
+              return;
+          }
+
+          const script = document.createElement("script");
+          script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey="
+                  + encodeURIComponent(kakaoJavaScriptKey)
+                  + "&libraries=services&autoload=false";
+
+          script.onload = function() {
+              if (!window.kakao || !kakao.maps) {
+                  reject(new Error("카카오 지도 SDK가 정상적으로 로드되지 않았습니다."));
+                  return;
+              }
+
+              kakao.maps.load(function() {
+                  if (!kakao.maps.services) {
+                      reject(new Error("카카오 services 라이브러리가 로드되지 않았습니다."));
+                      return;
+                  }
+
+                  addressGeocoder = new kakao.maps.services.Geocoder();
+                  console.log("카카오 지도 SDK 로드 완료");
+                  resolve(addressGeocoder);
+              });
+          };
+
+          script.onerror = function() {
+              reject(new Error("카카오 지도 SDK 스크립트 로드에 실패했습니다."));
+          };
+
+          document.head.appendChild(script);
+      });
+
+      return kakaoSdkReadyPromise;
+  }
+
+  window.addEventListener("load", function() {
+      loadKakaoMapSdk().catch(function(error) {
+          console.error(error);
+          openModal("fail", "카카오 지도 오류", error.message);
+      });
+  });
+
+  function checkPasswordMatch() {
+      const password = document.getElementById("password").value;
+      const passwordConfirm = document.getElementById("passwordConfirm").value;
+
+      if (!password && !passwordConfirm) {
+          setMessage("passwordMatchResult", "", "");
+          return false;
+      }
+
+      if (!passwordConfirm) {
+          setMessage("passwordMatchResult", "비밀번호 확인값을 입력해주세요.", "fail");
+          return false;
+      }
+
+      if (password === passwordConfirm) {
+          setMessage("passwordMatchResult", "비밀번호가 일치합니다.", "success");
+          return true;
+      }
+
+      setMessage("passwordMatchResult", "비밀번호가 일치하지 않습니다.", "fail");
+      return false;
+  }
+
+  async function checkLoginId() {
+      const loginId = document.getElementById("loginId").value.trim();
+
+      if (!loginId) {
+          setMessage("loginIdResult", "아이디를 입력해 주세요.", "fail");
+          return;
+      }
+
+      const response = await fetch(`/auth/login-id/check?loginId=${encodeURIComponent(loginId)}`);
+      const data = await response.json();
+
+      renderResult(data);
+
+      if (data.status !== 200 || !data.data) {
+          setMessage("loginIdResult", data.message, "fail");
+          return;
+      }
+
+      if (data.data.available) {
+          setMessage("loginIdResult", "사용 가능한 아이디입니다.", "success");
+      } else {
+          setMessage("loginIdResult", "이미 사용 중인 아이디입니다.", "fail");
+      }
+  }
+
+  async function checkNickname() {
+      const nickname = document.getElementById("nickname").value.trim();
+
+      if (!nickname) {
+          setMessage("nicknameResult", "닉네임을 입력해 주세요.", "fail");
+          return;
+      }
+
+      const response = await fetch(`/auth/nickname/check?nickname=${encodeURIComponent(nickname)}`);
+      const data = await response.json();
+
+      renderResult(data);
+
+      if (data.status !== 200 || !data.data) {
+          setMessage("nicknameResult", data.message, "fail");
+          return;
+      }
+
+      if (data.data.available) {
+          setMessage("nicknameResult", "사용 가능한 닉네임입니다.", "success");
+      } else {
+          setMessage("nicknameResult", "이미 사용 중인 닉네임입니다.", "fail");
+      }
+  }
+
+  function openAddressPopup() {
+      if (!window.daum || !daum.Postcode) {
+          openModal("fail", "주소 서비스 오류", "다음 우편번호 서비스가 정상적으로 로드되지 않았습니다.");
+          return;
+      }
+
+      new daum.Postcode({
+          oncomplete: async function(data) {
+              const selectedAddress = data.roadAddress || data.jibunAddress || data.address;
+
+              if (!selectedAddress) {
+                  openModal("fail", "주소 선택 오류", "선택된 주소가 없습니다.");
+                  return;
+              }
+
+              document.getElementById("address").value = selectedAddress;
+              document.getElementById("entX").value = "";
+              document.getElementById("entY").value = "";
+
+              try {
+                  const geocoder = await loadKakaoMapSdk();
+
+                  geocoder.addressSearch(selectedAddress, function(result, status) {
+                      if (status !== kakao.maps.services.Status.OK || result.length === 0) {
+                          openModal("fail", "좌표 변환 실패", "선택한 주소의 좌표를 찾을 수 없습니다.");
+                          document.getElementById("entX").value = "";
+                          document.getElementById("entY").value = "";
+                          return;
+                      }
+
+                      document.getElementById("entX").value = result[0].x;
+                      document.getElementById("entY").value = result[0].y;
+                  });
+              } catch (error) {
+                  console.error(error);
+                  openModal("fail", "카카오 지도 오류", error.message);
+                  document.getElementById("entX").value = "";
+                  document.getElementById("entY").value = "";
+              }
+          }
+      }).open();
+  }
+
+  async function signup() {
+      const loginId = document.getElementById("loginId").value.trim();
+      const password = document.getElementById("password").value;
+      const passwordConfirm = document.getElementById("passwordConfirm").value;
+      const nickname = document.getElementById("nickname").value.trim();
+      const termsServiceAgreed = document.getElementById("termsServiceAgreed").checked;
+      const termsPrivacyAgreed = document.getElementById("termsPrivacyAgreed").checked;
+      const address = document.getElementById("address").value;
+      const entX = document.getElementById("entX").value;
+      const entY = document.getElementById("entY").value;
+
+      if (!loginId || !nickname || !password || !passwordConfirm) {
+          openModal("fail", "입력값 확인", "아이디, 닉네임, 비밀번호를 모두 입력해 주세요.");
+          return;
+      }
+
+      if (!checkPasswordMatch()) {
+          openModal("fail", "비밀번호 확인", "비밀번호와 비밀번호 확인값을 확인해 주세요.");
+          return;
+      }
+
+      if (!address || !entX || !entY) {
+          openModal("fail", "주소 선택 필요", "주소를 선택한 뒤 회원가입을 진행해 주세요.");
+          return;
+      }
+
+      if (!termsServiceAgreed || !termsPrivacyAgreed) {
+          openModal("fail", "약관 동의 필요", "필수 약관 2개에 모두 동의해야 회원가입을 진행할 수 있습니다.");
+          return;
+      }
+
+      const request = {
+          loginId: loginId,
+          password: password,
+          passwordConfirm: passwordConfirm,
+          nickname: nickname,
+          termsAgreed: termsServiceAgreed && termsPrivacyAgreed,
+          address: address,
+          entX: Number(entX),
+          entY: Number(entY)
+      };
+
+      try {
+          const response = await fetch("/auth/signup", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify(request)
+          });
+
+          const data = await response.json();
+          renderResult(data);
+
+          if (data.status === 200 || data.status === 201) {
+              openModal(
+                  "success",
+                  "회원가입 완료",
+                  "회원가입이 완료되었습니다. 로그인 화면으로 이동합니다.",
+                  function() {
+                      window.location.href = "/auth/login.html";
+                  }
+              );
+              return;
+          }
+
+          openModal(
+              "fail",
+              "회원가입 실패",
+              data.message || "회원가입 요청을 처리하지 못했습니다."
+          );
+
+      } catch (error) {
+          console.error("회원가입 요청 중 오류 발생:", error);
+          openModal("fail", "서버 통신 오류", "서버와 통신하는 중 문제가 발생했습니다.");
+      }
+  }
+</script>
+</body>
+</html>
