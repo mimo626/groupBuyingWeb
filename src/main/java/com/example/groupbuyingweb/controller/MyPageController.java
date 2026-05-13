@@ -99,7 +99,7 @@ public class MyPageController {
             HttpSession session) {
         String memberId = loginSessionManager.requireLoginUserId(session);
         MyPageResponse.MyParticipationDetail dto =
-                myPageService.getParticipationDetail(memberId, participationId);
+                myPageService.getParticipationDetail(participationId);
         return ApiResponse.success(dto);
     }
 

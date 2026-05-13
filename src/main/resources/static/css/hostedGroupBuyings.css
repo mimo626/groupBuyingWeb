@@ -1,0 +1,211 @@
+/* 전역 설정 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: #FFFBF7; /* 마이페이지 배경색 일치 */
+    color: #333;
+}
+
+/* 상단 네비게이션 (도토리 창고 헤더) */
+.top-nav {
+    background-color: #B25A2C;
+    color: white;
+    padding: 15px 0;
+}
+
+.nav-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.nav-content h1 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.back-btn {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* 메인 컨테이너 */
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* 페이지 제목 & 상태 버튼 영역 */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end; /* 제목과 버튼들의 하단 라인 맞춤 */
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-arrow {
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+}
+
+/* 우측 상단 상태 필터 버튼 */
+.status-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.status-btn {
+    padding: 6px 14px;
+    border: 1px solid #E0E0E0;
+    background-color: #FFF;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.2s ease-in-out;
+}
+
+.status-btn:hover {
+    background-color: #f9f9f9;
+}
+
+.status-btn.active {
+    background-color: #B25A2C; /* 브랜드 메인 컬러 */
+    color: white;
+    border-color: #B25A2C;
+    font-weight: 600;
+}
+
+/* 빈 목록 상태 */
+.empty-state {
+    text-align: center;
+    padding: 60px 0;
+    color: #888;
+    background-color: #FFF;
+    border-radius: 12px;
+    border: 1px solid #EFEFEF;
+}
+
+/* 공구 리스트 카드 UI */
+.gb-card {
+    background: #FFFFFF;
+    border: 1px solid #F0F0F0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gb-card:hover {
+    border-color: #D6C4B8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* 상태 뱃지 (피그마 민트색상) */
+.status-badge {
+    background-color: #E6F4EA;
+    color: #1E8E3E;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.arrow-icon {
+    color: #ccc;
+    font-size: 14px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    margin: 0 0 6px 0;
+}
+
+.deadline {
+    color: #999;
+    font-size: 13px;
+    margin: 0 0 16px 0;
+}
+
+/* 가격 및 수량 정보 한 줄 처리 */
+.info-row {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: #555;
+}
+
+.price {
+    color: #D84315; /* 피그마 붉은 톤 */
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.divider {
+    color: #E0E0E0;
+    margin: 0 10px;
+    font-size: 12px;
+}
+
+/* 진행률 바 영역 */
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.progress-bar {
+    flex-grow: 1;
+    height: 6px;
+    background-color: #F0F0F0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #A67B5B; /* 피그마 갈색 톤 */
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.progress-text {
+    font-size: 13px;
+    color: #888;
+    min-width: 65px;
+    text-align: right;
+}

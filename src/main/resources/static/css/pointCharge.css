@@ -1,0 +1,198 @@
+/* 전역 설정 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: #FFFBF7; /* 마이페이지 베이지 톤 배경 */
+    color: #333;
+}
+
+/* 상단 네비게이션바 */
+.top-nav {
+    background-color: #B25A2C;
+    color: white;
+    padding: 15px 0;
+}
+
+.nav-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+#logo {
+    font-size: 18px;
+    margin: 0;
+}
+
+#gnb-list {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+#gnb-list a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+#gnb-list a:hover {
+    opacity: 0.8;
+}
+
+/* 메인 컨테이너 */
+.container {
+    max-width: 500px; /* 결제 폼은 너무 넓지 않게 제한 */
+    margin: 50px auto;
+    padding: 0 20px;
+}
+
+/* 페이지 헤더 */
+.page-header {
+    margin-bottom: 24px;
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-arrow {
+    cursor: pointer;
+    font-size: 20px;
+    color: #555;
+    transition: color 0.2s;
+}
+
+.back-arrow:hover {
+    color: #B25A2C;
+}
+
+/* 포인트 충전 카드 영역 */
+.charge-card {
+    background: #FFFFFF;
+    border: 1px solid #F0F0F0;
+    border-radius: 16px;
+    padding: 40px 30px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    text-align: center;
+}
+
+.charge-header {
+    margin-bottom: 40px;
+}
+
+.charge-header h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 8px;
+}
+
+.charge-header p {
+    font-size: 14px;
+    color: #888;
+}
+
+/* 금액 입력 필드 */
+.input-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px solid #E0E0E0;
+    padding-bottom: 10px;
+    width: 80%;
+    margin: 0 auto;
+    transition: border-color 0.3s ease;
+}
+
+.input-wrap:focus-within {
+    border-color: #B25A2C; /* 포커스 시 브랜드 컬러 강조 */
+}
+
+.input-wrap input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    text-align: right;
+    width: 100%;
+    padding-right: 8px;
+}
+
+/* input type="number" 기본 화살표 숨김 처리 */
+.input-wrap input::-webkit-outer-spin-button,
+.input-wrap input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.input-wrap input[type=number] {
+    appearance: textfield; /* Firefox 용 */
+}
+
+.input-wrap input::placeholder {
+    color: #DDD;
+}
+
+.currency {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+}
+
+.input-hint {
+    font-size: 12px;
+    color: #A0A0A0;
+    margin-top: 12px;
+    margin-bottom: 40px;
+}
+
+/* 버튼 그룹 */
+.button-group {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    flex: 1;
+    padding: 14px 0;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #F5F5F5;
+    color: #666;
+}
+
+.btn-secondary:hover {
+    background-color: #EBEBEB;
+}
+
+.btn-primary {
+    background-color: #B25A2C;
+    color: #FFFFFF;
+}
+
+.btn-primary:hover {
+    background-color: #8E5A3B;
+}

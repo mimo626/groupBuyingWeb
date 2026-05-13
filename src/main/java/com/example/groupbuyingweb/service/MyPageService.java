@@ -157,8 +157,7 @@ public class MyPageService {
         // 현재 참여 수량은 참여 이력의 신청 수량 합계로 계산한다.
         Long currentQuantity =
                 participationRepository.sumApplyQuantityByGroupBuyingIdAndRole(
-                        groupBuying.getId(),
-                        UserRole.PARTICIPANT
+                        groupBuying.getId()
                 );
 
         return new MyPageResponse.MyGroupBuyingListItem(
@@ -205,7 +204,7 @@ public class MyPageService {
 
 
     @Transactional
-    public MyPageResponse.MyParticipationDetail getParticipationDetail(String memberId, Long participationId) {
+    public MyPageResponse.MyParticipationDetail getParticipationDetail(Long participationId) {
         GroupBuyingParticipation participation = participationRepository.findById(participationId)
                 .orElseThrow();
         GroupBuying groupBuying = participation.getGroupBuying();
