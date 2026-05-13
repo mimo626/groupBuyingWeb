@@ -93,7 +93,7 @@ public class GroupBuyingController {
 
         Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable);
         model.addAttribute("groupBuyings", list);
-        return "groupbuying/list"; // 타임리프 템플릿 경로 (templates/groupbuying/list.html)
+        return "main";
     }
 
 
