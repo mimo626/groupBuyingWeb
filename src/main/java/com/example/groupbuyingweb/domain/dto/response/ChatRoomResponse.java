@@ -38,12 +38,14 @@ public class ChatRoomResponse {
             String meetingLocation,
             Long lastReadMessageId,
             int unreadCount,
+            String currentUserRole,
             List<Message> messages
     ) {}
 
     public record Message(
             Long messageId,
-            String senderId,   // Nullable (SYSTEM 메시지의 경우 null)
+            String senderId,        // Nullable (SYSTEM 메시지의 경우 null), isMine 판별용
+            String senderNickname,  // Nullable (SYSTEM 메시지의 경우 null), 화면 표시용
             String messageType,
             String content,
             LocalDateTime sentAt

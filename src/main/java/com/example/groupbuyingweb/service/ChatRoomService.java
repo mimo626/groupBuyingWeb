@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -119,6 +120,11 @@ public class ChatRoomService {
                 .findByChatRoomIdAndUserId(chatRoomId, memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_CHAT_PARTICIPANT));
 
+        // 현재 사용자의 공구 참여 role 조회 (ORGANIZER / PARTICIPANT)
+        GroupBuyingParticipation participation = groupBuyingParticipationRepository
+                .findByGroupBuyingIdAndMemberId(groupBuying.getId(), memberId);
+        String currentUserRole = participation != null ? participation.getRole().name() : null;
+
         // 4. 채팅방의 전체 메시지 목록을 시간 오름차순으로 조회
         List<ChatMessage> messages = chatMessageRepository
                 .findByChatRoomIdOrderByCreateAtAsc(chatRoomId);
@@ -127,8 +133,8 @@ public class ChatRoomService {
         // lastReadMessageId가 null이면 아직 한 번도 읽지 않은 것 -> 전체 메시지 수가 unreadCount
         Long lastReadMessageId = participant.getLastReadMessageId();
         long unreadCount = (lastReadMessageId == null)
-                ? messages.size()
-                : chatMessageRepository.countByChatRoomIdAndIdGreaterThan(chatRoomId, lastReadMessageId);
+                ? chatMessageRepository.countUnreadAll(chatRoomId, memberId)
+                : chatMessageRepository.countUnreadAfter(chatRoomId, lastReadMessageId, memberId);
 
         // 6. 읽음 처리 - 가장 최신 메시지 ID로 lastReadMessageId 갱신
         // messages가 비어있지 않을 때만 처리 (빈 채팅방이면 갱신할 ID가 없음)
@@ -140,6 +146,7 @@ public class ChatRoomService {
                 .map(m -> new ChatRoomResponse.Message(
                         m.getId(),
                         m.getSender() != null ? m.getSender().getId() : null,
+                        m.getSender() != null ? m.getSender().getNickname() : null,
                         m.getMessageType().name(),
                         m.getContent(),
                         m.getCreateAt()
@@ -155,8 +162,9 @@ public class ChatRoomService {
                 groupBuying.getTrackingNumber(),
                 groupBuying.getMeetingAt(),
                 groupBuying.getMeetingPlace(),
-                latestMessageId, // 클라이언트가 다음 읽음 처리 기준으로 사용
+                latestMessageId,
                 (int) unreadCount,
+                currentUserRole,
                 messageDtos
         );
     }
@@ -184,11 +192,11 @@ public class ChatRoomService {
                             .findTopByChatRoomIdOrderByCreateAtDescIdDesc(chatRoom.getId())
                             .orElse(null);
 
-                    // 안 읽은 메시지 수 계산
+                    // 안 읽은 메시지 수 계산 (본인 메시지 제외)
                     Long lastReadId = participant.getLastReadMessageId();
                     long unreadCount = (lastReadId == null)
-                            ? chatMessageRepository.findByChatRoomIdOrderByCreateAtAsc(chatRoom.getId()).size()
-                            : chatMessageRepository.countByChatRoomIdAndIdGreaterThan(chatRoom.getId(), lastReadId);
+                            ? chatMessageRepository.countUnreadAll(chatRoom.getId(), memberId)
+                            : chatMessageRepository.countUnreadAfter(chatRoom.getId(), lastReadId, memberId);
 
                     return new ChatRoomResponse.ListItem(
                             chatRoom.getId(),
@@ -200,6 +208,8 @@ public class ChatRoomService {
                             (int) unreadCount
                     );
                 })
+                .sorted(Comparator.comparing(ChatRoomResponse.ListItem::lastMessageAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
 
         return new ChatRoomResponse.ListResponse(items);
@@ -229,8 +239,8 @@ public class ChatRoomService {
         // lastReadMessageId가 null이면 한 번도 읽지 않은 것 -> 전체 메시지 수가 unreadCount
         // null이 아니면 마지막으로 읽은 메시지 이후의 메시지 수만 카운트
         long count = (lastReadMessageId == null)
-                ? chatMessageRepository.countByChatRoomIdAndIdGreaterThan(chatRoomId, 0L)
-                : chatMessageRepository.countByChatRoomIdAndIdGreaterThan(chatRoomId, lastReadMessageId);
+                ? chatMessageRepository.countUnreadAll(chatRoomId, memberId)
+                : chatMessageRepository.countUnreadAfter(chatRoomId, lastReadMessageId, memberId);
 
         return new ChatMessageResponse.UnreadCount((int) count);
     }

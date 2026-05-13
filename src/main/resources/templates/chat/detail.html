@@ -21,6 +21,8 @@
 </div>
 
 <hr>
+<div id="actionPanel"></div>
+
 <div id="sendForm">
     <input type="text" id="messageInput" placeholder="메시지 입력" size="50" onkeydown="handleKeyDown(event)">
     <button onclick="sendMessage()">전송</button>
@@ -29,6 +31,11 @@
 
 <hr>
 <a href="/chat/rooms-test">목록으로 돌아가기</a>
+
+<!-- Flatpickr 달력 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 
 <!-- SockJS + STOMP -->
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -41,6 +48,7 @@
 
     const currentUserId = document.getElementById('currentUserId').value;
     let stompClient = null;
+    let groupPurchaseId = null;
 
     window.onload = function () {
         loadChatRoomDetail();
@@ -56,7 +64,9 @@
                     alert('오류: ' + data.message);
                     return;
                 }
+                groupPurchaseId = data.data.groupPurchaseId;
                 renderRoomInfo(data.data);
+                renderActionPanel(data.data);
                 renderMessages(data.data.messages);
                 scrollToBottom();
             })
@@ -164,13 +174,75 @@
 
         const isMine = msg.senderId === currentUserId;
         const align = isMine ? 'right' : 'left';
-        const senderLabel = isMine ? '나' : shortenId(msg.senderId);
+        const senderLabel = isMine ? '나' : (msg.senderNickname || shortenId(msg.senderId));
 
         return `<div style="text-align:${align}; margin:4px 0;">
                     <div style="font-size:0.8em; color:#555;">${escapeHtml(senderLabel)}</div>
                     <div>${escapeHtml(msg.content)}</div>
                     <div style="font-size:0.75em; color:#999;">${formatDateTime(msg.sentAt)}</div>
                 </div>`;
+    }
+
+    /* 액션 패널 */
+    function renderActionPanel(detail) {
+        const panel = document.getElementById('actionPanel');
+        const { status, currentUserRole } = detail;
+        let html = '';
+
+        if (status === 'START' && currentUserRole === 'ORGANIZER') {
+            html = `<button onclick="updateStatus('PURCHASED')">상품 구매 완료</button>`;
+        } else if (status === 'PURCHASED' && currentUserRole === 'ORGANIZER') {
+            html = `
+                <input type="text" id="trackingInput" placeholder="운송장 번호 입력" size="30">
+                <button onclick="submitTracking()">배송 시작</button>`;
+        } else if (status === 'SHIPPING' && currentUserRole === 'ORGANIZER') {
+            html = `
+                <label>만남 일정: <input type="text" id="meetingAtInput" placeholder="날짜 및 시간 선택" readonly style="cursor:pointer; width:180px;"></label>
+                <button onclick="submitMeeting()">만남 일정 등록</button>`;
+        }
+
+        panel.innerHTML = html;
+
+        if (status === 'SHIPPING' && currentUserRole === 'ORGANIZER') {
+            flatpickr('#meetingAtInput', {
+                locale: 'ko',
+                enableTime: true,
+                dateFormat: 'Y-m-dTH:i:S',
+                altInput: true,
+                altFormat: 'Y년 m월 d일 H:i',
+                minDate: 'today',
+                time_24hr: true
+            });
+        }
+    }
+
+    function updateStatus(status, extra = {}) {
+        fetch(`/group-buying/${groupPurchaseId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status, ...extra })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 200) {
+                location.reload();
+            } else {
+                alert('오류: ' + data.message);
+            }
+        })
+        .catch(err => console.error('상태 변경 오류:', err));
+    }
+
+    function submitTracking() {
+        const trackingNumber = document.getElementById('trackingInput').value.trim();
+        if (!trackingNumber) { alert('운송장 번호를 입력해주세요.'); return; }
+        updateStatus('SHIPPING', { trackingNumber });
+    }
+
+    function submitMeeting() {
+        const meetingAt = document.getElementById('meetingAtInput').value;
+        if (!meetingAt) { alert('만남 일정을 선택해주세요.'); return; }
+        updateStatus('MEETING_SCHEDULED', { meetingAt });
     }
 
     /* 유틸 */
