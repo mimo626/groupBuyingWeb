@@ -2,86 +2,184 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>채팅 목록</title>
+    <title>채팅 목록 | 도토리 창고</title>
+    <link rel="stylesheet" href="/css/chat-room-list.css">
 </head>
 <body>
-<h2>내 채팅방 목록</h2>
+<header class="top-bar">
+    <a href="/group-buying/list" class="brand">
+        <span class="brand-icon">🌰</span>
+        <span>도토리 창고</span>
+    </a>
 
-<p>현재 로그인된 세션 ID: <strong th:text="${session.loginUserId}"></strong></p>
+    <nav class="nav">
+        <a href="/group-buying/list">🏠 홈</a>
+        <a href="/chat/rooms-test" class="active">💬 채팅방</a>
+        <a href="/mypage/mypage">👤 마이</a>
+    </nav>
+</header>
 
-<hr>
+<main class="chat-page">
+    <section class="chat-list-card">
+        <div class="chat-list-header">
+            <div>
+                <h1>채팅</h1>
+                <p>참여 중인 공동구매 채팅방을 확인할 수 있습니다.</p>
+            </div>
+            <span class="chat-count" id="chatCount">0개의 채팅방</span>
+        </div>
 
-<div>
-    <button onclick="loadChatRooms()">채팅방 목록 불러오기</button>
-</div>
-
-<hr>
-
-<div id="chatRoomList">
-    <p>목록을 불러오려면 위 버튼을 클릭하세요.</p>
-</div>
-
-<hr>
-
-<div>
-    <h3>서버 응답 결과 (JSON):</h3>
-    <p id="jsonResult">응답 대기 중...</p>
-</div>
+        <div id="chatRoomList" class="chat-room-list">
+            <div class="empty-box">
+                채팅방 목록을 불러오는 중입니다.
+            </div>
+        </div>
+    </section>
+</main>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      loadChatRooms();
+    });
+
     function loadChatRooms() {
-        fetch('/chat/api/rooms')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('jsonResult').innerText = JSON.stringify(data, null, 2);
+      fetch("/chat/api/rooms")
+        .then(response => response.json())
+        .then(data => {
+          if (data.status !== 200) {
+            renderError(data.message || "채팅방 목록을 불러오지 못했습니다.");
+            return;
+          }
 
-                if (data.status !== 200) {
-                    alert('오류: ' + data.message);
-                    return;
-                }
-
-                const chatRooms = data.data.chatRooms;
-                renderChatRooms(chatRooms);
-            })
-            .catch(error => {
-                console.error('API 호출 에러:', error);
-                document.getElementById('jsonResult').innerText = '오류 발생: ' + error.message;
-            });
+          const chatRooms = data.data.chatRooms;
+          renderChatRooms(chatRooms);
+        })
+        .catch(error => {
+          console.error("API 호출 에러:", error);
+          renderError("서버와 통신하는 중 문제가 발생했습니다.");
+        });
     }
 
     function renderChatRooms(chatRooms) {
-        const container = document.getElementById('chatRoomList');
+      const container = document.getElementById("chatRoomList");
+      const chatCount = document.getElementById("chatCount");
 
-        if (!chatRooms || chatRooms.length === 0) {
-            container.innerHTML = '<p>참여 중인 채팅방이 없습니다.</p>';
-            return;
-        }
+      if (!chatRooms || chatRooms.length === 0) {
+        chatCount.innerText = "0개의 채팅방";
+        container.innerHTML = `
+          <div class="empty-box">
+            참여 중인 채팅방이 없습니다.
+          </div>
+        `;
+        return;
+      }
 
-        let html = '<table border="1" cellpadding="8">';
-        html += '<thead><tr>';
-        html += '<th>채팅방 ID</th>';
-        html += '<th>공구 제목</th>';
-        html += '<th>상태</th>';
-        html += '<th>마지막 메시지</th>';
-        html += '<th>마지막 메시지 시간</th>';
-        html += '<th>안읽은 메시지</th>';
-        html += '<th>이동</th>';
-        html += '</tr></thead><tbody>';
+      chatCount.innerText = chatRooms.length + "개의 채팅방";
 
-        chatRooms.forEach(room => {
-            html += '<tr>';
-            html += `<td>${room.chatRoomId}</td>`;
-            html += `<td>${room.groupPurchaseTitle}</td>`;
-            html += `<td>${room.status}</td>`;
-            html += `<td>${room.lastMessage || '-'}</td>`;
-            html += `<td>${room.lastMessageAt ? room.lastMessageAt : '-'}</td>`;
-            html += `<td>${room.unreadCount > 0 ? '[' + room.unreadCount + ']' : '0'}</td>`;
-            html += `<td><a href="/chat/rooms-test/${room.chatRoomId}">입장</a></td>`;
-            html += '</tr>';
+      let html = "";
+
+      chatRooms.forEach(room => {
+        const title = room.groupPurchaseTitle || "공동구매 채팅방";
+        const statusText = getStatusText(room.status);
+        const lastMessage = room.lastMessage || "아직 메시지가 없습니다.";
+        const lastMessageTime = formatLastMessageTime(room.lastMessageAt);
+        const unreadCount = Number(room.unreadCount || 0);
+
+        html += `
+          <a href="/chat/rooms-test/${room.chatRoomId}" class="chat-room-item">
+            <div class="chat-thumb">
+              <span>🌰</span>
+            </div>
+
+            <div class="chat-info">
+              <div class="chat-title-row">
+                <strong class="chat-title">${escapeHtml(title)}</strong>
+                <span class="status-badge">${statusText}</span>
+              </div>
+
+              <p class="last-message">${escapeHtml(lastMessage)}</p>
+            </div>
+
+            <div class="chat-meta">
+              <span class="last-time">${lastMessageTime}</span>
+              ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ""}
+            </div>
+          </a>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderError(message) {
+      const container = document.getElementById("chatRoomList");
+      document.getElementById("chatCount").innerText = "0개의 채팅방";
+
+      container.innerHTML = `
+        <div class="empty-box error">
+          ${escapeHtml(message)}
+        </div>
+      `;
+    }
+
+    function getStatusText(status) {
+      if (!status) {
+        return "상태 없음";
+      }
+
+      const statusMap = {
+        RECRUITING: "모집중",
+        COMPLETED: "거래완료",
+        CLOSED: "마감",
+        CANCELED: "취소됨",
+        CANCELLED: "취소됨"
+      };
+
+      return statusMap[status] || status;
+    }
+
+    function formatLastMessageTime(value) {
+      if (!value) {
+        return "";
+      }
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return value;
+      }
+
+      const now = new Date();
+      const isToday = date.toDateString() === now.toDateString();
+
+      const yesterday = new Date();
+      yesterday.setDate(now.getDate() - 1);
+      const isYesterday = date.toDateString() === yesterday.toDateString();
+
+      if (isToday) {
+        return date.toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit"
         });
+      }
 
-        html += '</tbody></table>';
-        container.innerHTML = html;
+      if (isYesterday) {
+        return "어제";
+      }
+
+      return date.toLocaleDateString("ko-KR", {
+        month: "numeric",
+        day: "numeric"
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 </script>
 </body>
