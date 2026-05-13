@@ -14,26 +14,32 @@ public class GroupBuyingResponse {
     public record GroupBuyings(
             Long id,
             String title,
+            String productName,
             double unitPrice,
             int targetQuantity,
             int currentQuantity,
             String neighborhoodName, // 동네 이름 --동
             int viewCount,
             GroupBuyingStatus status,
+            String thumbnailImage,
+            String dDayString,
             LocalDateTime deadline,
             LocalDateTime createAt
     ) {
         // Entity -> DTO 변환 정적 팩토리 메서드
-        public static GroupBuyings of(GroupBuying groupBuying, int currentQuantity) {
+        public static GroupBuyings of(GroupBuying groupBuying, String thumbnailImage, int currentQuantity, String dDayString) {
             return new GroupBuyings(
                     groupBuying.getId(),
                     groupBuying.getTitle(),
+                    groupBuying.getProductName(),
                     groupBuying.getTargetQuantity() > 0 ? groupBuying.getTotalPrice() / groupBuying.getTargetQuantity() : 0,
                     groupBuying.getTargetQuantity(),
                     currentQuantity,
                     groupBuying.getNeighborhoodName(),
                     groupBuying.getViewCount(),
                     groupBuying.getStatus(),
+                    thumbnailImage,
+                    dDayString,
                     groupBuying.getDeadline(),
                     groupBuying.getCreatedAt()
             );

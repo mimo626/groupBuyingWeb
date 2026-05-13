@@ -17,6 +17,7 @@ import java.util.List;
 public interface GroupBuyingRepository extends JpaRepository<GroupBuying, Long> {
     Integer findTargetQuantityById(long groupBuyingId);
     @Query("SELECT g FROM GroupBuying g WHERE " +
+            "(g.status = GroupBuyingStatus.RECRUITING) AND " +
             "(:category IS NULL OR g.category = :category) AND " +
             "(:keyword IS NULL OR :keyword = '' OR g.title LIKE %:keyword% OR g.productName LIKE %:keyword%)")
     Page<GroupBuying> searchGroupBuyings(

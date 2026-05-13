@@ -114,9 +114,15 @@ public class GroupBuying {
         this.meetingAt = meetingAt;
     }
 
-    //
+    // 이미지 추가
     public void addImage(GroupBuyingImage image) {
         this.images.add(image);
         image.updateGroupBuying(this);
     }
+
+    // 조회수 증가
+    public void incrementViewCount() {
+        this.viewCount += 1;
+    }
+
 }

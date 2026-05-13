@@ -60,7 +60,7 @@ public class GroupBuyingController {
         String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
         GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId, loggedInUserId);
-        System.out.println(res.toString());
+
         model.addAttribute("kakaoJsKey", kakaoJsKey);
         model.addAttribute("groupBuying", res);
         return "groupBuying/detail";
@@ -89,11 +89,13 @@ public class GroupBuyingController {
     public String groupBuyingList(
             GroupBuyingRequest.SearchCondition condition,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            HttpSession session,
             Model model) {
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
-        Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable);
+        Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable, loggedInUserId);
         model.addAttribute("groupBuyings", list);
-        return "groupbuying/list"; // 타임리프 템플릿 경로 (templates/groupbuying/list.html)
+        return "main";
     }
 
 
