@@ -117,9 +117,9 @@ public class MyPageService {
         List<GroupBuying> groupBuyings =
                 groupBuyingRepository.findAllByMember_IdAndStatusOrderByIdDesc(memberId, status);
 
-        // 조회된 GroupBuying Entity 목록을 화면에 내려줄 Response DTO 목록으로 변환한다.
+        // participationId를 구하려면 현재 로그인한 사용자 ID도 함께 필요하다.
         return groupBuyings.stream()
-                .map(this::toMyGroupBuyingListItem)
+                .map(groupBuying -> toMyGroupBuyingListItem(groupBuying, memberId))
                 .toList();
     }
 
@@ -141,7 +141,19 @@ public class MyPageService {
                 .toList();
     }
 
-    private MyPageResponse.MyGroupBuyingListItem toMyGroupBuyingListItem(GroupBuying groupBuying) {
+    private MyPageResponse.MyGroupBuyingListItem toMyGroupBuyingListItem(
+            GroupBuying groupBuying,
+            String memberId
+    ) {
+        // 상세페이지 이동에 필요한 참여 이력 ID를 조회한다.
+        GroupBuyingParticipation participation =
+                participationRepository.findByGroupBuyingIdAndMemberId(
+                        groupBuying.getId(),
+                        memberId
+                );
+
+        Long participationId = participation == null ? null : participation.getId();
+
         // 현재 참여 수량은 참여 이력의 신청 수량 합계로 계산한다.
         Long currentQuantity =
                 participationRepository.sumApplyQuantityByGroupBuyingIdAndRole(
@@ -150,6 +162,7 @@ public class MyPageService {
                 );
 
         return new MyPageResponse.MyGroupBuyingListItem(
+                participationId,
                 groupBuying.getId(),
                 groupBuying.getTitle(),
                 groupBuying.getTotalPrice(),

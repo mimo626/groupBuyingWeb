@@ -74,15 +74,24 @@
             };
             card.innerHTML = `
                 <h3>${item.title}</h3>
-                <p>가격: ${item.totalPrice}</p>
-                <p>목표 수량: ${item.targetQuantity}</p>
-                <p>현재 참여 수량: ${item.currentQuantity}</p>
-                <p>상태: ${item.status}</p>
-                <p>마감일: ${item.deadline}</p>
-            `;
+                <p>참여 이력 ID: ${item.participationId}</p>
+             <p>공구 ID: ${item.groupBuyingId}</p>
+                 <p>가격: ${item.totalPrice}</p>
+                 <p>목표 수량: ${item.targetQuantity}</p>
+                 <p>현재 참여 수량: ${item.currentQuantity}</p>
+                 <p>상태: ${item.status}</p>
+                 <p>마감일: ${item.deadline}</p>
+             `;
             list.appendChild(card);
         });
     }
+    card.addEventListener('click', function() {
+    console.log('상세페이지 이동에 사용할 participationId:', item.participationId);
+    console.log('상세페이지 이동에 사용할 groupBuyingId:', item.groupBuyingId);
+    alert('상세페이지 이동에 사용할 ID 확인\n'
+            + 'participationId: ' + item.participationId + '\n'
+            + 'groupBuyingId: ' + item.groupBuyingId);
+});
 </script>
 </body>
 </html>

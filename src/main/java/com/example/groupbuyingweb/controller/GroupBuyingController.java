@@ -97,6 +97,7 @@ public class GroupBuyingController {
     }
 
 
+    @ResponseBody
     @PatchMapping("/{id}/status")
     public ApiResponse<GroupBuyingResponse.UpdateStatus> updateGroupBuyingStatus(
             @PathVariable("id") Long groupBuyingId,

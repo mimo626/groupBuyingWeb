@@ -1,6 +1,5 @@
 package com.example.groupbuyingweb.controller;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,7 +22,7 @@ public class AuthPageController {
     public String myPage(Model model) {
         model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
 
-        return "myPage";
+        return "mypage/myPage";
     }
 
 //    @GetMapping("/auth/mypage")
@@ -36,11 +35,11 @@ public class AuthPageController {
 
     @GetMapping("/mypage/charge")
     public String chargePage() {
-        return "pointCharge";
+        return "mypage/pointCharge";
     }
 
     @GetMapping("/mypage/gb-detail/{participationId}")
     public String participationDetail(@PathVariable Long participationId) {
-        return "participationDetail";
+        return "mypage/participationDetail";
     }
 }
