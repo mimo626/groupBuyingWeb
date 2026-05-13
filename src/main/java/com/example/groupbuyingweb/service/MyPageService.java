@@ -162,8 +162,8 @@ public class MyPageService {
                 );
 
         return new MyPageResponse.MyGroupBuyingListItem(
-                participationId,
                 groupBuying.getId(),
+                participationId,
                 groupBuying.getTitle(),
                 groupBuying.getTotalPrice(),
                 groupBuying.getTargetQuantity(),
