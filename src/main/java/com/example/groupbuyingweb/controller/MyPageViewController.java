@@ -36,7 +36,7 @@ public class MyPageViewController {
         return "mypage/participationDetail";
     }
 
-    @GetMapping("/mypage")
+    @GetMapping("")
     public String myPage(Model model) {
         model.addAttribute("kakaoJavaScriptKey", kakaoJavaScriptKey);
 
