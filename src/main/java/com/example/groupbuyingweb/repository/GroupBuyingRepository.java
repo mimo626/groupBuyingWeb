@@ -19,10 +19,12 @@ public interface GroupBuyingRepository extends JpaRepository<GroupBuying, Long> 
     @Query("SELECT g FROM GroupBuying g WHERE " +
             "(g.status = GroupBuyingStatus.RECRUITING) AND " +
             "(:category IS NULL OR g.category = :category) AND " +
-            "(:keyword IS NULL OR :keyword = '' OR g.title LIKE %:keyword% OR g.productName LIKE %:keyword%)")
+            "(:keyword IS NULL OR :keyword = '' OR g.title LIKE %:keyword% OR g.productName LIKE %:keyword%) AND " +
+            "(g.neighborhoodName IN :neighborhoods)") // 추가된 부분
     Page<GroupBuying> searchGroupBuyings(
             @Param("category") GroupBuyingCategory category,
             @Param("keyword") String keyword,
+            @Param("neighborhoods") List<String> neighborhoods, // 파라미터 추가
             Pageable pageable
     );
 
