@@ -168,15 +168,20 @@ public class GroupBuyingService {
 
         List<String> userNearbyAddressList = addressEntities.stream()
                 .map(UserNearbyAddress::getNeighborhoodName)
-                .collect(Collectors.toList());
+                .toList();
 
-        for (String neighborhoodName : userNearbyAddressList) {
-            System.out.println("주변 주소: " + neighborhoodName);
+        // 방어 로직: 등록된 동네가 하나도 없다면 DB를 조회할 필요 없이 빈 페이지 반환
+        if (userNearbyAddressList.isEmpty()) {
+            return Page.empty(pageable);
         }
 
         // Repository에서 Page<GroupBuying> 조회
-        return groupBuyingRepository.searchGroupBuyings(condition.category(), condition.keyword(), pageable)
-                .map(groupBuying -> {
+        return groupBuyingRepository.searchGroupBuyings(
+                condition.category(),
+                condition.keyword(),
+                userNearbyAddressList, // 추가된 파라미터 전달
+                pageable
+            ).map(groupBuying -> {
                     int currentQuantity = calculateCurrentQuantity(groupBuying.getId());
 
                     // map을 통해 엔티티 객체에서 URL만 추출
@@ -215,7 +220,6 @@ public class GroupBuyingService {
             case START -> {
                 // 채팅방 생성
                 chatRoomService.createChatRoom(groupBuying);
-
             }
             case PURCHASED -> {
 
