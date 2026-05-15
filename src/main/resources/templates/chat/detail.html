@@ -214,6 +214,9 @@
           const msg = JSON.parse(frame.body);
           appendMessage(msg);
           scrollToBottom();
+          if (msg.messageType === "SYSTEM") {
+            refreshRoomStatus();
+          }
         });
       }, function (error) {
         const status = document.getElementById("connectionStatus");
@@ -268,9 +271,18 @@
       const panel = document.getElementById("actionPanel");
       const status = detail.status;
       const currentUserRole = detail.currentUserRole;
+      console.log("[renderActionPanel] status:", status, "| currentUserRole:", currentUserRole);
 
       if (currentUserRole !== "ORGANIZER") {
-        panel.innerHTML = "";
+        if (status === "SETTLING") {
+          panel.innerHTML = `
+            <button type="button" class="primary-action-btn" onclick="confirmSettle()">
+              정산 완료
+            </button>
+          `;
+        } else {
+          panel.innerHTML = "";
+        }
         return;
       }
 
@@ -330,6 +342,15 @@
           }
         });
 
+        return;
+      }
+
+      if (status === "MEETING_SCHEDULED") {
+        panel.innerHTML = `
+          <button type="button" class="primary-action-btn" onclick="confirmSettlingStart()">
+            정산 시작
+          </button>
+        `;
         return;
       }
 
@@ -409,6 +430,51 @@
       );
     }
 
+    function confirmSettlingStart() {
+      openConfirmModal(
+        "정산 시작",
+        "정산을 시작하시겠습니까?",
+        function () {
+          updateStatus("SETTLING");
+        }
+      );
+    }
+
+    function confirmSettle() {
+      openConfirmModal(
+        "정산 완료",
+        "정산을 완료하시겠습니까?",
+        function () {
+          settlePoint();
+        }
+      );
+    }
+
+    function settlePoint() {
+      fetch("/api/point/settle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupBuyingId: groupPurchaseId })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 200) {
+            document.getElementById("actionPanel").innerHTML = "";
+            if (data.data.isCompleteAll === true) {
+              updateStatus("CLOSED");
+            } else {
+              openAlertModal("success", "정산 완료", "정산이 완료되었습니다. 다른 참여자의 정산을 기다리는 중입니다.");
+            }
+            return;
+          }
+          openAlertModal("fail", "정산 실패", data.message || "정산 처리에 실패했습니다.");
+        })
+        .catch(err => {
+          console.error("정산 오류:", err);
+          openAlertModal("fail", "서버 통신 오류", "정산 처리 중 문제가 발생했습니다.");
+        });
+    }
+
     function updateStatus(status, extra = {}) {
       fetch(`/group-buying/${groupPurchaseId}/status`, {
         method: "PATCH",
@@ -477,6 +543,19 @@
         closeModal();
       }
     });
+
+    function refreshRoomStatus() {
+      fetch(`/chat/api/rooms/${roomId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status !== 200) return;
+          groupPurchaseId = data.data.groupPurchaseId;
+          renderRoomHeader(data.data);
+          renderStatusNotice(data.data);
+          renderActionPanel(data.data);
+        })
+        .catch(err => console.error("상태 갱신 오류:", err));
+    }
 
     function scrollToBottom() {
       const container = document.getElementById("messageList");
