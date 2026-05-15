@@ -98,12 +98,20 @@
 
         <!-- 2. 카테고리 필터 -->
         <div class="category-list">
-            <!-- 선택된 카테고리에 active 클래스 부여 -->
-            <button type="button" class="category-btn active" onclick="setCategory('')">전체</button>
-            <button type="button" class="category-btn" onclick="setCategory('LIVING')">생활용품</button>
-            <button type="button" class="category-btn" onclick="setCategory('BEAUTY')">미용용품</button>
-            <button type="button" class="category-btn" onclick="setCategory('FOOD')">식품</button>
-            <button type="button" class="category-btn" onclick="setCategory('CLOTHES')">의류/잡화</button>
+            <!-- '전체' 카테고리 (기본값) -->
+            <button type="button"
+                    class="category-btn"
+                    th:classappend="${selectedCategory == null or selectedCategory == ''} ? 'active' : ''"
+                    onclick="setCategory('')">전체</button>
+
+            <!-- Java Enum 카테고리 반복 -->
+            <th:block th:each="c : ${category}">
+                <button type="button"
+                        class="category-btn"
+                        th:classappend="${selectedCategory == c.name()} ? 'active' : ''"
+                        th:onclick="|setCategory('${c.name()}')|"
+                        th:text="${c.description}"></button>
+            </th:block>
             <!-- 숨겨진 input으로 카테고리 값 전송 -->
             <input type="hidden" id="categoryInput" name="category" th:value="${param.category}">
         </div>
