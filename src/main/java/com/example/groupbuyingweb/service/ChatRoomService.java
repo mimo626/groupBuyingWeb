@@ -17,8 +17,11 @@ import com.example.groupbuyingweb.repository.ChatRoomParticipantRepository;
 import com.example.groupbuyingweb.repository.ChatRoomRepository;
 import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Comparator;
 import java.util.List;
@@ -35,6 +38,7 @@ public class ChatRoomService {
     private final ChatRoomParticipantRepository participantRepository;
     private final ChatRoomParticipantService participantService;
     private final GroupBuyingParticipationRepository groupBuyingParticipationRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * 채팅방 생성 및 공구 참여자 전원 입장 처리
@@ -92,6 +96,22 @@ public class ChatRoomService {
                 .build();
 
         chatMessageRepository.save(systemMessage);
+
+        Long chatRoomId = chatRoom.getId();
+        ChatRoomResponse.Message messageDto = new ChatRoomResponse.Message(
+                systemMessage.getId(),
+                null,
+                null,
+                MessageType.SYSTEM.name(),
+                content,
+                systemMessage.getCreateAt()
+        );
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagingTemplate.convertAndSend("/topic/chat/room/" + chatRoomId, messageDto);
+            }
+        });
     }
 
     /**
