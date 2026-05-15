@@ -193,6 +193,10 @@ public class GroupBuyingService {
                     // D-Day 계산
                     String dDayString = calculateDday(groupBuying.getDeadline());
 
+                    if(dDayString.equals("마감")) {
+                        groupBuying.updateStatus(GroupBuyingStatus.CLOSED);
+                    }
+
                     // DTO 변환 시 thumbnailUrl 추가
                     return GroupBuyingResponse.GroupBuyings.of(groupBuying, thumbnailUrl, currentQuantity, dDayString);
                 });
