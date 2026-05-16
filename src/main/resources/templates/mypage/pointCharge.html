@@ -85,9 +85,9 @@
         }
 
         // API 엔드포인트 및 방식
-        const apiUrl = `/api/point/charge?point=${pointValue}`;
+        const apiUrl = `/api/point/charge?point`; //api/members/me/point
         const requestOptions = {
-            method: 'POST',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
