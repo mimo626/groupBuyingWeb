@@ -94,6 +94,11 @@ public class GroupBuyingController {
         String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
         Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable, loggedInUserId);
+        String categoryName = (condition.category() != null) ? condition.category().name() : null;
+
+        model.addAttribute("category", GroupBuyingCategory.values());
+        model.addAttribute("selectedCategory", categoryName);
+
         model.addAttribute("groupBuyings", list);
         return "main";
     }
