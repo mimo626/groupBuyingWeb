@@ -149,7 +149,7 @@
         <a th:each="item : ${groupBuyings.content}" th:href="@{/group-buying/{id}(id=${item.id})}" class="card">
             <!-- 썸네일 영역 -->
             <div class="thumbnail-wrapper">
-                <span class="badge-status" th:text="${item.status}">모집중</span>
+                <span class="badge-status" th:text="${item.status.description}">모집중</span>
                 <span class="badge-dday" th:text="${item.dDayString}"></span>
                 <img class="thumbnail" th:src="${item.thumbnailImage != null ? item.thumbnailImage : '/images/default-thumb.jpg'}" alt="공구 썸네일">
             </div>
