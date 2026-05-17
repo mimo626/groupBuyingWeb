@@ -14,7 +14,7 @@
 
     <nav class="nav">
         <a href="/group-buying/list">🏠 홈</a>
-        <a href="/chat/rooms-test" class="active">💬 채팅방</a>
+        <a href="/chat/rooms" class="active">💬 채팅방</a>
         <a href="/mypage">👤 마이</a>
     </nav>
 </header>
@@ -43,7 +43,7 @@
     });
 
     function loadChatRooms() {
-      fetch("/chat/api/rooms")
+      fetch("/api/chat/rooms")
         .then(response => response.json())
         .then(data => {
           if (data.status !== 200) {
@@ -86,7 +86,7 @@
         const unreadCount = Number(room.unreadCount || 0);
 
         html += `
-          <a href="/chat/rooms-test/${room.chatRoomId}" class="chat-room-item">
+          <a href="/chat/rooms/${room.chatRoomId}" class="chat-room-item">
             <div class="chat-thumb">
               <span>🌰</span>
             </div>

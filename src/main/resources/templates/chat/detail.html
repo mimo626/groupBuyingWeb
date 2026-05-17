@@ -18,7 +18,7 @@
 <main class="chat-detail-page">
     <section class="chat-detail-shell">
         <header class="chat-header">
-            <a href="/chat/rooms-test" class="back-btn">‹</a>
+            <a href="/chat/rooms" class="back-btn">‹</a>
 
             <div class="chat-header-thumb">🌰</div>
 
@@ -86,7 +86,7 @@
     };
 
     function loadChatRoomDetail() {
-      fetch(`/chat/api/rooms/${roomId}`)
+      fetch(`/api/chat/rooms/${roomId}`)
         .then(res => res.json())
         .then(data => {
           if (data.status !== 200) {
@@ -545,7 +545,7 @@
     });
 
     function refreshRoomStatus() {
-      fetch(`/chat/api/rooms/${roomId}`)
+      fetch(`/api/chat/rooms/${roomId}`)
         .then(res => res.json())
         .then(data => {
           if (data.status !== 200) return;
