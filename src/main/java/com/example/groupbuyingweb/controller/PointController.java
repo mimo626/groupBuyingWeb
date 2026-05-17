@@ -45,7 +45,7 @@ public class PointController {
     public ApiResponse<?> sendPointToOrganizer(
             // 성공 : 200 ok
             // 메시지 : 정산 요청 되었습니다
-            // dto : 정산된 공구 id, 전체 정산 여부 T/F
+            // dto : 정산된 공구 id, 전체 정산 여부 True/False
             // 실패 : 500 서버 내부 오류
             // 실패 : 401 로그인 오류
             @RequestBody GroupBuyingParticipationRequest.Send request,
