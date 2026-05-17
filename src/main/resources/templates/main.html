@@ -88,7 +88,7 @@
 <div class="container">
 
     <!-- 검색 폼 (서버로 파라미터 전송용) -->
-    <form id="searchForm" th:action="@{/group-buying/list}" method="get">
+    <form id="searchForm" th:action="@{/group-buyings}" method="get">
 
         <!-- 1. 검색 바 -->
         <div class="search-container">
@@ -146,7 +146,7 @@
 
     <!-- 공구 목록 그리드 -->
     <div class="grid">
-        <a th:each="item : ${groupBuyings.content}" th:href="@{/group-buying/{id}(id=${item.id})}" class="card">
+        <a th:each="item : ${groupBuyings.content}" th:href="@{/group-buyings/{id}(id=${item.id})}" class="card">
             <!-- 썸네일 영역 -->
             <div class="thumbnail-wrapper">
                 <span class="badge-status" th:text="${item.status.description}">모집중</span>
@@ -202,11 +202,11 @@
     const myPageBtn = document.getElementById("myPageBtn");
 
     homeBtn.addEventListener("click", () => {
-        window.location.href = "/group-buying/list";
+        window.location.href = "/group-buyings";
     });
 
     createGroupBtn.addEventListener("click", () => {
-        window.location.href = "/group-buying/create";
+        window.location.href = "/group-buyings/new";
     });
 
     chattingBtn.addEventListener("click", () => {
