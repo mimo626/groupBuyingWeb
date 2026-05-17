@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/api/mypage")
 public class MyPageController {
 
     @Autowired
@@ -33,25 +32,34 @@ public class MyPageController {
 
 
 
-
+    //@GetMapping("/api/members/me")
+    // 성공 : 200 ok
+    // 실패 : 500 내부 서버 오류
+    // 실패 : 401 로그인 오류 -> 로그인 페이지 이동
     @ResponseBody
-    @GetMapping("/profile")
+    @GetMapping("/api/mypage/profile")
     public ApiResponse<?> getProfile(HttpSession session){
         String memberId = loginSessionManager.requireLoginUserId(session);
         MyPageResponse.Profile dto = myPageService.getProfile(memberId);
         return ApiResponse.success(dto);
     }
 
+    //GetMapping("api/members/me/neighborhoods")
+    // 성공 : 200 ok
+    // 실패 : 500 내부 서버 에러
     @ResponseBody
-    @GetMapping("/neighborhood")
+    @GetMapping("/api/mypage/neighborhood")
     public ApiResponse<?> getNeighborhood(HttpSession session){
         String memberId = loginSessionManager.requireLoginUserId(session);
         MyPageResponse.Neighborhood dto = myPageService.getNeighborhood(memberId);
         return ApiResponse.success(dto);
     }
 
+    //@PatchMapping("api/members/me/neighborhoods")
+    // 성공 : 200 ok : 수정 성공 시 수정한 data 반환
+    // 실패 : 500 내부 서버 에러
     @ResponseBody
-    @PatchMapping("/neighborhood")
+    @PatchMapping("/api/mypage/neighborhood")
     public ApiResponse<MyPageResponse.Neighborhood> patchNeighborhood(
             @RequestBody MyPageRequest.UpdateNeighborhood request,
             HttpSession session){
@@ -61,7 +69,7 @@ public class MyPageController {
     }
 
     @ResponseBody
-    @GetMapping("/group-buys")
+    @GetMapping("/api/mypage/group-buys")
     public ApiResponse<List<MyPageResponse.MyGroupBuyingListItem>> getHostedGroupBuyings(
             @Valid @ModelAttribute MyPageRequest.MyGroupBuyingSearchCondition request,
             HttpSession session
@@ -77,7 +85,7 @@ public class MyPageController {
     }
 
     @ResponseBody
-    @GetMapping("/participations")
+    @GetMapping("/api/mypage/participations")
     public ApiResponse<List<MyPageResponse.MyParticipationListItem>> getParticipatedGroupBuyings(
             @Valid @ModelAttribute MyPageRequest.MyGroupBuyingSearchCondition request,
             HttpSession session
@@ -92,8 +100,12 @@ public class MyPageController {
         return ApiResponse.success(dto);
     }
 
+    //@GetMapping("/api/members/me/group-buying/participations/{participationId}")
+    // 성공 : 200 ok
+    // 실패 : 400 공구or공구 참여 기록 없음
+    // 실패 : 500 내부 서버 오류
     @ResponseBody
-    @GetMapping("/participations/{participationId}")
+    @GetMapping("/api/mypage/participations/{participationId}")
     public ApiResponse<MyPageResponse.MyParticipationDetail> getParticipationDetail(
             @PathVariable("participationId") Long participationId,
             HttpSession session) {
