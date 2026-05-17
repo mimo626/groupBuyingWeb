@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -18,10 +19,11 @@ public interface GroupBuyingRepository extends JpaRepository<GroupBuying, Long> 
     Integer findTargetQuantityById(long groupBuyingId);
     @Query("SELECT g FROM GroupBuying g WHERE " +
             "(g.status = GroupBuyingStatus.RECRUITING) AND " +
+            "deadline > NOW() AND " +
             "(:category IS NULL OR g.category = :category) AND " +
             "(:keyword IS NULL OR :keyword = '' OR g.title LIKE %:keyword% OR g.productName LIKE %:keyword%) AND " +
             "(g.neighborhoodName IN :neighborhoods)") // 추가된 부분
-    Page<GroupBuying> searchGroupBuyings(
+    Page<GroupBuying>  searchGroupBuyings(
             @Param("category") GroupBuyingCategory category,
             @Param("keyword") String keyword,
             @Param("neighborhoods") List<String> neighborhoods, // 파라미터 추가
@@ -35,6 +37,9 @@ public interface GroupBuyingRepository extends JpaRepository<GroupBuying, Long> 
             String memberId,
             GroupBuyingStatus status
     );
+
+    // Status가 일치하고 Deadline이 지정된 시간보다 이전(Before)인 데이터 조회
+    List<GroupBuying> findAllByStatusAndDeadlineBefore(GroupBuyingStatus status, LocalDateTime now);
 
 
 }
