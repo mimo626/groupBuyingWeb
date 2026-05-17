@@ -68,16 +68,18 @@ public class MyPageController {
         return ApiResponse.success(dto);
     }
 
+    // 성공 시 200 OK
+    // 실패(공구 진행 상태 값이 잘못된 경우) 시 400 Bad Request
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
-    @GetMapping("/api/mypage/group-buys")
+    @GetMapping("/members/me/group-buyings")
     public ApiResponse<List<MyPageResponse.MyGroupBuyingListItem>> getHostedGroupBuyings(
             @Valid @ModelAttribute MyPageRequest.MyGroupBuyingSearchCondition request,
             HttpSession session
     ) {
-        // 세션에서 현재 로그인한 사용자 ID를 꺼낸다.
         String memberId = loginSessionManager.requireLoginUserId(session);
 
-        // Service에 로그인 사용자 ID와 진행 상태를 넘겨 내가 개설한 공구 목록을 조회한다.
         List<MyPageResponse.MyGroupBuyingListItem> dto =
                 myPageService.getHostedGroupBuyings(memberId, request.status());
 
