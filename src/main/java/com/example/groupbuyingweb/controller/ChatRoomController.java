@@ -27,11 +27,15 @@ public class ChatRoomController {
 
     // ──────────────── 페이지 렌더링 ────────────────
 
+    // 성공 시 200 OK
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
     @GetMapping("/chat/rooms")
     public String chatRoomListPage() {
         return "chat/list";
     }
 
+    // 성공 시 200 OK
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
     @GetMapping("/chat/rooms/{roomId}")
     public String chatRoomDetailPage(@PathVariable Long roomId) {
         return "chat/detail";
@@ -39,7 +43,8 @@ public class ChatRoomController {
 
     // ──────────────── REST API ────────────────
 
-    // GET /api/chat/rooms
+    // 성공 시 200 OK
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
     @ResponseBody
     @GetMapping("/api/chat/rooms")
     public ApiResponse<ChatRoomResponse.ListResponse> getChatRoomList(HttpSession session) {
@@ -48,7 +53,9 @@ public class ChatRoomController {
         return ApiResponse.success(response);
     }
 
-    // GET /api/chat/rooms/{roomId}
+    // 성공 시 200 OK
+    // 실패(해당 ID의 채팅방 없음) 시 404 Not Found
+    // 실패(채팅방 참여자 아님) 시 403 Forbidden
     @ResponseBody
     @GetMapping("/api/chat/rooms/{roomId}")
     public ApiResponse<ChatRoomResponse.Detail> getChatRoomDetail(
@@ -59,7 +66,9 @@ public class ChatRoomController {
         return ApiResponse.success(response);
     }
 
-    // GET /api/chat/rooms/{roomId}/unread
+    // 성공 시 200 OK
+    // 실패(해당 ID의 채팅방 없음) 시 404 Not Found
+    // 실패(채팅방 참여자 아님) 시 403 Forbidden
     @ResponseBody
     @GetMapping("/api/chat/rooms/{roomId}/unread")
     public ApiResponse<ChatMessageResponse.UnreadCount> getUnreadCount(
