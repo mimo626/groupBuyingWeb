@@ -91,7 +91,7 @@
 
     <div class="login-area">
       이미 계정이 있나요?
-      <a href="/auth/login.html">로그인</a>
+      <a href="/auth/login">로그인</a> <!-- 수정: /auth/login.html 대신 컨트롤러 매핑 주소 사용 -->
     </div>
   </section>
 </main>
@@ -403,7 +403,7 @@
                   "회원가입 완료",
                   "회원가입이 완료되었습니다. 로그인 화면으로 이동합니다.",
                   function() {
-                      window.location.href = "/auth/login.html";
+                      window.location.href = "/auth/login"; // 수정: /auth/login.html 대신 컨트롤러 매핑 주소 사용
                   }
               );
               return;
