@@ -262,12 +262,13 @@ public class GroupBuyingService {
     /* ================= 공통 로직 ================= */
 
     // 공구 상세 Dto 생성
+    @Transactional
     public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId, String loggedInUserId) {
+        // 조회수 증가
+        groupBuyingRepository.incrementViewCount(groupBuyingId);
+
         // 공동구매 엔티티 조회 (예외 처리 생략)
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
-
-        // 조회수 증가
-        groupBuying.incrementViewCount();
 
         // 현재 모집된 수량
         int currentQuantity = calculateCurrentQuantity(groupBuyingId);
