@@ -91,7 +91,7 @@
 
     <div class="login-area">
       이미 계정이 있나요?
-      <a href="/auth/login">로그인</a> <!-- 수정: /auth/login.html 대신 컨트롤러 매핑 주소 사용 -->
+      <a href="/auth/login">로그인</a>
     </div>
   </section>
 </main>
@@ -110,10 +110,11 @@
 
 <script th:inline="javascript">
   const kakaoJavaScriptKey = /*[[${kakaoJavaScriptKey}]]*/ "";
-  const LOGIN_ID_CHECK_URL = "/auth/login-ids/check"; // 추가: 아이디 중복확인 요청 URL 상수화
-  const NICKNAME_CHECK_URL = "/auth/nicknames/check"; // 추가: 닉네임 중복확인 요청 URL 상수화
-  const SIGNUP_URL = "/auth/signup"; // 추가: 회원가입 요청 URL 상수화
-  const LOGIN_PAGE_URL = "/auth/login"; // 추가: 로그인 화면 이동 URL 상수화
+  const LOGIN_ID_CHECK_URL = "/auth/login-ids/check";
+  const NICKNAME_CHECK_URL = "/auth/nicknames/check";
+  const SIGNUP_URL = "/auth/signup";
+  const LOGIN_PAGE_URL = "/auth/login";
+
   let addressGeocoder = null;
   let kakaoSdkReadyPromise = null;
   let modalConfirmAction = null;
@@ -231,12 +232,65 @@
       });
   });
 
+  function isValidLoginId(loginId) {
+      const loginIdPattern = /^[a-z0-9]{4,20}$/;
+      return loginIdPattern.test(loginId);
+  }
+
+  function isValidNickname(nickname) {
+      const nicknamePattern = /^[가-힣a-zA-Z0-9]{2,10}$/;
+      return nicknamePattern.test(nickname);
+  }
+
+  function isValidPassword(password) {
+      const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$/;
+      return passwordPattern.test(password);
+  }
+
+  function validateLoginIdForCheck(loginId) {
+      if (!loginId) {
+          setMessage("loginIdResult", "아이디를 입력해 주세요.", "fail");
+          return false;
+      }
+
+      if (!isValidLoginId(loginId)) {
+          setMessage("loginIdResult", "아이디는 4자 이상 20자 이하의 영문 소문자와 숫자만 사용할 수 있습니다.", "fail");
+          return false;
+      }
+
+      return true;
+  }
+
+  function validateNicknameForCheck(nickname) {
+      if (!nickname) {
+          setMessage("nicknameResult", "닉네임을 입력해 주세요.", "fail");
+          return false;
+      }
+
+      if (!isValidNickname(nickname)) {
+          setMessage("nicknameResult", "닉네임은 2자 이상 10자 이하의 한글, 영문, 숫자만 사용할 수 있습니다.", "fail");
+          return false;
+      }
+
+      return true;
+  }
+
   function checkPasswordMatch() {
       const password = document.getElementById("password").value;
       const passwordConfirm = document.getElementById("passwordConfirm").value;
 
       if (!password && !passwordConfirm) {
           setMessage("passwordMatchResult", "", "");
+          return false;
+      }
+
+      if (!password) {
+          setMessage("passwordMatchResult", "비밀번호를 입력해주세요.", "fail");
+          return false;
+      }
+
+      if (!isValidPassword(password)) {
+          setMessage("passwordMatchResult", "비밀번호는 영문, 숫자, 특수문자를 포함해 8자 이상 20자 이하로 입력해주세요.", "fail");
           return false;
       }
 
@@ -254,15 +308,33 @@
       return false;
   }
 
+  function validateSignupInput(loginId, nickname, password) {
+      if (!isValidLoginId(loginId)) {
+          openModal("fail", "아이디 조건 확인", "아이디는 4자 이상 20자 이하의 영문 소문자와 숫자만 사용할 수 있습니다.");
+          return false;
+      }
+
+      if (!isValidNickname(nickname)) {
+          openModal("fail", "닉네임 조건 확인", "닉네임은 2자 이상 10자 이하의 한글, 영문, 숫자만 사용할 수 있습니다.");
+          return false;
+      }
+
+      if (!isValidPassword(password)) {
+          openModal("fail", "비밀번호 조건 확인", "비밀번호는 영문, 숫자, 특수문자를 포함해 8자 이상 20자 이하로 입력해주세요.");
+          return false;
+      }
+
+      return true;
+  }
+
   async function checkLoginId() {
       const loginId = document.getElementById("loginId").value.trim();
 
-      if (!loginId) {
-          setMessage("loginIdResult", "아이디를 입력해 주세요.", "fail");
+      if (!validateLoginIdForCheck(loginId)) {
           return;
       }
 
-      const response = await fetch(`${LOGIN_ID_CHECK_URL}?loginId=${encodeURIComponent(loginId)}`); // 수정: URL 상수 사용
+      const response = await fetch(`${LOGIN_ID_CHECK_URL}?loginId=${encodeURIComponent(loginId)}`);
       const data = await response.json();
 
       renderResult(data);
@@ -282,12 +354,11 @@
   async function checkNickname() {
       const nickname = document.getElementById("nickname").value.trim();
 
-      if (!nickname) {
-          setMessage("nicknameResult", "닉네임을 입력해 주세요.", "fail");
+      if (!validateNicknameForCheck(nickname)) {
           return;
       }
 
-      const response = await fetch(`${NICKNAME_CHECK_URL}?nickname=${encodeURIComponent(nickname)}`); // 수정: URL 상수 사용
+      const response = await fetch(`${NICKNAME_CHECK_URL}?nickname=${encodeURIComponent(nickname)}`);
       const data = await response.json();
 
       renderResult(data);
@@ -363,6 +434,10 @@
           return;
       }
 
+      if (!validateSignupInput(loginId, nickname, password)) {
+          return;
+      }
+
       if (!checkPasswordMatch()) {
           openModal("fail", "비밀번호 확인", "비밀번호와 비밀번호 확인값을 확인해 주세요.");
           return;
@@ -390,7 +465,7 @@
       };
 
       try {
-          const response = await fetch(SIGNUP_URL, { // 수정: 회원가입 요청 URL 상수 사용
+          const response = await fetch(SIGNUP_URL, {
               method: "POST",
               headers: {
                   "Content-Type": "application/json"
@@ -407,7 +482,7 @@
                   "회원가입 완료",
                   "회원가입이 완료되었습니다. 로그인 화면으로 이동합니다.",
                   function() {
-                      window.location.href = LOGIN_PAGE_URL; // 수정: 로그인 화면 이동 URL 상수 사용
+                      window.location.href = LOGIN_PAGE_URL;
                   }
               );
               return;
