@@ -42,6 +42,8 @@
 
 <script>
     let currentStatus = 'RECRUITING';
+    const HOSTED_GROUP_BUYINGS_URL = "/members/me/group-buyings"; // 추가: 내가 개설한 공구 목록 요청 URL 상수화
+    const LOGIN_PAGE_URL = "/auth/login"; // 추가: 로그인 화면 이동 URL 상수화
 
     // 상태값을 한글로 매핑해주는 객체
     const statusMap = {
@@ -69,12 +71,12 @@
     }
 
     function requestHostedGroupBuyings(status) {
-        fetch('/api/mypage/group-buys?status=' + encodeURIComponent(status))
+        fetch(`${HOSTED_GROUP_BUYINGS_URL}?status=${encodeURIComponent(status)}`) // 수정: URL 상수 사용
             .then(response => response.json())
             .then(data => {
                 if (data.status === 400 || data.status === 401) {
                     alert(data.message);
-                    location.href = '/auth/login.html';
+                    location.href = LOGIN_PAGE_URL; // 수정: 로그인 이동 URL 상수 사용
                     return;
                 }
                 renderHostedGroupBuyings(data.data || []);

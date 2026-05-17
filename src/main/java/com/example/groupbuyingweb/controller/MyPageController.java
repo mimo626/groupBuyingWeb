@@ -68,32 +68,37 @@ public class MyPageController {
         return ApiResponse.success(dto);
     }
 
+    // 성공 시 200 OK
+    // 실패(공구 진행 상태 값이 잘못된 경우) 시 400 Bad Request
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
-    @GetMapping("/api/mypage/group-buys")
+    @GetMapping("/members/me/group-buyings")
     public ApiResponse<List<MyPageResponse.MyGroupBuyingListItem>> getHostedGroupBuyings(
             @Valid @ModelAttribute MyPageRequest.MyGroupBuyingSearchCondition request,
             HttpSession session
     ) {
-        // 세션에서 현재 로그인한 사용자 ID를 꺼낸다.
         String memberId = loginSessionManager.requireLoginUserId(session);
 
-        // Service에 로그인 사용자 ID와 진행 상태를 넘겨 내가 개설한 공구 목록을 조회한다.
         List<MyPageResponse.MyGroupBuyingListItem> dto =
                 myPageService.getHostedGroupBuyings(memberId, request.status());
 
         return ApiResponse.success(dto);
     }
 
+    // 추가: 성공/실패 상태 코드 기준 주석 정리
+    // 성공 시 200 OK
+    // 실패(공구 진행 상태 값이 잘못된 경우) 시 400 Bad Request
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
-    @GetMapping("/api/mypage/participations")
+    @GetMapping("/members/me/participations") // 수정: 내가 참여한 공구 목록 API URL을 현재 로그인한 회원 기준으로 정리
     public ApiResponse<List<MyPageResponse.MyParticipationListItem>> getParticipatedGroupBuyings(
             @Valid @ModelAttribute MyPageRequest.MyGroupBuyingSearchCondition request,
             HttpSession session
     ) {
-        // 세션에서 현재 로그인한 사용자 ID를 꺼낸다.
         String memberId = loginSessionManager.requireLoginUserId(session);
 
-        // Service에 로그인 사용자 ID와 진행 상태를 넘겨 내가 참여한 공구 이력 목록을 조회한다.
         List<MyPageResponse.MyParticipationListItem> dto =
                 myPageService.getParticipatedGroupBuyings(memberId, request.status());
 

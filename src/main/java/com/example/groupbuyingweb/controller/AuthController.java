@@ -25,8 +25,12 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // 추가: 성공/실패 상태 코드 기준 주석 정리
+    // 성공 시 200 OK
+    // 실패(로그인 아이디 미입력) 시 400 Bad Request
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
-    @GetMapping("/login-id/check")
+    @GetMapping("/login-ids/check") // 수정: 아이디 중복확인 URL을 복수형 자원 기준으로 정리
     public ApiResponse<AuthResponse.DuplicateCheck> checkLoginId(
             @RequestParam("loginId")
             @NotBlank(message = "로그인 아이디를 입력해주세요.")
@@ -36,8 +40,12 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+    // 추가: 성공/실패 상태 코드 기준 주석 정리
+    // 성공 시 200 OK
+    // 실패(닉네임 미입력) 시 400 Bad Request
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
-    @GetMapping("/nickname/check")
+    @GetMapping("/nicknames/check") // 수정: 닉네임 중복확인 URL을 복수형 자원 기준으로 정리
     public ApiResponse<AuthResponse.DuplicateCheck> checkNickname(
             @RequestParam("nickname")
             @NotBlank(message = "닉네임을 입력해주세요.")
@@ -47,6 +55,11 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+    // 추가: 성공/실패 상태 코드 기준 주석 정리
+    // 성공(회원 자원 생성 완료) 시 201 Created
+    // 실패(필수값 누락, 유효성 에러) 시 400 Bad Request
+    // 실패(아이디 또는 닉네임 중복) 시 409 Conflict
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
     @PostMapping("/signup")
     public ApiResponse<AuthResponse.SignupResult> signup(
@@ -56,6 +69,11 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+    // 추가: 성공/실패 상태 코드 기준 주석 정리
+    // 성공 시 200 OK
+    // 실패(필수값 누락, 유효성 에러) 시 400 Bad Request
+    // 실패(로그인 아이디 또는 비밀번호 불일치) 시 401 Unauthorized
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
     @PostMapping("/login")
     public ApiResponse<AuthResponse.LoginResult> login(
@@ -66,12 +84,15 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+    // 추가: 성공/실패 상태 코드 기준 주석 정리
+    // 성공 시 200 OK
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
+    // 실패(서버 내부 오류) 시 500 Internal Server Error
     @ResponseBody
     @PostMapping("/logout")
     public ApiResponse<Void> logout(
             HttpSession session
     ) {
-
         authService.logout(session);
         return ApiResponse.success(null);
     }
