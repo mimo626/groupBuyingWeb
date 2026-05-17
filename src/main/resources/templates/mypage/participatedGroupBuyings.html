@@ -65,12 +65,12 @@
     }
 
     function requestParticipatedGroupBuyings(status) {
-        fetch('/api/mypage/participations?status=' + encodeURIComponent(status))
+        fetch('/members/me/participations?status=' + encodeURIComponent(status)) // 수정: 변경된 내가 참여한 공구 목록 API URL로 요청
             .then(response => response.json())
             .then(data => {
                 if (data.status === 400 || data.status === 401) {
                     alert(data.message);
-                    location.href = '/loginTest.html';
+                    location.href = '/auth/login'; // 수정: /auth/login.html 대신 컨트롤러 매핑 주소 사용
                     return;
                 }
 
