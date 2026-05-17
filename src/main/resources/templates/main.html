@@ -88,7 +88,7 @@
 <div class="container">
 
     <!-- 검색 폼 (서버로 파라미터 전송용) -->
-    <form id="searchForm" action="/list" method="get">
+    <form id="searchForm" th:action="@{/group-buying/list}" method="get">
 
         <!-- 1. 검색 바 -->
         <div class="search-container">
@@ -98,14 +98,25 @@
 
         <!-- 2. 카테고리 필터 -->
         <div class="category-list">
-            <!-- 선택된 카테고리에 active 클래스 부여 -->
-            <button type="button" class="category-btn active" onclick="setCategory('')">전체</button>
-            <button type="button" class="category-btn" onclick="setCategory('LIVING')">생활용품</button>
-            <button type="button" class="category-btn" onclick="setCategory('BEAUTY')">미용용품</button>
-            <button type="button" class="category-btn" onclick="setCategory('FOOD')">식품</button>
-            <button type="button" class="category-btn" onclick="setCategory('CLOTHES')">의류/잡화</button>
-            <!-- 숨겨진 input으로 카테고리 값 전송 -->
-            <input type="hidden" id="categoryInput" name="category" th:value="${param.category}">
+            <!-- '전체' 카테고리 (기본값) -->
+            <!-- #strings.isEmpty()를 사용하면 null과 빈 문자열('')을 한 번에 안전하게 체크할 수 있습니다. -->
+            <button type="button"
+                    class="category-btn"
+                    th:classappend="${#strings.isEmpty(selectedCategory)} ? 'active' : ''"
+                    onclick="setCategory('')">전체</button>
+
+            <!-- Java Enum 카테고리 반복 -->
+            <th:block th:each="c : ${category}">
+                <button type="button"
+                        class="category-btn"
+                        th:classappend="${#strings.equals(selectedCategory, c.name)} ? 'active'"
+                        th:data-category="${c.name}"
+                        onclick="setCategory(this.getAttribute('data-category'))"
+                        th:text="${c.description}"></button>
+            </th:block>
+
+            <!-- 숨겨진 input으로 카테고리 값 전송 (param 대신 모델의 selectedCategory 사용) -->
+            <input type="hidden" id="categoryInput" name="category" th:value="${selectedCategory}">
         </div>
 
         <!-- 3. 섹션 헤더 (타이틀, 정렬, 공구 개설) -->
@@ -118,9 +129,12 @@
             <div class="controls">
                 <!-- 정렬 드롭다운 (변경 시 폼 자동 서브밋) -->
                 <select name="sort" class="sort-select" onchange="document.getElementById('searchForm').submit();">
-                    <option value="createdAt,desc" th:selected="${param.sort != null and param.sort[0] == 'createdAt,desc'}">최신순</option>
-                    <option value="deadline,asc" th:selected="${param.sort != null and param.sort[0] == 'deadline,asc'}">마감임박순</option>
-                    <option value="viewCount,desc" th:selected="${param.sort != null and param.sort[0] == 'viewCount,desc'}">인기순</option>
+                    <th:block th:each="sortType : ${sorts}">
+                        <option th:value="${sortType.sortValue}"
+                                th:text="${sortType.description}"
+                                th:selected="${(param.sort == null and sortType.name() == 'LATEST') or (param.sort != null and param.sort[0] == sortType.sortValue)}">
+                        </option>
+                    </th:block>
                 </select>
 
                 <!-- 공구 개설 버튼 (form 바깥 로직이므로 type="button") -->
