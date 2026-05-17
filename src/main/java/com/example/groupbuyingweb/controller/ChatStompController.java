@@ -41,6 +41,9 @@ public class ChatStompController {
      * @param principal MemberPrincipalHandshakeHandler에서 생성한 인증 객체.
      *                  principal.getName()이 세션의 member_id(UUID)를 반환함
      */
+    // 성공 시 /topic/chat/room/{roomId} 구독자 전체에게 브로드캐스트
+    // 실패(채팅방 참여자 아님) 시 403 Forbidden에 해당하는 BusinessException 발생
+    // 실패(인증되지 않은 사용자) 시 WebSocket 핸드셰이크 단계에서 401 Unauthorized로 연결 거부
     @MessageMapping("/chat/room/{roomId}")
     @SendTo("/topic/chat/room/{roomId}")
     public ChatRoomResponse.Message send(

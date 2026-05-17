@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
  * 채팅방 목록/상세 조회처럼 HTTP 요청으로 처리할 수 있는 기능은 여기서 담당함
  */
 @Controller
-@RequestMapping("/chat")
 @RequiredArgsConstructor
 public class ChatRoomController {
 
@@ -28,46 +27,37 @@ public class ChatRoomController {
 
     // ──────────────── 페이지 렌더링 ────────────────
 
-    @GetMapping("/rooms-test")
+    // 성공 시 200 OK
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
+    @GetMapping("/chat/rooms")
     public String chatRoomListPage() {
         return "chat/list";
     }
 
-    @GetMapping("/rooms-test/{roomId}")
+    // 성공 시 200 OK
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
+    @GetMapping("/chat/rooms/{roomId}")
     public String chatRoomDetailPage(@PathVariable Long roomId) {
         return "chat/detail";
     }
 
     // ──────────────── REST API ────────────────
 
-    /**
-     * 내 채팅방 목록 조회
-     *
-     * GET /chat/api/rooms
-     *
-     * 세션에서 memberId를 꺼내 서비스에 전달
-     * 반환값에는 각 채팅방의 마지막 메시지와 안 읽은 메시지 수 포함
-     */
+    // 성공 시 200 OK
+    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
     @ResponseBody
-    @GetMapping("/api/rooms")
+    @GetMapping("/api/chat/rooms")
     public ApiResponse<ChatRoomResponse.ListResponse> getChatRoomList(HttpSession session) {
         String memberId = loginSessionManager.requireLoginUserId(session);
         ChatRoomResponse.ListResponse response = chatRoomService.getChatRoomList(memberId);
         return ApiResponse.success(response);
     }
 
-    /**
-     * 채팅방 상세 조회
-     *
-     * GET /chat/api/rooms/{roomId}
-     *
-     * 전체 메시지 목록, 안 읽은 수, 공동구매 상태 등 반환
-     * 조회 시 자동으로 읽음 처리가 수행됨 (lastReadMessageId 갱신)
-     *
-     * @param: roomId 조회할 채팅방 ID (URL 경로에서 추출)
-     */
+    // 성공 시 200 OK
+    // 실패(해당 ID의 채팅방 없음) 시 404 Not Found
+    // 실패(채팅방 참여자 아님) 시 403 Forbidden
     @ResponseBody
-    @GetMapping("/api/rooms/{roomId}")
+    @GetMapping("/api/chat/rooms/{roomId}")
     public ApiResponse<ChatRoomResponse.Detail> getChatRoomDetail(
             @PathVariable Long roomId,
             HttpSession session) {
@@ -76,18 +66,11 @@ public class ChatRoomController {
         return ApiResponse.success(response);
     }
 
-    /**
-     * 특정 채팅방의 안 읽은 메시지 수 조회
-     *
-     * GET /chat/api/rooms/{roomId}/unread
-     *
-     * 채팅방 목록 화면에서 배지 숫자를 실시간으로 갱신할 때 사용
-     * 전체 목록/상세를 다시 불러오지 않고 카운트만 빠르게 반환
-     *
-     * @param: roomId 안 읽은 수를 조회할 채팅방 ID
-     */
+    // 성공 시 200 OK
+    // 실패(해당 ID의 채팅방 없음) 시 404 Not Found
+    // 실패(채팅방 참여자 아님) 시 403 Forbidden
     @ResponseBody
-    @GetMapping("/api/rooms/{roomId}/unread")
+    @GetMapping("/api/chat/rooms/{roomId}/unread")
     public ApiResponse<ChatMessageResponse.UnreadCount> getUnreadCount(
             @PathVariable Long roomId,
             HttpSession session) {

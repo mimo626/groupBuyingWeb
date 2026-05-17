@@ -39,7 +39,7 @@ public enum ErrorCode {
     EXCEED_TARGET_QUANTITY(400, "모집 수량을 초과하여 신청할 수 없습니다."),
 
     // 채팅
-    NOT_EXIST_CHAT_ROOM(400, "존재하지 않는 채팅방입니다."),
+    NOT_EXIST_CHAT_ROOM(404, "존재하지 않는 채팅방입니다."),
     NOT_CHAT_PARTICIPANT(403, "채팅방 참여자가 아닙니다.");
 
     private final int status;
