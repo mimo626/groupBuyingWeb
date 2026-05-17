@@ -6,6 +6,7 @@ import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -41,5 +42,8 @@ public interface GroupBuyingRepository extends JpaRepository<GroupBuying, Long> 
     // Status가 일치하고 Deadline이 지정된 시간보다 이전(Before)인 데이터 조회
     List<GroupBuying> findAllByStatusAndDeadlineBefore(GroupBuyingStatus status, LocalDateTime now);
 
-
+    // DB에서 직접 조회수를 +1 올리는 쿼리
+    @Modifying
+    @Query("UPDATE GroupBuying g SET g.viewCount = g.viewCount + 1 WHERE g.id = :id")
+    void incrementViewCount(@Param("id") Long id);
 }
