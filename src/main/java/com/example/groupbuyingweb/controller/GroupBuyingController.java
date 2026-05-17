@@ -5,6 +5,7 @@ import com.example.groupbuyingweb.core.session.LoginSessionManager;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingSort;
 import com.example.groupbuyingweb.service.GroupBuyingService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -96,13 +97,16 @@ public class GroupBuyingController {
         Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable, loggedInUserId);
         String categoryName = (condition.category() != null) ? condition.category().name() : null;
 
+        // 카테고리 데이터
         model.addAttribute("category", GroupBuyingCategory.values());
         model.addAttribute("selectedCategory", categoryName);
+
+        // 정렬 데이터
+        model.addAttribute("sorts", GroupBuyingSort.values());
 
         model.addAttribute("groupBuyings", list);
         return "main";
     }
-
 
     @ResponseBody
     @PatchMapping("/{id}/status")
