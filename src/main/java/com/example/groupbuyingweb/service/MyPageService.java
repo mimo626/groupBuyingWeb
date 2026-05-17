@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
@@ -209,7 +208,7 @@ public class MyPageService {
                 .orElseThrow();
         GroupBuying groupBuying = participation.getGroupBuying();
 
-        int CurrentQuantity = participationRepository.sumQuantity(groupBuying.getId()); // 공구 현재 수량
+        int currentQuantity = participationRepository.sumQuantity(groupBuying.getId()); // 공구 현재 수량
 
 
         List<MyPageResponse.ProgressStep> steps = getProgressSteps(groupBuying);
@@ -222,7 +221,7 @@ public class MyPageService {
                 groupBuying.getProductContent(),
                 groupBuying.getTotalPrice(),
                 groupBuying.getTargetQuantity(),
-                CurrentQuantity,
+                currentQuantity,
                 participation.getApplyQuantity(),
                 participation.getPaidPoint(),
                 participation.getPaymentStatus(),

@@ -108,7 +108,7 @@
         document.getElementById('product-name').innerText = detail.productName || '';
 
         if (detail.totalPrice !== undefined) {
-            document.getElementById('unit-price').innerText = detail.totalPrice.toLocaleString() + '원';
+            document.getElementById('unit-price').innerText = (detail.totalPrice / detail.targetQuantity).toLocaleString() + '원';
         }
         if (detail.applyQuantity !== undefined) {
             document.getElementById('apply-quantity').innerText = ` × ${detail.applyQuantity}개`;

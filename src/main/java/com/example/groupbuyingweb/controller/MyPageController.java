@@ -102,7 +102,7 @@ public class MyPageController {
 
     //@GetMapping("/api/members/me/group-buying/participations/{participationId}")
     // 성공 : 200 ok
-    // 실패 : 400 그런 공구or공구 참여 기록 없음
+    // 실패 : 400 공구or공구 참여 기록 없음
     // 실패 : 500 내부 서버 오류
     @ResponseBody
     @GetMapping("/api/mypage/participations/{participationId}")
