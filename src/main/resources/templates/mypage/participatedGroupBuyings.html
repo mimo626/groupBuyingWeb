@@ -38,6 +38,8 @@
 
 <script>
     let currentStatus = 'RECRUITING';
+    const PARTICIPATED_GROUP_BUYINGS_URL = "/members/me/participations"; // 추가: 내가 참여한 공구 목록 요청 URL 상수화
+    const LOGIN_PAGE_URL = "/auth/login"; // 추가: 로그인 화면 이동 URL <상수화></상수화>
 
     // 피그마 시안에 맞춘 상태 텍스트 및 컬러 테마 매핑
     const statusConfig = {
@@ -65,12 +67,12 @@
     }
 
     function requestParticipatedGroupBuyings(status) {
-        fetch('/members/me/participations?status=' + encodeURIComponent(status)) // 수정: 변경된 내가 참여한 공구 목록 API URL로 요청
+        fetch(`${PARTICIPATED_GROUP_BUYINGS_URL}?status=${encodeURIComponent(status)}`) // 수정: URL 상수 사용
             .then(response => response.json())
             .then(data => {
                 if (data.status === 400 || data.status === 401) {
                     alert(data.message);
-                    location.href = '/auth/login'; // 수정: /auth/login.html 대신 컨트롤러 매핑 주소 사용
+                    location.href = LOGIN_PAGE_URL; // 수정: 로그인 이동 URL 상수 사용
                     return;
                 }
 
