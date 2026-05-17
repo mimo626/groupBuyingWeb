@@ -10,6 +10,7 @@ import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
 import com.example.groupbuyingweb.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -191,11 +192,7 @@ public class GroupBuyingService {
                             .orElse(null);
 
                     // D-Day 계산
-                    String dDayString = calculateDday(groupBuying.getDeadline());
-
-                    if(dDayString.equals("마감")) {
-                        groupBuying.updateStatus(GroupBuyingStatus.CLOSED);
-                    }
+                    String dDayString = calculateDday(groupBuying);
 
                     // DTO 변환 시 thumbnailUrl 추가
                     return GroupBuyingResponse.GroupBuyings.of(groupBuying, thumbnailUrl, currentQuantity, dDayString);
@@ -203,7 +200,7 @@ public class GroupBuyingService {
     }
     // 공구 진행 상태 변경
     @Transactional
-    public GroupBuyingResponse.UpdateStatus updateStatusFromRequest(Long groupBuyingId, GroupBuyingRequest.UpdateStatus request) {
+    public GroupBuyingResponse.UpdateStatus updateStatusFromRequest(Long groupBuyingId, GroupBuyingRequest.@NonNull UpdateStatus request) {
         // 상태 변경 로직 호출 (DTO의 값들을 풀어서 전달)
         GroupBuying updatedGroupBuying = processStatusChange(
                 groupBuyingId, request.status(), request.trackingNumber(), request.meetingAt()
@@ -218,6 +215,8 @@ public class GroupBuyingService {
         GroupBuying groupBuying = groupBuyingRepository.findById(groupBuyingId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_GROUP_BUYING));
 
+        // 변경 전 상태 기록
+        GroupBuyingStatus previousStatus = groupBuying.getStatus();
         groupBuying.updateStatus(newStatus);
 
         switch (newStatus) {
@@ -245,12 +244,13 @@ public class GroupBuyingService {
                 break;
             }
         }
-        // TODO 상태 변경 시 어떤 내용을 전달할 지 정하기
-        // 변경된 상태
-//        chatRoomService.sendSystemMessage(newStatus.getDescription());
 
-        chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus);
-
+        // 모집 중 -> 공구 종료로 직행한 경우(채팅방 없음) 시스템 메시지 전송 생략
+        if (previousStatus == GroupBuyingStatus.RECRUITING && newStatus == GroupBuyingStatus.CLOSED) {
+            System.out.println("모집 기간 만료 마감. 채팅방이 없어 시스템 메시지를 생략합니다.");
+        } else {
+            chatRoomService.sendSystemMessage(groupBuying.getId(), newStatus);
+        }
         return groupBuying; // 변경된 엔티티 반환
     }
 
@@ -327,7 +327,8 @@ public class GroupBuyingService {
     }
 
     // 디데이 계산
-    private String calculateDday(LocalDateTime deadline) {
+    private String calculateDday(GroupBuying groupBuying) {
+        LocalDateTime deadline = groupBuying.getDeadline();
         LocalDateTime now = LocalDateTime.now();
 
         // 1. 이미 마감 기한이 지난 경우
