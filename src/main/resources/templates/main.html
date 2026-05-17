@@ -88,7 +88,7 @@
 <div class="container">
 
     <!-- 검색 폼 (서버로 파라미터 전송용) -->
-    <form id="searchForm" action="/list" method="get">
+    <form id="searchForm" th:action="@{/group-buying/list}" method="get">
 
         <!-- 1. 검색 바 -->
         <div class="search-container">
@@ -99,21 +99,24 @@
         <!-- 2. 카테고리 필터 -->
         <div class="category-list">
             <!-- '전체' 카테고리 (기본값) -->
+            <!-- #strings.isEmpty()를 사용하면 null과 빈 문자열('')을 한 번에 안전하게 체크할 수 있습니다. -->
             <button type="button"
                     class="category-btn"
-                    th:classappend="${selectedCategory == null or selectedCategory == ''} ? 'active' : ''"
+                    th:classappend="${#strings.isEmpty(selectedCategory)} ? 'active' : ''"
                     onclick="setCategory('')">전체</button>
 
             <!-- Java Enum 카테고리 반복 -->
             <th:block th:each="c : ${category}">
                 <button type="button"
                         class="category-btn"
-                        th:classappend="${selectedCategory == c.name()} ? 'active' : ''"
-                        th:onclick="|setCategory('${c.name()}')|"
+                        th:classappend="${#strings.equals(selectedCategory, c.name)} ? 'active'"
+                        th:data-category="${c.name}"
+                        onclick="setCategory(this.getAttribute('data-category'))"
                         th:text="${c.description}"></button>
             </th:block>
-            <!-- 숨겨진 input으로 카테고리 값 전송 -->
-            <input type="hidden" id="categoryInput" name="category" th:value="${param.category}">
+
+            <!-- 숨겨진 input으로 카테고리 값 전송 (param 대신 모델의 selectedCategory 사용) -->
+            <input type="hidden" id="categoryInput" name="category" th:value="${selectedCategory}">
         </div>
 
         <!-- 3. 섹션 헤더 (타이틀, 정렬, 공구 개설) -->
