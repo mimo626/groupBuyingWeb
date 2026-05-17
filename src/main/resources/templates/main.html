@@ -129,9 +129,12 @@
             <div class="controls">
                 <!-- 정렬 드롭다운 (변경 시 폼 자동 서브밋) -->
                 <select name="sort" class="sort-select" onchange="document.getElementById('searchForm').submit();">
-                    <option value="createdAt,desc" th:selected="${param.sort != null and param.sort[0] == 'createdAt,desc'}">최신순</option>
-                    <option value="deadline,asc" th:selected="${param.sort != null and param.sort[0] == 'deadline,asc'}">마감임박순</option>
-                    <option value="viewCount,desc" th:selected="${param.sort != null and param.sort[0] == 'viewCount,desc'}">인기순</option>
+                    <th:block th:each="sortType : ${sorts}">
+                        <option th:value="${sortType.sortValue}"
+                                th:text="${sortType.description}"
+                                th:selected="${(param.sort == null and sortType.name() == 'LATEST') or (param.sort != null and param.sort[0] == sortType.sortValue)}">
+                        </option>
+                    </th:block>
                 </select>
 
                 <!-- 공구 개설 버튼 (form 바깥 로직이므로 type="button") -->
