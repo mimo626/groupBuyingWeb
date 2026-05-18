@@ -238,7 +238,11 @@ public class GroupBuyingService {
                 //pointService.settlePoint(groupBuyingId);
             }
             case CLOSED -> {
-                //TODO 공구 종료
+                //TODO 공구 종료 시
+                // 주최자 보상 (도토리레벨 x 100) 포인트 지급
+                Member organizer = groupBuying.getMember();
+                Double acornLevel = (double) Math.min(20, (organizer.getAcornExp() / 10) + 1);
+                pointService.chargePoint(organizer.getId(), acornLevel * 100);
             }
             default -> {
                 break;
