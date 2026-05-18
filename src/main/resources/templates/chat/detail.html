@@ -451,10 +451,10 @@
     }
 
     function settlePoint() {
-      fetch("/api/point/settle", {
+      fetch(`/api/group-buyings/${groupPurchaseId}/settlements/me`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupBuyingId: groupPurchaseId })
+        headers: { "Content-Type": "application/json" }
+        //body: JSON.stringify({ groupBuyingId: groupPurchaseId })
       })
         .then(res => res.json())
         .then(data => {

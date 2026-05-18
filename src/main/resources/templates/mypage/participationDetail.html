@@ -64,6 +64,9 @@
 </main>
 
 <script th:inline="javascript">
+    const API_PARTICIPATION_DETAIL_URL = `/api/mypage/participations/`; // /api/mypage/participations/{participationId}
+    const API_GROUP_BUYING_URL = `/group-buying/`;
+
     window.onload = function() {
         const pathSegments = window.location.pathname.split('/');
         const participationId = pathSegments[pathSegments.length - 1];
@@ -84,7 +87,7 @@
     };
 
     function fetchParticipationDetail(id) {
-        const apiUrl = `/api/mypage/participations/${id}`;
+        const apiUrl = API_PARTICIPATION_DETAIL_URL + id;
 
         fetch(apiUrl)
             .then(response => response.json())
@@ -94,6 +97,11 @@
                     renderDetail(detail);
                 } else {
                     alert("정보를 불러오는데 실패했습니다: " + data.message);
+                    if (document.referrer) {
+                        location.href = document.referrer;
+                    } else {
+                        history.back();
+                    }
                 }
             })
             .catch(error => {
@@ -119,7 +127,7 @@
 
         document.getElementById('summary-section').addEventListener('click', function () {
             if (detail.groupBuyingId) {
-                location.href = `/group-buying/${detail.groupBuyingId}`;
+                location.href = API_GROUP_BUYING_URL + detail.groupBuyingId;
             } else {
                 alert("해당 공구 원본 정보를 찾을 수 없습니다.");
             }

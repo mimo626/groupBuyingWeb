@@ -52,6 +52,9 @@
 </main>
 
 <script th:inline="javascript">
+    const POINT_CHARGE_URL = `/api/members/me/point`;
+    const MYPAGE_URL = '/mypage';
+
     window.onload = function() {
         // 뒤로가기 화살표 이벤트 연결
         document.getElementById('btn-back-arrow').addEventListener('click', function() {
@@ -85,7 +88,7 @@
         }
 
         // API 엔드포인트 및 방식
-        const apiUrl = `/api/point/charge?point`; //api/members/me/point
+        const apiUrl = POINT_CHARGE_URL; //api/members/me/point
         const requestOptions = {
             method: 'PATCH',
             headers: {
@@ -120,7 +123,7 @@
         if (document.referrer) {
             location.href = document.referrer;
         } else {
-            location.href = '/mypage';
+            location.href = MYPAGE_URL;
         }
     }
 </script>

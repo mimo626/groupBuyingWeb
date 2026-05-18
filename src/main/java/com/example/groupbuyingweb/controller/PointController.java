@@ -25,8 +25,8 @@ public class PointController {
 //
 //    }
 //
-    //@PatchMapping("/api/members/me/point") 멤버리소스/마이페이지/포인트리소스 업데이트
-    @PostMapping("/api/point/charge")
+    //@PostMapping("/api/point/charge")
+    @PatchMapping("/api/members/me/point") //멤버리소스/마이페이지/포인트리소스 업데이트
     @ResponseBody
     public ApiResponse<?> chargePoint(
             // 성공 : 200 OK
@@ -39,8 +39,9 @@ public class PointController {
         GroupBuyingParticipationResponse.UserResult dto = pointService.chargePoint(memberId, charge);
         return ApiResponse.success(dto);
     }
-    //@PostMapping("/api/group-buyings/{groupBuyingId}/settlements/me") // 복수의 공구리소스 /중 하나의/(추상적)정산 리소스/마이페이지
-    @PostMapping("/api/point/settle")
+
+    //@PostMapping("/api/point/settle")
+    @PostMapping("/api/group-buyings/{groupBuyingId}/settlements/me") // 복수의 공구리소스 /중 하나의/(추상적)정산 리소스/마이페이지
     @ResponseBody
     public ApiResponse<?> sendPointToOrganizer(
             // 성공 : 200 ok
@@ -49,9 +50,10 @@ public class PointController {
             // 실패 : 500 서버 내부 오류
             // 실패 : 401 로그인 오류
             @RequestBody GroupBuyingParticipationRequest.Send request,
+            @PathVariable Long groupBuyingId,
             HttpSession session){
         String memberId = loginSessionManager.requireLoginUserId(session);
-        GroupBuyingParticipationResponse.SettleResult dto = pointService.settlePoint(request.groupBuyingId(), memberId);
+        GroupBuyingParticipationResponse.SettleResult dto = pointService.settlePoint(groupBuyingId, memberId);
         return ApiResponse.success(dto); // 공구 참여자 전체 정산 완료 : true / 아니면 false
     }
 }
