@@ -303,15 +303,19 @@
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
 </script>
 <script type="text/javascript" th:inline="javascript">
+    const HOME_URL = "/api/group-buyings";
+    const CHAT_ROOMS_URL = "/api/chat/rooms";
+    const MY_PAGE_URL = "/api/mypage";
+
     // 헤더 버튼 라우팅 (메인과 동일하게 추가)
     document.getElementById("homeBtn").addEventListener("click", () => {
-        window.location.href = "/group-buyings";
+        window.location.href = HOME_URL;
     });
     document.getElementById("chattingBtn").addEventListener("click", () => {
-        window.location.href = "/chat/rooms";
+        window.location.href = CHAT_ROOMS_URL;
     });
     document.getElementById("myPageBtn").addEventListener("click", () => {
-        window.location.href = "/mypage";
+        window.location.href = MY_PAGE_URL;
     });
 
     // KakaoMap API 로직
@@ -360,7 +364,7 @@
     }
 
     // --- 참여 신청 API 통신 로직 ---
-    function participate(groupBuyingId) {
+    function participate(id) {
         const quantityStr = prompt("신청할 수량을 입력해주세요. (숫자만 입력)");
 
         if (quantityStr === null || quantityStr.trim() === "") return;
@@ -372,7 +376,7 @@
         }
 
         const form = document.createElement("form");
-        form.setAttribute("action", `/group-buying/${groupBuyingId}/participate`);
+        form.setAttribute("action", `/api/group-buyings/${id}/participants`);
         form.setAttribute("method", "POST");
 
         const inputQuantity = document.createElement("input");
