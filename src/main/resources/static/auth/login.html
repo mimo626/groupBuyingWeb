@@ -49,6 +49,7 @@
 </div>
 
 <script>
+  const HOME_URL = "/api/group-buyings";
   const loginIdInput = document.getElementById("loginId");
   const passwordInput = document.getElementById("password");
   const loginBtn = document.getElementById("loginBtn");
@@ -62,95 +63,95 @@
   let modalConfirmAction = null;
 
   function openModal(type, title, message, confirmAction) {
-    modalIcon.className = "modal-icon " + type;
-    modalIcon.textContent = type === "success" ? "✓" : "!";
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
-    modalConfirmAction = confirmAction || null;
-    modalBackdrop.classList.add("is-open");
+  modalIcon.className = "modal-icon " + type;
+  modalIcon.textContent = type === "success" ? "✓" : "!";
+  modalTitle.textContent = title;
+  modalMessage.textContent = message;
+  modalConfirmAction = confirmAction || null;
+  modalBackdrop.classList.add("is-open");
   }
 
   function closeModal() {
-    modalBackdrop.classList.remove("is-open");
-    modalConfirmAction = null;
+  modalBackdrop.classList.remove("is-open");
+  modalConfirmAction = null;
   }
 
   modalConfirmBtn.addEventListener("click", () => {
-    if (modalConfirmAction) {
-      modalConfirmAction();
-      return;
-    }
+  if (modalConfirmAction) {
+    modalConfirmAction();
+    return;
+  }
 
-    closeModal();
+  closeModal();
   });
 
   modalBackdrop.addEventListener("click", (event) => {
-    if (event.target === modalBackdrop) {
-      closeModal();
-    }
+  if (event.target === modalBackdrop) {
+    closeModal();
+  }
   });
 
   loginBtn.addEventListener("click", async () => {
-    const loginId = loginIdInput.value.trim();
-    const password = passwordInput.value.trim();
+  const loginId = loginIdInput.value.trim();
+  const password = passwordInput.value.trim();
 
-    if (!loginId || !password) {
+  if (!loginId || !password) {
+    openModal(
+      "fail",
+      "입력값 확인",
+      "아이디와 비밀번호를 모두 입력해 주세요."
+    );
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = "로그인 중...";
+
+  try {
+    const response = await fetch("/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        loginId: loginId,
+        password: password
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.status == 200) {
+      openModal(
+        "success",
+        "로그인 성공",
+        "메인 화면으로 이동합니다.",
+        () => {
+          window.location.href = HOME_URL;
+        }
+      );
+    } else {
       openModal(
         "fail",
-        "입력값 확인",
-        "아이디와 비밀번호를 모두 입력해 주세요."
+        "로그인 실패",
+        "아이디와 비밀번호를 다시 확인해 주세요."
       );
-      return;
     }
 
-    loginBtn.disabled = true;
-    loginBtn.textContent = "로그인 중...";
+  } catch (error) {
+    console.error("로그인 요청 중 오류 발생:", error);
 
-    try {
-      const response = await fetch("/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          loginId: loginId,
-          password: password
-        })
-      });
+    openModal(
+      "fail",
+      "서버 통신 오류",
+      "서버와 통신하는 중 문제가 발생했습니다."
+    );
 
-      const data = await response.json();
-
-      if (data.status == 200) {
-        openModal(
-          "success",
-          "로그인 성공",
-          "메인 화면으로 이동합니다.",
-          () => {
-            window.location.href = "/group-buyings";
-          }
-        );
-      } else {
-        openModal(
-          "fail",
-          "로그인 실패",
-          "아이디와 비밀번호를 다시 확인해 주세요."
-        );
-      }
-
-    } catch (error) {
-      console.error("로그인 요청 중 오류 발생:", error);
-
-      openModal(
-        "fail",
-        "서버 통신 오류",
-        "서버와 통신하는 중 문제가 발생했습니다."
-      );
-
-    } finally {
-      loginBtn.disabled = false;
-      loginBtn.textContent = "로그인";
-    }
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "로그인";
+  }
   });
 </script>
 </body>
