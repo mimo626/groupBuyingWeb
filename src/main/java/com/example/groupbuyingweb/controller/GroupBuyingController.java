@@ -24,7 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/group-buyings")
+@RequestMapping("/api/group-buyings")
 public class GroupBuyingController {
     @Autowired
     private GroupBuyingService groupBuyingService;
@@ -60,7 +60,7 @@ public class GroupBuyingController {
         System.out.println(request.toString());
         GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, loggedInUserId);
 
-        return "redirect:/group-buyings/" + res.groupBuyingId();
+        return "redirect:/api/group-buyings/" + res.groupBuyingId();
     }
 
     // 성공 시 200 OK
@@ -93,7 +93,7 @@ public class GroupBuyingController {
 
         redirectAttributes.addFlashAttribute("participateSuccess", true);
 
-        return "redirect:/group-buyings/" + groupBuyingId;
+        return "redirect:/api/group-buyings/" + groupBuyingId;
     }
 
     // 성공 시 200 OK
