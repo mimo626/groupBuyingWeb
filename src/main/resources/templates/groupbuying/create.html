@@ -165,7 +165,7 @@
         <span>공구 개설</span>
     </div>
 
-    <form action="/group-buying/create" method="post" enctype="multipart/form-data" id="createForm">
+    <form action="/api/group-buyings" method="post" enctype="multipart/form-data" id="createForm">
         <div class="form-group">
             <label>공구 제목 <span class="required">*</span></label>
             <input type="text" name="title" class="form-control" placeholder="예: 신선 딸기 공구" required>
@@ -248,79 +248,82 @@
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
 </script>
 <script type="text/javascript" th:inline="javascript">
-    // 헤더 버튼 라우팅
-    document.getElementById("homeBtn").addEventListener("click", () => {
-        window.location.href = "/group-buyings";
-    });
-    document.getElementById("chattingBtn").addEventListener("click", () => {
-        window.location.href = "/chat/rooms";
-    });
-    document.getElementById("myPageBtn").addEventListener("click", () => {
-        window.location.href = "/mypage";
-    });
+    const HOME_URL = "/api/group-buyings";
+    const CHAT_ROOMS_URL = "/api/chat/rooms";
+    const MY_PAGE_URL = "/api/mypage";
+  // 헤더 버튼 라우팅
+  document.getElementById("homeBtn").addEventListener("click", () => {
+      window.location.href = HOME_URL;
+  });
+  document.getElementById("chattingBtn").addEventListener("click", () => {
+      window.location.href = CHAT_ROOMS_URL;
+  });
+  document.getElementById("myPageBtn").addEventListener("click", () => {
+      window.location.href = MY_PAGE_URL;
+  });
 
-    // JS 3개 제한 로직
-    document.getElementById('imageInput').addEventListener('change', function() {
-        if (this.files.length > 3) {
-            alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
-            this.value = '';
-        }
-    });
+  // JS 3개 제한 로직
+  document.getElementById('imageInput').addEventListener('change', function() {
+      if (this.files.length > 3) {
+          alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
+          this.value = '';
+      }
+  });
 
-    // kakaoMap 설정 로직
-    var mapContainer = document.getElementById('map');
-    var geocoder = new kakao.maps.services.Geocoder();
-    var map, marker, infowindow;
-    var userAddress = [[${memberAddress}]];
+  // kakaoMap 설정 로직
+  var mapContainer = document.getElementById('map');
+  var geocoder = new kakao.maps.services.Geocoder();
+  var map, marker, infowindow;
+  var userAddress = [[${memberAddress}]];
 
-    // 좌표, 주소, 인포윈도우 텍스트를 받아서 한 번에 업데이트 해주는 함수
-    function updateLocationData(coords, detailAddr, infoText) {
-        // 숨겨진 input 값들 업데이트
-        document.getElementById('entX').value = coords.getLng();
-        document.getElementById('entY').value = coords.getLat();
-        document.getElementById('meetingAddress').value = detailAddr;
+  // 좌표, 주소, 인포윈도우 텍스트를 받아서 한 번에 업데이트 해주는 함수
+  function updateLocationData(coords, detailAddr, infoText) {
+      // 숨겨진 input 값들 업데이트
+      document.getElementById('entX').value = coords.getLng();
+      document.getElementById('entY').value = coords.getLat();
+      document.getElementById('meetingAddress').value = detailAddr;
 
-        // 마커 위치 이동
-        marker.setPosition(coords);
+      // 마커 위치 이동
+      marker.setPosition(coords);
 
-        // 인포윈도우 텍스트 변경 및 열기
-        infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">' + infoText + '</div>');
-        infowindow.open(map, marker);
-    }
+      // 인포윈도우 텍스트 변경 및 열기
+      infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">' + infoText + '</div>');
+      infowindow.open(map, marker);
+  }
 
-    // 초기 주소 검색
-    geocoder.addressSearch(userAddress, function(result, status) {
-        if (status === kakao.maps.services.Status.OK) {
-            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-            var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+  // 초기 주소 검색
+  geocoder.addressSearch(userAddress, function(result, status) {
+      if (status === kakao.maps.services.Status.OK) {
+          var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+          var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
 
-            // 지도 및 마커, 인포윈도우 객체 생성
-            map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
-            marker = new kakao.maps.Marker({ map: map, position: coords });
-            infowindow = new kakao.maps.InfoWindow();
+          // 지도 및 마커, 인포윈도우 객체 생성
+          map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
+          marker = new kakao.maps.Marker({ map: map, position: coords });
+          infowindow = new kakao.maps.InfoWindow();
 
-            // 초기 로딩 시 주소 데이터 업데이트
-            updateLocationData(coords, detailAddr, '만남 장소');
+          // 초기 로딩 시 주소 데이터 업데이트
+          updateLocationData(coords, detailAddr, '만남 장소');
 
-            // 지도 클릭 이벤트
-            kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
-                var latlng = mouseEvent.latLng;
+          // 지도 클릭 이벤트
+          kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+              var latlng = mouseEvent.latLng;
 
-                // 좌표를 통해 주소를 가져온 뒤
-                geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
-                    if (status === kakao.maps.services.Status.OK) {
-                        var newDetailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+              // 좌표를 통해 주소를 가져온 뒤
+              geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+                  if (status === kakao.maps.services.Status.OK) {
+                      var newDetailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
 
-                        // 클릭 시 주소 데이터 업데이트
-                        updateLocationData(latlng, newDetailAddr, '만남 장소');
-                    }
-                });
-            });
+                      // 클릭 시 주소 데이터 업데이트
+                      updateLocationData(latlng, newDetailAddr, '만남 장소');
+                  }
+              });
+          });
 
-        } else {
-            alert("기본 주소를 찾을 수 없습니다.");
-        }
-    });
+      } else {
+          alert("기본 주소를 찾을 수 없습니다.");
+      }
+  });
 </script>
 </body>
 </html>
