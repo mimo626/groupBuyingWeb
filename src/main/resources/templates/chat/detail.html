@@ -476,7 +476,7 @@
     }
 
     function updateStatus(status, extra = {}) {
-      fetch(`/group-buying/${groupPurchaseId}/status`, {
+      fetch(`/api/group-buyings/${groupPurchaseId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, ...extra })
