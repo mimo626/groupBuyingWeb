@@ -109,6 +109,11 @@
     let addressGeocoder = null;
     let kakaoSdkReadyPromise = null;
 
+    const PATCH_NEIGHBORHOOD_URL = `/api/members/me/neighborhoods`;
+    const API_GET_PROFILE_URL = `/api/members/me`;
+    const PAGE_CHARGE_URL = '/mypage/charge';
+
+
     window.onload = function() {
         // 페이지 로드 시 내 정보(profile) 조회 요청
         requestProfile('profile');
@@ -129,7 +134,7 @@
         // 포인트 메뉴 클릭 시 임의의 템플릿으로 이동
         document.getElementById('menu-point-setting').addEventListener('click', function() {
             // 실제 이동할 URL로 나중에 변경해주세요
-            location.href = '/mypage/charge';
+            location.href = PAGE_CHARGE_URL;
         });
 
         // 추가: 로그아웃 버튼 클릭 이벤트 연결
@@ -139,7 +144,7 @@
     };
 
     function requestProfile(target) {
-        const apiUrl = `/api/mypage/` + target;
+        const apiUrl = target == `profile` ? API_GET_PROFILE_URL : API_GET_PROFILE_URL + `/${target}` ;
 
         fetch(apiUrl)
             .then(response => {
@@ -337,7 +342,7 @@ document.getElementById('menu-participated-groupbuy').addEventListener('click', 
             entY: entY
         };
 
-        const apiUrl = `/api/mypage/neighborhood`;
+        const apiUrl = PATCH_NEIGHBORHOOD_URL;//`/api/mypage/neighborhood`;
         const requestOptions = {
             method: 'PATCH',
             headers: {
