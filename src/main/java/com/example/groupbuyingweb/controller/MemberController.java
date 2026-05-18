@@ -118,7 +118,7 @@ public class MemberController {
         return ApiResponse.success(dto);
     }
 
-    @PatchMapping("/api/members/me/point") //멤버리소스/마이페이지/포인트리소스 업데이트
+    @PatchMapping("/me/point") //멤버리소스/마이페이지/포인트리소스 업데이트
     @ResponseBody
     public ApiResponse<?> chargePoint(
             // 성공 : 200 OK
