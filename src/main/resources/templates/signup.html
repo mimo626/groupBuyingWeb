@@ -110,10 +110,10 @@
 
 <script th:inline="javascript">
   const kakaoJavaScriptKey = /*[[${kakaoJavaScriptKey}]]*/ "";
-  const LOGIN_ID_CHECK_URL = "/auth/login-ids/check";
-  const NICKNAME_CHECK_URL = "/auth/nicknames/check";
-  const SIGNUP_URL = "/auth/signup";
-  const LOGIN_PAGE_URL = "/auth/login";
+  const LOGIN_ID_CHECK_URL = "/api/auth/login-ids/check"; // 수정: 아이디 중복확인 API URL
+  const NICKNAME_CHECK_URL = "/api/auth/nicknames/check"; // 수정: 닉네임 중복확인 API URL
+  const SIGNUP_URL = "/api/auth/signup"; // 수정: 회원가입 요청 API URL
+  const LOGIN_PAGE_URL = "/auth/login"; // 수정: 회원가입 성공 후 로그인 화면 이동 URL
 
   let addressGeocoder = null;
   let kakaoSdkReadyPromise = null;

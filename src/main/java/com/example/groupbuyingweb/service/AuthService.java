@@ -125,7 +125,7 @@ public class AuthService {
     }
 
     public void logout(HttpSession session) {
-        loginSessionManager.requireLoginUserId(session); // 추가: 로그인 상태가 아니면 로그아웃을 막는다.
+        loginSessionManager.requireLoginUserId(session);
         loginSessionManager.logout(session);
     }
 
