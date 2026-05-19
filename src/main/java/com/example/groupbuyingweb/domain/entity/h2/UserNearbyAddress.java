@@ -38,7 +38,7 @@ public class UserNearbyAddress {
 //    private Member member;
 
     // h2 - mysql 물리적 분리로 인한 연관관계 대체 필드
-    @Column(name = "user_id", nullable = false, length = 36)
+    @Column(name = "member_id", nullable = false, length = 36)
     private String memberId;
 
     // 시/도 이름

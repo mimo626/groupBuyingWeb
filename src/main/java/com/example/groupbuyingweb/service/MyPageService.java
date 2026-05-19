@@ -75,18 +75,19 @@ public class MyPageService {
     public MyPageResponse.Neighborhood patchNeighborhood(String memberId, MyPageRequest.UpdateNeighborhood request) {
         Member member = memberRepository.findById(memberId).orElseThrow();
         member.patchAddress(request);
-        userNearbyAddressRepository.deleteAllByMemberId(memberId);
 
-
-        // 변경된
         List<UserNearbyAddress> nearbyAddressList =
                 addressService.createNearbyAddresses(
                         member,
                         request.entX(),
                         request.entY()
                 );
+        userNearbyAddressRepository.deleteAllByMemberId(memberId);
 
-        userNearbyAddressRepository.saveAll(nearbyAddressList);
+        if (nearbyAddressList != null && !nearbyAddressList.isEmpty()) {
+            saveAllToH2(nearbyAddressList);
+        }
+
 
         // 2. 엔티티결과-> RESPONSEDTO
         List<MyPageResponse.NearbyAddress> nearbyAddressDto = nearbyAddressList.stream()
@@ -106,6 +107,11 @@ public class MyPageService {
                 member.getEntY(),
                 nearbyAddressDto
         );
+    }
+
+    @Transactional("h2TransactionManager")
+    public void saveAllToH2(List<UserNearbyAddress> nearbyAddressList) {
+        userNearbyAddressRepository.saveAll(nearbyAddressList);
     }
 
     public List<MyPageResponse.MyGroupBuyingListItem> getHostedGroupBuyings(
