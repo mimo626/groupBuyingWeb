@@ -1,6 +1,6 @@
-package com.example.groupbuyingweb.repository;
+package com.example.groupbuyingweb.repository.mysql;
 
-import com.example.groupbuyingweb.domain.entity.ChatRoom;
+import com.example.groupbuyingweb.domain.entity.mysql.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

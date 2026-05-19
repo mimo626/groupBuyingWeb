@@ -1,8 +1,8 @@
 package com.example.groupbuyingweb.core.scheduler;
 
-import com.example.groupbuyingweb.domain.entity.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
-import com.example.groupbuyingweb.repository.GroupBuyingRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingRepository;
 import com.example.groupbuyingweb.service.GroupBuyingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

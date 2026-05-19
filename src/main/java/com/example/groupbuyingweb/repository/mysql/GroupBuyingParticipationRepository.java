@@ -1,7 +1,7 @@
-package com.example.groupbuyingweb.repository;
+package com.example.groupbuyingweb.repository.mysql;
 
-import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
-import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingParticipation;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;

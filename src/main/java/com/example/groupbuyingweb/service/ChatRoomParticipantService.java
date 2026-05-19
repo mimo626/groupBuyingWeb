@@ -1,9 +1,9 @@
 package com.example.groupbuyingweb.service;
 
 import com.example.groupbuyingweb.core.error.BusinessException;
-import com.example.groupbuyingweb.domain.entity.ChatRoomParticipant;
+import com.example.groupbuyingweb.domain.entity.mysql.ChatRoomParticipant;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
-import com.example.groupbuyingweb.repository.ChatRoomParticipantRepository;
+import com.example.groupbuyingweb.repository.mysql.ChatRoomParticipantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

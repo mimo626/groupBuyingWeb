@@ -1,6 +1,6 @@
-package com.example.groupbuyingweb.repository;
+package com.example.groupbuyingweb.repository.mysql;
 
-import com.example.groupbuyingweb.domain.entity.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import org.springframework.data.domain.Page;

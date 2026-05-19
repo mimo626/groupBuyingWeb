@@ -2,10 +2,10 @@ package com.example.groupbuyingweb;
 
 import com.example.groupbuyingweb.domain.dto.response.ChatMessageResponse;
 import com.example.groupbuyingweb.domain.dto.response.ChatRoomResponse;
-import com.example.groupbuyingweb.domain.entity.*;
+import com.example.groupbuyingweb.domain.entity.mysql.*;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
 import com.example.groupbuyingweb.domain.enums.UserRole;
-import com.example.groupbuyingweb.repository.*;
+import com.example.groupbuyingweb.repository.mysql.*;
 import com.example.groupbuyingweb.service.ChatMessageService;
 import com.example.groupbuyingweb.service.ChatRoomService;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;

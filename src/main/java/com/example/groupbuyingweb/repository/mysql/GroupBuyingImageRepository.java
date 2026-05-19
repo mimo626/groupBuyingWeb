@@ -1,6 +1,6 @@
-package com.example.groupbuyingweb.repository;
+package com.example.groupbuyingweb.repository.mysql;
 
-import com.example.groupbuyingweb.domain.entity.GroupBuyingImage;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

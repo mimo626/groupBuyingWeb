@@ -1,6 +1,5 @@
 package com.example.groupbuyingweb.domain.dto.response;
 
-import com.example.groupbuyingweb.domain.entity.GroupBuying;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 

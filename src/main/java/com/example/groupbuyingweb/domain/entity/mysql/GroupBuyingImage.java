@@ -1,8 +1,7 @@
-package com.example.groupbuyingweb.domain.entity;
+package com.example.groupbuyingweb.domain.entity.mysql;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Getter
