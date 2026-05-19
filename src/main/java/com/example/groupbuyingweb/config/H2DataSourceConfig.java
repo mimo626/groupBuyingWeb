@@ -29,11 +29,11 @@ public class H2DataSourceConfig {
 
     @Bean(name = "h2EntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean h2EntityManagerFactory(
-            EntityManagerFactoryBuilder builder, @Qualifier("h2DataSource") DataSource dataSource) {;
+            EntityManagerFactoryBuilder builder, @Qualifier("h2DataSource") DataSource dataSource) {
 
         return builder
                 .dataSource(dataSource)
-                .packages("com.example.groupbuyingweb.domain.entity.h2") // 변경된 엔티티 경로
+                .packages("com.example.groupbuyingweb.domain.entity.h2") // H2로 관리할 엔티티 패키지 지정
                 .persistenceUnit("h2")
                 .build();
     }

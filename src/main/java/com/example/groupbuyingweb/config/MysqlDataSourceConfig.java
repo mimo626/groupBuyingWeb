@@ -38,7 +38,7 @@ public class MysqlDataSourceConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("com.example.groupbuyingweb.domain.entity.mysql") // 엔티티 패키지 지정
+                .packages("com.example.groupbuyingweb.domain.entity.mysql") // mysql로 관리할 엔티티 패키지 지정
                 .persistenceUnit("mysql")
                 .build();
     }
