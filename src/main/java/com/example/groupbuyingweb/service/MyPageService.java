@@ -84,10 +84,7 @@ public class MyPageService {
                 );
         userNearbyAddressRepository.deleteAllByMemberId(memberId);
 
-        if (nearbyAddressList != null && !nearbyAddressList.isEmpty()) {
-            saveAllToH2(nearbyAddressList);
-        }
-
+        userNearbyAddressRepository.saveAll(nearbyAddressList);
 
         // 2. 엔티티결과-> RESPONSEDTO
         List<MyPageResponse.NearbyAddress> nearbyAddressDto = nearbyAddressList.stream()
@@ -107,11 +104,6 @@ public class MyPageService {
                 member.getEntY(),
                 nearbyAddressDto
         );
-    }
-
-    @Transactional("h2TransactionManager")
-    public void saveAllToH2(List<UserNearbyAddress> nearbyAddressList) {
-        userNearbyAddressRepository.saveAll(nearbyAddressList);
     }
 
     public List<MyPageResponse.MyGroupBuyingListItem> getHostedGroupBuyings(

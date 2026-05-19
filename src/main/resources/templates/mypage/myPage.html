@@ -111,6 +111,7 @@
 
     const PATCH_NEIGHBORHOOD_URL = `/api/members/me/neighborhoods`;
     const API_GET_PROFILE_URL = `/api/members/me`;
+    const API_LOGOUT_URL = `/api/auth/logout`;
     const PAGE_CHARGE_URL = '/mypage/charge';
 
 
@@ -119,7 +120,7 @@
         requestProfile('profile');
 
         // 페이지 로드 시 내 주소(neighborhood) 조회 요청
-        requestProfile('neighborhood');
+        requestProfile('neighborhoods');
 
         // 카카오 지도 SDK 비동기 로드
         loadKakaoMapSdk().catch(function(error) {
@@ -195,7 +196,7 @@
                         }
                     }
                     // 동네(주소) 요청인 경우 DOM 요소 업데이트
-                    else if (target === 'neighborhood') {
+                    else if (target === 'neighborhoods') {
                         const neighborhood = data.data;
                         if (neighborhood && neighborhood.address) {
                             document.getElementById("user-address-text").innerText = neighborhood.address;
@@ -224,7 +225,7 @@ document.getElementById('menu-participated-groupbuy').addEventListener('click', 
             return;
         }
 
-        fetch("/auth/logout", {
+        fetch(API_LOGOUT_URL, {
             method: "POST",
             credentials: "same-origin"
         })

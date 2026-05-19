@@ -11,11 +11,13 @@ import java.util.List;
 
 @Transactional("h2TransactionManager")
 public interface UserNearbyAddressRepository extends JpaRepository<UserNearbyAddress, Long> {
-    List<UserNearbyAddress> findAllByMemberId(String memberId);
 
-    @Query("SELECT u.neighborhoodName FROM UserNearbyAddress u WHERE u.memberId = :memberId")
-    List<String> findNeighborhoodNameByMemberId(@Param("memberId") String memberId);
+    @Transactional(transactionManager = "h2TransactionManager", readOnly = true)
+    List<UserNearbyAddress> findAllByMemberId(String memberId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     void deleteAllByMemberId(String memberId);
+
+//    @Query("SELECT u.neighborhoodName FROM UserNearbyAddress u WHERE u.memberId = :memberId")
+//    List<String> findNeighborhoodNameByMemberId(@Param("memberId") String memberId);
 }
