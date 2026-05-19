@@ -244,7 +244,19 @@ public class GroupBuyingService {
                 //pointService.settlePoint(groupBuyingId);
             }
             case CLOSED -> {
-                //TODO 공구 종료 시
+                // 공구 주최자, 참여자의 경험치 증가
+                participationRepository.findAllByGroupBuyingId(groupBuyingId)
+                        .forEach(g -> {
+                            String memberId = g.getMember().getId();
+                            UserRole role = g.getRole(); // 역할 가져오기
+
+                            // 역할에 따라 증가시킬 경험치 결정 (주최자면 2, 그 외는 1)
+                            int expToAppend = (role == UserRole.ORGANIZER) ? 2 : 1;
+
+                            // Repository에 멤버 ID와 증가시킬 경험치량을 함께 전달
+                            memberRepository.incrementAcornExp(memberId, expToAppend);
+                        });
+
                 // 주최자 보상 (도토리레벨 x 100) 포인트 지급
                 Member organizer = groupBuying.getMember();
                 Double acornLevel = (double) Math.min(20, (organizer.getAcornExp() / 10) + 1);
