@@ -1,7 +1,7 @@
 package com.example.groupbuyingweb.service;
 
-import com.example.groupbuyingweb.domain.entity.Member;
-import com.example.groupbuyingweb.domain.entity.UserNearbyAddress;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
+import com.example.groupbuyingweb.domain.entity.h2.UserNearbyAddress;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +52,7 @@ public class AddressService {
         // 4. 중복 제거된 행정동 정보를 UserNearbyAddress 객체로 만든다.
         return regionMap.values().stream()
                 .map(region -> UserNearbyAddress.builder()
-                        .member(member)
+                        .memberId(member.getId())
                         .cityName(region.cityName())
                         .districtName(region.districtName())
                         .neighborhoodName(region.neighborhoodName())

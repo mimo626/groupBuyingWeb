@@ -1,8 +1,8 @@
 package com.example.groupbuyingweb.domain.dto.response;
 
-import com.example.groupbuyingweb.domain.entity.GroupBuying;
-import com.example.groupbuyingweb.domain.entity.GroupBuyingImage;
-import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingImage;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 
 import java.time.LocalDateTime;

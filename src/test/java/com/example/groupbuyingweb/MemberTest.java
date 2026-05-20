@@ -1,7 +1,7 @@
 package com.example.groupbuyingweb;
 
-import com.example.groupbuyingweb.domain.entity.Member;
-import com.example.groupbuyingweb.repository.MemberRepository;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
+import com.example.groupbuyingweb.repository.mysql.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,14 +1,14 @@
 package com.example.groupbuyingweb;
 
-import com.example.groupbuyingweb.domain.entity.GroupBuying;
-import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
-import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingParticipation;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
-import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
-import com.example.groupbuyingweb.repository.GroupBuyingRepository;
-import com.example.groupbuyingweb.repository.MemberRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingParticipationRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingRepository;
+import com.example.groupbuyingweb.repository.mysql.MemberRepository;
 import com.example.groupbuyingweb.service.PointService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

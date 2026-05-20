@@ -1,11 +1,11 @@
 package com.example.groupbuyingweb.service;
 
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingParticipationResponse;
-import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
-import com.example.groupbuyingweb.domain.entity.Member;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingParticipation;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
-import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
-import com.example.groupbuyingweb.repository.MemberRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingParticipationRepository;
+import com.example.groupbuyingweb.repository.mysql.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,5 +1,6 @@
-package com.example.groupbuyingweb.domain.entity;
+package com.example.groupbuyingweb.domain.entity.h2;
 
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,9 +33,13 @@ public class UserNearbyAddress {
     private Long id;
 
     // user_nearby_address.user_id -> member.id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    private Member member;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+//    private Member member;
+
+    // h2 - mysql 물리적 분리로 인한 연관관계 대체 필드
+    @Column(name = "member_id", nullable = false, length = 36)
+    private String memberId;
 
     // 시/도 이름
     @Column(name = "city_name", nullable = false, length = 50)

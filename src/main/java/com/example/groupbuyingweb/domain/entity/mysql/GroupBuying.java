@@ -1,4 +1,4 @@
-package com.example.groupbuyingweb.domain.entity;
+package com.example.groupbuyingweb.domain.entity.mysql;
 
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;

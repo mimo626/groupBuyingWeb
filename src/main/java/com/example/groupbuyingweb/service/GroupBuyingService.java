@@ -3,12 +3,20 @@ package com.example.groupbuyingweb.service;
 import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
-import com.example.groupbuyingweb.domain.entity.*;
+import com.example.groupbuyingweb.domain.entity.h2.UserNearbyAddress;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingImage;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingParticipation;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
 import com.example.groupbuyingweb.domain.enums.ErrorCode;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.PaymentStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
-import com.example.groupbuyingweb.repository.*;
+import com.example.groupbuyingweb.repository.h2.UserNearbyAddressRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingImageRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingParticipationRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingRepository;
+import com.example.groupbuyingweb.repository.mysql.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,11 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor // @Autowired 대신 생성자 주입 (권장 방식)

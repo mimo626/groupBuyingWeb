@@ -1,6 +1,6 @@
-package com.example.groupbuyingweb.repository;
+package com.example.groupbuyingweb.repository.mysql;
 
-import com.example.groupbuyingweb.domain.entity.ChatMessage;
+import com.example.groupbuyingweb.domain.entity.mysql.ChatMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

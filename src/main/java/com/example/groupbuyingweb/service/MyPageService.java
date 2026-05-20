@@ -2,16 +2,16 @@ package com.example.groupbuyingweb.service;
 
 import com.example.groupbuyingweb.domain.dto.request.MyPageRequest;
 import com.example.groupbuyingweb.domain.dto.response.MyPageResponse;
-import com.example.groupbuyingweb.domain.entity.GroupBuying;
-import com.example.groupbuyingweb.domain.entity.GroupBuyingParticipation;
-import com.example.groupbuyingweb.domain.entity.Member;
-import com.example.groupbuyingweb.domain.entity.UserNearbyAddress;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingParticipation;
+import com.example.groupbuyingweb.domain.entity.mysql.Member;
+import com.example.groupbuyingweb.domain.entity.h2.UserNearbyAddress;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 import com.example.groupbuyingweb.domain.enums.UserRole;
-import com.example.groupbuyingweb.repository.GroupBuyingParticipationRepository;
-import com.example.groupbuyingweb.repository.GroupBuyingRepository;
-import com.example.groupbuyingweb.repository.MemberRepository;
-import com.example.groupbuyingweb.repository.UserNearbyAddressRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingParticipationRepository;
+import com.example.groupbuyingweb.repository.mysql.GroupBuyingRepository;
+import com.example.groupbuyingweb.repository.mysql.MemberRepository;
+import com.example.groupbuyingweb.repository.h2.UserNearbyAddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,16 +75,14 @@ public class MyPageService {
     public MyPageResponse.Neighborhood patchNeighborhood(String memberId, MyPageRequest.UpdateNeighborhood request) {
         Member member = memberRepository.findById(memberId).orElseThrow();
         member.patchAddress(request);
-        userNearbyAddressRepository.deleteAllByMemberId(memberId);
 
-
-        // 변경된
         List<UserNearbyAddress> nearbyAddressList =
                 addressService.createNearbyAddresses(
                         member,
                         request.entX(),
                         request.entY()
                 );
+        userNearbyAddressRepository.deleteAllByMemberId(memberId);
 
         userNearbyAddressRepository.saveAll(nearbyAddressList);
 
