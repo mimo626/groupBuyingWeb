@@ -219,8 +219,13 @@ public class GroupBuyingService {
 
         // 변경 전 상태 기록
         GroupBuyingStatus previousStatus = groupBuying.getStatus();
+
         groupBuying.updateStatus(newStatus);
 
+        // 메모리가 초기화되기 전에 DB에 즉시 UPDATE 쿼리를 날려버림
+        groupBuyingRepository.saveAndFlush(groupBuying);
+
+        System.out.println("processStatusChange: " + groupBuying.getStatus().toString());
         switch (newStatus) {
             case START -> {
                 // 채팅방 생성
@@ -240,23 +245,30 @@ public class GroupBuyingService {
                 //pointService.settlePoint(groupBuyingId);
             }
             case CLOSED -> {
-                // 공구 주최자, 참여자의 경험치 증가
+                // 1. 영속성 컨텍스트가 날아가기 전에 주최자 ID를 미리 확보합니다.
+                // (프록시 객체라도 식별자(ID) 조회는 예외를 발생시키지 않습니다)
+                String organizerId = groupBuying.getMember().getId();
+
+                // 2. 공구 주최자, 참여자의 경험치 증가
+                // (이 과정에서 @Modifying(clearAutomatically = true)로 인해 세션이 초기화될 수 있음)
                 participationRepository.findAllByGroupBuyingId(groupBuyingId)
                         .forEach(g -> {
                             String memberId = g.getMember().getId();
-                            UserRole role = g.getRole(); // 역할 가져오기
+                            UserRole role = g.getRole();
 
-                            // 역할에 따라 증가시킬 경험치 결정 (주최자면 2, 그 외는 1)
                             int expToAppend = (role == UserRole.ORGANIZER) ? 2 : 1;
-
-                            // Repository에 멤버 ID와 증가시킬 경험치량을 함께 전달
                             memberRepository.incrementAcornExp(memberId, expToAppend);
                         });
 
-                // 주최자 보상 (도토리레벨 x 100) 포인트 지급
-                Member organizer = groupBuying.getMember();
+                // 3. 최신 경험치를 반영하기 위해 DB에서 주최자 정보를 다시 조회합니다.
+                Member organizer = memberRepository.findById(organizerId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_MEMBER)); // 적절한 예외 처리로 변경해주세요
+
+                // 4. 주최자 보상 지급 (최신 경험치 기준)
                 Double acornLevel = (double) Math.min(20, (organizer.getAcornExp() / 10) + 1);
-                pointService.chargePoint(organizer.getId(), acornLevel * 100);
+                pointService.chargePoint(organizerId, acornLevel * 100);
+                System.out.println("CLOSED: " + groupBuying.getStatus().toString());
+
             }
             default -> {
                 break;
