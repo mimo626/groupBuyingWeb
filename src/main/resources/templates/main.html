@@ -88,7 +88,7 @@
 <div class="container">
 
     <!-- 검색 폼 (서버로 파라미터 전송용) -->
-    <form id="searchForm" th:action="@{/api/group-buyings}" method="get">
+    <form id="searchForm" th:action="@{/group-buyings}" method="get">
 
         <!-- 1. 검색 바 -->
         <div class="search-container">
@@ -146,7 +146,7 @@
 
     <!-- 공구 목록 그리드 -->
     <div class="grid">
-        <a th:each="item : ${groupBuyings.content}" th:href="@{/api/group-buyings/{id}(id=${item.id})}" class="card">
+        <a th:each="item : ${groupBuyings.content}" th:href="@{/group-buyings/{id}(id=${item.id})}" class="card">
             <!-- 썸네일 영역 -->
             <div class="thumbnail-wrapper">
                 <span class="badge-status" th:text="${item.status.description}">모집중</span>
@@ -189,9 +189,9 @@
 </div>
 
 <script>
-    const HOME_URL = "/api/group-buyings";
-    const GROUP_BUYING_CREATE_URL = "/api/group-buyings/new";
-    const CHAT_ROOMS_URL = "/api/chat/rooms";
+    const HOME_URL = "/group-buyings";
+    const GROUP_BUYING_CREATE_URL = "/group-buyings/new";
+    const CHAT_ROOMS_URL = "/chat/rooms";
     const MY_PAGE_URL = "/mypage";
 
     // 카테고리 클릭 시 폼 제출 처리 함수

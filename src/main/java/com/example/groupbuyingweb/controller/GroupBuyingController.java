@@ -3,20 +3,14 @@ package com.example.groupbuyingweb.controller;
 import com.example.groupbuyingweb.core.api.ApiResponse;
 import com.example.groupbuyingweb.core.session.LoginSessionManager;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingRequest;
+import com.example.groupbuyingweb.domain.dto.response.GroupBuyingParticipationResponse;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingResponse;
-import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
-import com.example.groupbuyingweb.domain.enums.GroupBuyingSort;
 import com.example.groupbuyingweb.service.GroupBuyingService;
+import com.example.groupbuyingweb.service.PointService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -30,27 +24,13 @@ public class GroupBuyingController {
     private GroupBuyingService groupBuyingService;
     @Autowired
     private LoginSessionManager loginSessionManager;
-
-    @Value("${kakao.local.javascript-key}")
-    private String kakaoJsKey;
-
-    // 성공 시 200 OK
-    // 실패(인증되지 않은 사용자) 시 401 Unauthorized
-    @GetMapping("/new")
-    public String createForm(Model model,
-                             HttpSession session) {
-        String memberId = loginSessionManager.requireLoginUserId(session);
-        String memberAddress = groupBuyingService.getMemberAddress(memberId);
-        model.addAttribute("categories", GroupBuyingCategory.values());
-        model.addAttribute("kakaoJsKey", kakaoJsKey);
-        model.addAttribute("memberAddress", memberAddress);
-        return "groupbuying/create";
-    }
+    @Autowired
+    private PointService pointService;
 
     // 성공(자원 생성 완료) 시 201 Created
     // 실패(필수값 누락, 유효성 에러) 시 400 Bad Request
     // 실패(서버 내부 오류) 시 500 Internal Server Error
-    @PostMapping
+    @PostMapping()
     public String addGroupBuying(
             @Valid @ModelAttribute GroupBuyingRequest.Create request,
             @RequestParam("images") List<MultipartFile> images,
@@ -60,20 +40,7 @@ public class GroupBuyingController {
         System.out.println(request.toString());
         GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, loggedInUserId);
 
-        return "redirect:/api/group-buyings/" + res.groupBuyingId();
-    }
-
-    // 성공 시 200 OK
-    // 실패(해당 ID의 공구가 없을 때) 시 404 Not Found
-    @GetMapping("/{id}")
-    public String getGroupBuyingById(@PathVariable("id") Long groupBuyingId, Model model, HttpSession session) {
-        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
-
-        GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId, loggedInUserId);
-
-        model.addAttribute("kakaoJsKey", kakaoJsKey);
-        model.addAttribute("groupBuying", res);
-        return "groupBuying/detail";
+        return "redirect:/group-buyings/" + res.groupBuyingId();
     }
 
     // 성공(참여자 자원 생성 완료) 시 201 Created
@@ -93,28 +60,7 @@ public class GroupBuyingController {
 
         redirectAttributes.addFlashAttribute("participateSuccess", true);
 
-        return "redirect:/api/group-buyings/" + groupBuyingId;
-    }
-
-    // 성공 시 200 OK
-    // 실패(파라미터 타입 불일치 등) 시 400 Bad Request
-    @GetMapping
-    public String groupBuyingList(
-            GroupBuyingRequest.SearchCondition condition,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-            HttpSession session,
-            Model model) {
-        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
-
-        Page<GroupBuyingResponse.GroupBuyings> list = groupBuyingService.getGroupBuyings(condition, pageable, loggedInUserId);
-        String categoryName = (condition.category() != null) ? condition.category().name() : null;
-
-        model.addAttribute("category", GroupBuyingCategory.values());
-        model.addAttribute("selectedCategory", categoryName);
-        model.addAttribute("sorts", GroupBuyingSort.values());
-        model.addAttribute("groupBuyings", list);
-
-        return "main";
+        return "redirect:/group-buyings/" + groupBuyingId;
     }
 
     // 성공(상태 변경 완료) 시 200 OK
@@ -128,5 +74,20 @@ public class GroupBuyingController {
     ) {
         GroupBuyingResponse.UpdateStatus res = groupBuyingService.updateStatusFromRequest(groupBuyingId, request);
         return ApiResponse.success(res);
+    }
+
+    // 성공 : 200 ok
+    // 메시지 : 정산 요청 되었습니다
+    // dto : 정산된 공구 id, 전체 정산 여부 True/False
+    // 실패 : 500 서버 내부 오류
+    // 실패 : 401 로그인 오류
+    @PostMapping("/{groupBuyingId}/settlements/me") // 복수의 공구리소스 /중 하나의/(추상적)정산 리소스/마이페이지
+    @ResponseBody
+    public ApiResponse<?> sendPointToOrganizer(
+            @PathVariable Long groupBuyingId,
+            HttpSession session){
+        String memberId = loginSessionManager.requireLoginUserId(session);
+        GroupBuyingParticipationResponse.SettleResult dto = pointService.settlePoint(groupBuyingId, memberId);
+        return ApiResponse.success(dto); // 공구 참여자 전체 정산 완료 : true / 아니면 false
     }
 }

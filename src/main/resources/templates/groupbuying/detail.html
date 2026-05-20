@@ -303,9 +303,9 @@
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
 </script>
 <script type="text/javascript" th:inline="javascript">
-    const HOME_URL = "/api/group-buyings";
-    const CHAT_ROOMS_URL = "/api/chat/rooms";
-    const MY_PAGE_URL = "/api/mypage";
+    const HOME_URL = "/group-buyings";
+    const CHAT_ROOMS_URL = "/chat/rooms";
+    const MY_PAGE_URL = "/mypage";
 
     // 헤더 버튼 라우팅 (메인과 동일하게 추가)
     document.getElementById("homeBtn").addEventListener("click", () => {

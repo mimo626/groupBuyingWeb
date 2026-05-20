@@ -184,6 +184,7 @@ public class GroupBuyingService {
 
         // Repository에서 Page<GroupBuying> 조회
         return groupBuyingRepository.searchGroupBuyings(
+                LocalDateTime.now(),
                 condition.category(),
                 condition.keyword(),
                 userNearbyAddressList, // 추가된 파라미터 전달
