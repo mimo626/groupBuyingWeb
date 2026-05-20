@@ -20,11 +20,12 @@ public interface GroupBuyingRepository extends JpaRepository<GroupBuying, Long> 
     Integer findTargetQuantityById(long groupBuyingId);
     @Query("SELECT g FROM GroupBuying g WHERE " +
             "(g.status = GroupBuyingStatus.RECRUITING) AND " +
-            "deadline > NOW() AND " +
+            "deadline > :currentTime AND " +
             "(:category IS NULL OR g.category = :category) AND " +
             "(:keyword IS NULL OR :keyword = '' OR g.title LIKE %:keyword% OR g.productName LIKE %:keyword%) AND " +
             "(g.neighborhoodName IN :neighborhoods)") // 추가된 부분
     Page<GroupBuying>  searchGroupBuyings(
+            @Param("currentTime") LocalDateTime currentTime,
             @Param("category") GroupBuyingCategory category,
             @Param("keyword") String keyword,
             @Param("neighborhoods") List<String> neighborhoods, // 파라미터 추가
