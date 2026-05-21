@@ -43,6 +43,22 @@ public class GroupBuyingController {
         return "redirect:/group-buyings/" + res.groupBuyingId();
     }
 
+    // 실제 수정 처리 요청
+    @PostMapping("/{id}/edit") // HTML Form은 기본적으로 GET/POST만 지원하므로 POST 사용 추천
+    public String editGroupBuying(@PathVariable("id") Long groupBuyingId,
+                                  @Valid @ModelAttribute GroupBuyingRequest.Create request, // 폼에서 넘어온 수정 데이터
+                                  @RequestParam("images") List<MultipartFile> images,
+                                  HttpSession session) {
+
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
+
+        // 서비스에 수정 요청 (권한 체크 -> 기존 데이터 조회 -> 값 덮어쓰기 -> 저장)
+        groupBuyingService.updateGroupBuying(groupBuyingId, request, images, loggedInUserId);
+
+        // 수정이 완료되면 다시 상세 페이지로 리다이렉트
+        return "redirect:/group-buyings/" + groupBuyingId;
+    }
+
     // 성공(참여자 자원 생성 완료) 시 201 Created
     // 실패(참여 불가 상태, 모집 인원 초과 등 비즈니스 예외) 시 400 Bad Request
     // 실패(공구 정보 없음) 시 404 Not Found
