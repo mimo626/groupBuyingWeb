@@ -3,6 +3,7 @@ package com.example.groupbuyingweb.domain.dto.response;
 import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingImage;
 import com.example.groupbuyingweb.domain.entity.mysql.Member;
+import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
 
 import java.time.LocalDateTime;
@@ -60,7 +61,10 @@ public class GroupBuyingResponse {
             int currentQuantity,
             String meetingPlace, // 만남 장소 텍스트
             String meetingAddress,
+            Double entX,
+            Double entY,
             int viewCount,
+            GroupBuyingCategory category,
             GroupBuyingStatus status,
             LocalDateTime deadline,
             List<ImageDetail> images,
@@ -91,7 +95,10 @@ public class GroupBuyingResponse {
                     currentQuantity,
                     groupBuying.getMeetingPlace(),
                     groupBuying.getMeetingAddress(),
+                    groupBuying.getEntX(),
+                    groupBuying.getEntY(),
                     groupBuying.getViewCount(),
+                    groupBuying.getCategory(),
                     groupBuying.getStatus(),
                     groupBuying.getDeadline(),
                     groupBuying.getImages().stream()
@@ -106,11 +113,15 @@ public class GroupBuyingResponse {
     }
 
     public record ImageDetail(
+            Long id,
             String imageUrl,
             boolean isThumbnail
     ) {
         public static ImageDetail of(GroupBuyingImage image) {
-            return new ImageDetail(image.getImageUrl(), image.isThumbnail());
+            return new ImageDetail(
+                    image.getId(),
+                    image.getImageUrl(),
+                    image.isThumbnail());
         }
     }
 
