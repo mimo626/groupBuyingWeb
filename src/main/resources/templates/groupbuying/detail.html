@@ -262,7 +262,7 @@
             <div th:if="${groupBuying.status.name() == 'RECRUITING'}">
                 <!-- 버튼 2개 나란히 배치 (button-group) -->
                 <div th:if="${!groupBuying.hasParticipants}" class="button-group">
-                    <button id="btn-edit" class="submit-btn sub-btn">수정</button>
+                    <button id="btn-edit" class="submit-btn sub-btn" th:onclick="|location.href='@{/group-buyings/{id}/edit(id=${groupBuying.id})}'|">수정</button>
                     <button id="btn-delete" class="submit-btn danger-btn">삭제</button>
                 </div>
                 <div th:if="${groupBuying.hasParticipants}" class="chat-notice">
@@ -279,7 +279,7 @@
                     id="btn-cancel" class="submit-btn danger-btn"
                     onclick="confirmCancel()">참여 취소</button>
             <button th:if="${groupBuying.status.name() == 'START'}"
-                    id="btn-chat-part" class="submit-btn">채팅방 이동</button>
+                    class="chat-notice">공동 구매가 시작되어 취소 불가함</button>
         </div>
 
         <!-- 일반 사용자 -->
@@ -289,7 +289,7 @@
                     th:data-id="${groupBuying.id}"
                     onclick="participate(this.getAttribute('data-id'))">공구 참여</button>
             <button th:if="${groupBuying.status.name() == 'START'}"
-                    id="btn-closed" class="submit-btn" disabled>모집 마감</button>
+                    id="btn-closed" clas가="submit-btn" disabled>모집 마감</button>
         </div>
     </div>
 
