@@ -115,8 +115,6 @@ public class GroupBuyingService {
         }
 
         // 3. DB 저장 (Cascade 옵션 때문에 GroupBuying만 저장해도 Image까지 같이 INSERT 됩니다)
-        groupBuyingRepository.save(groupBuying);
-
         GroupBuying savedGroupBuying = groupBuyingRepository.save(groupBuying);
 
         // 공구 참여 엔티티 생성 (주최자)
@@ -294,6 +292,98 @@ public class GroupBuyingService {
         Member member = getMember(memberId);
         return member.getAddress();
     }
+
+    // 공구 상세 수정
+    @Transactional
+    public GroupBuyingResponse.Detail updateGroupBuying(
+            Long groupBuyingId,
+            GroupBuyingRequest.Create request, // 수정용 Request DTO (Create와 비슷하게 생겼을 겁니다)
+            List<MultipartFile> newImages,
+            String loggedInUserId) {
+
+        // 1. 기존 공구 엔티티 조회 (없으면 예외 발생)
+        GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+
+        // 2. 권한 체크 (주최자만 수정 가능)
+        if (!groupBuying.getMember().getId().equals(loggedInUserId)) {
+            throw new IllegalArgumentException("게시글 수정 권한이 없습니다."); // 예외는 프로젝트 정책에 맞게 변경하세요
+        }
+
+        // 3. 주소가 변경되었을 수 있으므로 동네 이름 다시 계산
+        String updatedNeighborhoodName = addressService.createNeighborhoodName(request.entX(), request.entY());
+
+        // 4. 공구 기본 정보 업데이트 (JPA 더티 체킹 활용)
+        // ※ GroupBuying 엔티티 내부에 update() 같은 비즈니스 메서드를 만들어두는 것이 좋습니다. (아래 참고)
+        // TODO 주최자 수량 공구참여에서 수정해야함
+        // TODO 이미지 변경 반영안됨
+        groupBuying.update(
+                request.title(),
+                request.productName(),
+                request.category(),
+                request.productContent(),
+                request.totalPrice(),
+                request.targetQuantity(),
+                request.entX(),
+                request.entY(),
+                request.meetingPlace(),
+                request.meetingAddress(),
+                request.productUrl(),
+                request.deadline(),
+                updatedNeighborhoodName
+        );
+
+        // 5. 이미지 수정 로직 (새로운 이미지가 업로드된 경우에만 실행)
+        if (newImages != null && !newImages.isEmpty() && !newImages.get(0).isEmpty()) {
+
+            // (선택사항) 서버 디스크에 저장된 기존 실제 파일들을 삭제하는 로직을 여기에 추가하면 용량 관리에 좋습니다.
+
+            // 기존 DB 이미지 정보 초기화 (고아 객체 제거 orphanRemoval = true 설정 필요)
+            groupBuying.clearImages();
+
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            // 새로운 이미지 저장 로직 (Create 로직과 동일)
+            for (int i = 0; i < newImages.size(); i++) {
+                MultipartFile file = newImages.get(i);
+
+                if (!file.isEmpty()) {
+                    String originalFilename = file.getOriginalFilename();
+                    String storedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+                    String imageUrl = "/uploads/" + storedFilename;
+                    File targetFile = new File(uploadDir + storedFilename);
+
+                    try {
+                        file.transferTo(targetFile);
+
+                        boolean isThumbnail = (i == 0);
+
+                        GroupBuyingImage imageEntity = GroupBuyingImage.builder()
+                                .originalFilename(originalFilename)
+                                .storedFilename(storedFilename)
+                                .imageUrl(imageUrl)
+                                .isThumbnail(isThumbnail)
+                                .build();
+
+                        groupBuying.addImage(imageEntity);
+
+                    } catch (IOException e) {
+                        throw new RuntimeException("파일 업로드 중 오류 발생", e);
+                    }
+                }
+            }
+        }
+
+        // 현재 수량 및 기타 권한을 다시 계산하여 DTO로 반환
+        int currentQuantity = calculateCurrentQuantity(groupBuyingId);
+        boolean hasParticipants = participationRepository.existsByGroupBuyingIdAndRole(groupBuyingId, UserRole.PARTICIPANT);
+
+        // 수정을 한 사람은 주최자이므로 isOrganizer=true, isParticipant=false 로 세팅
+        return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity, true, false, hasParticipants);
+    }
+
     /* ================= 공통 로직 ================= */
 
     // 공구 상세 Dto 생성
