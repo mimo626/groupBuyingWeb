@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>공구 개설</title>
+    <style>
+        /* 기본 리셋 및 폰트 설정 */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            background-color: #f9f8f5; /* 이미지와 비슷한 따뜻한 배경색 */
+            /* 기존의 display: flex; justify-content: center; 제거 */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 헤더 (상단 네비게이션) - 상단 고정 */
+        .header {
+            background-color: #a0522d;
+            color: white;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            /* 스크롤 시 상단 고정 */
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-logo { font-size: 24px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .header-nav { display: flex; gap: 30px; font-size: 16px; font-weight: 500; }
+        .header-nav span { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        /* 폼 컨테이너 (모바일 화면 크기에 맞춤) - 가운데 정렬 추가 */
+        .form-container {
+            margin: 40px auto; /* body 대신 여기서 가운데 정렬 및 상하 여백 */
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-sizing: border-box; /* 패딩이 width에 포함되도록 설정 */
+        }
+
+        /* 헤더 스타일 */
+        .header2 {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .header2 .close-btn {
+            color: #999;
+            font-size: 24px;
+            margin-right: 15px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* 폼 그룹 기본 마진 */
+        .form-group { margin-bottom: 20px; }
+
+        /* 라벨 스타일 */
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        /* 필수 입력 별표 */
+        .required { color: #e74c3c; margin-left: 2px;}
+
+        /* 입력창 공통 스타일 */
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { border-color: #8d553f; }
+        .form-control::placeholder { color: #aaa; }
+
+        /* ✨ 2단(절반) 배치용 Flexbox 설정 ✨ */
+        .flex-row {
+            display: flex;
+            gap: 15px;
+        }
+        .flex-row .form-group {
+            flex: 1; /* 남은 공간을 동일하게 나눠 가짐 */
+            margin-bottom: 20px;
+        }
+
+        /* 텍스트 에어리어 (설명) */
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        /* 이미지 업로드 박스 (현재는 UI만) */
+        .image-upload-box {
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            color: #999;
+            cursor: pointer;
+            background: #faf9f7;
+            font-size: 14px;
+        }
+
+        /* 위치 입력창 래퍼 (아이콘 삽입용) */
+        .location-wrapper { position: relative; }
+        .location-wrapper input { padding-left: 36px; }
+        .location-wrapper .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #999;
+        }
+        .hint-text { font-size: 12px; color: #888; margin-top: 6px; display: block; }
+
+        /* 제출 버튼 */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background-color: #8d553f; /* 디자인에 있는 갈색 버튼 */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .btn-submit:hover { background-color: #7a4834; }
+
+    </style>
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<header class="header">
+    <div class="header-logo">
+        🌰 도토리 창고
+    </div>
+    <div class="header-nav">
+        <!-- JS로 라우팅 처리하기 위해 id 부여 -->
+        <span id="homeBtn">🏠 홈</span>
+        <span id="chattingBtn">💬 채팅방</span>
+        <span id="myPageBtn">👤 마이</span>
+    </div>
+</header>
+
+<div class="form-container">
+    <div class="header2">
+        <a href="javascript:history.back()" class="close-btn">✕</a>
+        <span>공동 구매 글 수정</span>
+    </div>
+
+    <form th:action="@{/api/group-buyings/{id}/edit(id=${groupBuying.id})}" method="post" enctype="multipart/form-data" id="createForm">
+        <div class="form-group">
+            <label>공구 제목 <span class="required">*</span></label>
+            <input type="text" name="title" class="form-control" th:value="${groupBuying.title}" required>
+        </div>
+
+        <div class="form-group">
+            <label>상품 이름 <span class="required">*</span></label>
+            <input type="text" name="productName" class="form-control" th:value="${groupBuying.productName}" required>
+        </div>
+
+        <div class="form-group">
+            <label>상품 설명 <span style="color: #999; font-weight: normal; font-size: 12px;">(선택)</span></label>
+            <textarea name="productContent" class="form-control" th:text="${groupBuying.productContent}"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>상품 URL <span class="required">*</span></label>
+            <input type="url" name="productUrl" class="form-control" th:value="${groupBuying.productUrl}" required>
+        </div>
+
+        <div class="flex-row">
+            <div class="form-group">
+                <label>카테고리</label>
+                <select name="category" class="form-control">
+                    <option th:each="category : ${categories}"
+                            th:value="${category.name()}"
+                            th:text="${category.description}"
+                            th:selected="${category.name() == groupBuying.category.name()}">
+                        생활용품
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>전체 가격 <span class="required">*</span></label>
+                <input type="number" name="totalPrice" class="form-control" th:value="${#numbers.formatInteger(groupBuying.totalPrice, 0)}" required>
+            </div>
+        </div>
+
+        <div class="flex-row">
+            <div class="form-group">
+                <label>내가 살 수량 <span class="required">*</span></label>
+                <input type="number" name="organizerQuantity" class="form-control" th:value="${groupBuying.currentQuantity}" min="1" required>
+            </div>
+            <div class="form-group">
+                <label>모집 수량 <span class="required">*</span></label>
+                <input type="number" name="targetQuantity" class="form-control" th:value="${groupBuying.targetQuantity}" min="2" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>마감 시간 <span class="required">*</span></label>
+            <input type="datetime-local" name="deadline" th:value="${#temporals.format(groupBuying.deadline, 'yyyy-MM-dd''T''HH:mm')}" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>대표 이미지 <span style="color: #999; font-weight: normal; font-size: 12px;">(최대 3개, 선택)</span></label>
+
+            <!-- 기존에 등록된 이미지 목록 미리보기 -->
+            <div class="current-images-preview" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div th:each="image : ${groupBuying.images}" class="image-zone" style="position: relative;">
+                    <!-- 이미지 띄우기 -->
+                    <img th:src="${image.imageUrl}" alt="기존 이미지" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
+
+                    <!-- 삭제용 체크박스 또는 버튼 -->
+                    <button type="button" class="btn-delete-img" th:onclick="'deleteExistingImage(' + ${image.id} + ', this)'"
+                            style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">
+                        X
+                    </button>
+                </div>
+            </div>
+
+            <!-- 새로 추가할 이미지를 선택하는 인풋 -->
+            <input type="file" name="images" id="imageInput" accept="image/*" multiple class="form-control"/>
+            <!-- 지워진 ID들이 여기에 쉼표(,)로 구분되어 쌓임 -->
+            <input type="hidden" name="deletedImageIds" id="deletedImageIds" value="">
+        </div>
+
+        <div class="form-group">
+            <div class="location-wrapper">
+                <div>
+                    <label>수령 장소 <span class="required">*</span></label>
+                    <span class="hint-text">이웃과 만나서 거래하고 싶은 장소를 선택해주세요.(공공장소가 좋아요)</span>
+                    <div id="map" style="width:100%;height:350px;"></div>
+
+                    <input type="hidden" id="entX" name="entX" th:value="${groupBuying.entX}">
+                    <input type="hidden" id="entY" name="entY" th:value="${groupBuying.entY}">
+                    <input type="hidden" id="meetingAddress" name="meetingAddress" th:value="${groupBuying.meetingAddress}">
+
+                </div>
+                <span class="icon">📍</span>
+                <input type="text" name="meetingPlace" class="form-control" th:value="${groupBuying.meetingPlace}" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">수정하기</button>
+    </form>
+</div>
+
+<script type="text/javascript"
+        th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
+</script>
+<script type="text/javascript" th:inline="javascript">
+    const HOME_URL = "/group-buyings";
+    const CHAT_ROOMS_URL = "/chat/rooms";
+    const MY_PAGE_URL = "/mypage";
+  // 헤더 버튼 라우팅
+  document.getElementById("homeBtn").addEventListener("click", () => {
+      window.location.href = HOME_URL;
+  });
+  document.getElementById("chattingBtn").addEventListener("click", () => {
+      window.location.href = CHAT_ROOMS_URL;
+  });
+  document.getElementById("myPageBtn").addEventListener("click", () => {
+      window.location.href = MY_PAGE_URL;
+  });
+
+  // JS 3개 제한 로직
+  document.getElementById('imageInput').addEventListener('change', function() {
+      if (this.files.length > 3) {
+          alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
+          this.value = '';
+      }
+  });
+  // kakaoMap 설정 로직
+  var mapContainer = document.getElementById('map');
+  var geocoder = new kakao.maps.services.Geocoder();
+  var map, marker, infowindow;
+  var userAddress = [[${groupBuying.meetingAddress}]];
+
+
+  // 좌표, 주소, 인포윈도우 텍스트를 받아서 한 번에 업데이트 해주는 함수
+  function updateLocationData(coords, detailAddr, infoText) {
+      // 숨겨진 input 값들 업데이트
+      document.getElementById('entX').value = coords.getLng();
+      document.getElementById('entY').value = coords.getLat();
+      document.getElementById('meetingAddress').value = detailAddr;
+
+      // 마커 위치 이동
+      marker.setPosition(coords);
+
+      // 인포윈도우 텍스트 변경 및 열기
+      infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">' + infoText + '</div>');
+      infowindow.open(map, marker);
+  }
+
+  // 초기 주소 검색
+  geocoder.addressSearch(userAddress, function(result, status) {
+      if (status === kakao.maps.services.Status.OK) {
+          var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+          var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+
+          // 지도 및 마커, 인포윈도우 객체 생성
+          map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
+          marker = new kakao.maps.Marker({ map: map, position: coords });
+          infowindow = new kakao.maps.InfoWindow();
+
+          // 초기 로딩 시 주소 데이터 업데이트
+          updateLocationData(coords, detailAddr, '만남 장소');
+
+          // 지도 클릭 이벤트
+          kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+              var latlng = mouseEvent.latLng;
+
+              // 좌표를 통해 주소를 가져온 뒤
+              geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+                  if (status === kakao.maps.services.Status.OK) {
+                      var newDetailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+
+                      // 클릭 시 주소 데이터 업데이트
+                      updateLocationData(latlng, newDetailAddr, '만남 장소');
+                  }
+              });
+          });
+
+      } else {
+          alert("기본 주소를 찾을 수 없습니다.");
+      }
+  });
+
+    function deleteExistingImage(imageId, buttonElement) {
+    if (!confirm("이 이미지를 삭제하시겠습니까?")) {
+        return; // 취소를 누르면 아무 일도 안 일어남
+    }
+
+    // 1. 서버로 보낼 hidden input 가져오기
+    const deletedInput = document.getElementById('deletedImageIds');
+
+    // 2. 기존에 기록된 ID 배열 만들기 (비어있으면 빈 배열, 있으면 쉼표 분리)
+    let currentIds = deletedInput.value ? deletedInput.value.split(',') : [];
+
+    // 3. 현재 지운 이미지 ID를 배열에 추가 (중복 방지)
+    if (!currentIds.includes(String(imageId))) {
+        currentIds.push(imageId);
+    }
+
+    // 4. 다시 hidden input에 쉼표로 연결해서 저장 (예: "12,15")
+    deletedInput.value = currentIds.join(',');
+
+    // 5. 화면에서 이미지 영역 지우기 (X 버튼을 둘러싼 부모 div 요소를 찾아 삭제)
+    const imageZone = buttonElement.closest('.image-zone');
+    if (imageZone) {
+        imageZone.remove();
+    }
+}
+</script>
+</body>
+</html>
