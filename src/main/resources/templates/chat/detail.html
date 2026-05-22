@@ -109,7 +109,7 @@
 
     function renderRoomHeader(detail) {
       document.getElementById("chatRoomTitle").innerText = detail.groupPurchaseTitle || "공동구매 채팅방";
-      document.getElementById("statusBadge").innerText = getStatusText(detail.status);
+      document.getElementById("statusBadge").innerText = detail.statusLabel || "상태 없음";
     }
 
     function renderStatusNotice(detail) {
@@ -560,19 +560,6 @@
     function scrollToBottom() {
       const container = document.getElementById("messageList");
       container.scrollTop = container.scrollHeight;
-    }
-
-    function getStatusText(status) {
-      const statusLabel = {
-        START: "채팅 개설",
-        PURCHASED: "물품 구매 완료",
-        SHIPPING: "배송 중",
-        MEETING_SCHEDULED: "만남 일정 확정",
-        SETTLING: "정산 중",
-        CLOSED: "종료"
-      };
-
-      return statusLabel[status] || status || "상태 없음";
     }
 
     function formatDateTime(value) {

@@ -80,7 +80,7 @@
 
       chatRooms.forEach(room => {
         const title = room.groupPurchaseTitle || "공동구매 채팅방";
-        const statusText = getStatusText(room.status);
+        const statusText = room.status || "상태 없음";
         const lastMessage = room.lastMessage || "아직 메시지가 없습니다.";
         const lastMessageTime = formatLastMessageTime(room.lastMessageAt);
         const unreadCount = Number(room.unreadCount || 0);
@@ -120,22 +120,6 @@
           ${escapeHtml(message)}
         </div>
       `;
-    }
-
-    function getStatusText(status) {
-      if (!status) {
-        return "상태 없음";
-      }
-
-      const statusMap = {
-        RECRUITING: "모집중",
-        COMPLETED: "거래완료",
-        CLOSED: "마감",
-        CANCELED: "취소됨",
-        CANCELLED: "취소됨"
-      };
-
-      return statusMap[status] || status;
     }
 
     function formatLastMessageTime(value) {
