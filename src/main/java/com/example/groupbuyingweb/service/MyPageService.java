@@ -151,6 +151,12 @@ public class MyPageService {
 
         Long participationId = participation == null ? null : participation.getId();
 
+        Double appliedPrice = calculateAppliedPrice( // 추가: totalPrice, targetQuantity, 주최자의 applyQuantity로 신청 가격 계산
+                groupBuying.getTotalPrice(),
+                groupBuying.getTargetQuantity(),
+                participation == null ? null : participation.getApplyQuantity()
+        );
+
         // 현재 참여 수량은 참여 이력의 신청 수량 합계로 계산한다.
         Long currentQuantity =
                 participationRepository.sumApplyQuantityByGroupBuyingIdAndRole(
@@ -161,7 +167,7 @@ public class MyPageService {
                 groupBuying.getId(),
                 participationId,
                 groupBuying.getTitle(),
-                groupBuying.getTotalPrice(),
+                appliedPrice, // 수정: groupBuying.getTotalPrice() 대신 계산된 신청 가격 전달
                 groupBuying.getTargetQuantity(),
                 toIntegerCurrentQuantity(currentQuantity),
                 groupBuying.getStatus(),
@@ -175,19 +181,41 @@ public class MyPageService {
         // 참여 이력과 연결된 공구 정보를 가져온다.
         GroupBuying groupBuying = participation.getGroupBuying();
 
+        Double appliedPrice = calculateAppliedPrice( // 추가: totalPrice, targetQuantity, 참여자의 applyQuantity로 신청 가격 계산
+                groupBuying.getTotalPrice(),
+                groupBuying.getTargetQuantity(),
+                participation.getApplyQuantity()
+        );
+
         return new MyPageResponse.MyParticipationListItem(
                 participation.getId(),
                 groupBuying.getId(),
                 groupBuying.getTitle(),
-                groupBuying.getTotalPrice(),
+                appliedPrice, // 수정: groupBuying.getTotalPrice() 대신 계산된 신청 가격 전달
                 participation.getApplyQuantity(),
                 participation.getPaidPoint(),
                 participation.getPaymentStatus(),
                 groupBuying.getStatus(),
                 groupBuying.getMeetingAt(),
-                groupBuying.getMeetingAddress(),
+                groupBuying.getMeetingPlace(), // 수정: meetingAddress 대신 meetingPlace 전달
                 groupBuying.getDeadline()
         );
+    }
+
+    private Double calculateAppliedPrice(
+            Double totalPrice,
+            Integer targetQuantity,
+            Integer applyQuantity
+    ) { // 추가: 신청 가격 계산 메서드
+        if (totalPrice == null || targetQuantity == null || applyQuantity == null) {
+            return 0.0;
+        }
+
+        if (targetQuantity == 0) {
+            return 0.0;
+        }
+
+        return (totalPrice / targetQuantity) * applyQuantity;
     }
 
     private Integer toIntegerCurrentQuantity(Long currentQuantity) {

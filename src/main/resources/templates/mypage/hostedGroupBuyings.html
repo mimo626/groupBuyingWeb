@@ -60,6 +60,24 @@
         requestHostedGroupBuyings(currentStatus);
     };
 
+
+    function formatDateTime(dateTime) {
+    if (!dateTime) {
+        return '일시 미정';
+    }
+    const date = new Date(dateTime);
+    if (Number.isNaN(date.getTime())) {
+        return '일시 미정';
+    }
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const period = hours < 12 ? '오전' : '오후';
+    const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+    return `${month}월 ${day}일 ${period} ${displayHours}:${minutes}`;
+}
+
     function changeStatus(status, element) {
         currentStatus = status;
 
@@ -100,6 +118,7 @@
 
     function renderHostedGroupBuyings(items) {
         const list = document.getElementById('group-buying-list');
+        const deadlineText = formatDateTime(item.deadline);
         list.innerHTML = '';
 
         if (items.length === 0) {
@@ -124,7 +143,7 @@
             const percentage = Math.min(Math.round((currentQty / targetQty) * 100), 100);
 
             // 가격 콤마 포맷팅
-            const priceFormatted = (item.totalPrice || 0).toLocaleString();
+            const priceFormatted = (item.appliedPrice || 0).toLocaleString();
 
             card.innerHTML = `
                 <div class="card-header">
@@ -132,7 +151,7 @@
                     <span class="arrow-icon">&gt;</span>
                 </div>
                 <h3 class="title">${item.title}</h3>
-                <p class="deadline">마감 ${item.deadline}</p>
+                <p class="deadline">마감 ${deadlineText}</p>
 
                 <div class="info-row">
                     <span class="price">${priceFormatted}원</span>
