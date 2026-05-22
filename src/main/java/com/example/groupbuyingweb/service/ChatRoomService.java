@@ -178,6 +178,7 @@ public class ChatRoomService {
                 groupBuying.getId(),
                 groupBuying.getTitle(),
                 groupBuying.getStatus(),
+                groupBuying.getStatus().getDescription(),
                 groupBuying.getTrackingNumber(),
                 groupBuying.getMeetingAt(),
                 groupBuying.getMeetingPlace(),
@@ -222,7 +223,7 @@ public class ChatRoomService {
                             groupBuying.getId(),
                             groupBuying.getTitle(),
                             lastMessage != null ? lastMessage.getContent() : null,
-                            groupBuying.getStatus(),
+                            groupBuying.getStatus().getDescription(),
                             lastMessage != null ? lastMessage.getCreateAt() : null,
                             (int) unreadCount
                     );

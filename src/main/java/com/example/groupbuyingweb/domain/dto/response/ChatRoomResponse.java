@@ -22,7 +22,7 @@ public class ChatRoomResponse {
             Long groupPurchaseId,
             String groupPurchaseTitle,
             String lastMessage,
-            GroupBuyingStatus status,
+            String status,
             LocalDateTime lastMessageAt,
             int unreadCount
     ) {}
@@ -33,6 +33,7 @@ public class ChatRoomResponse {
             Long groupPurchaseId,
             String groupPurchaseTitle,
             GroupBuyingStatus status,
+            String statusLabel,
             String trackingNumber,
             LocalDateTime meetingAt,
             String meetingLocation,
