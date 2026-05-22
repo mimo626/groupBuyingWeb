@@ -37,7 +37,7 @@ public class MyPageResponse {
             Long groupBuyingId,
             Long participationId,
             String title,
-            Double totalPrice,
+            Double appliedPrice,
             Integer targetQuantity,
             Integer currentQuantity,
             GroupBuyingStatus status,
@@ -48,13 +48,13 @@ public class MyPageResponse {
             Long participationId,
             Long groupBuyingId,
             String title,
-            Double totalPrice,
+            Double appliedPrice,
             Integer applyQuantity,
             Double paidPoint,
             PaymentStatus paymentStatus,
             GroupBuyingStatus groupBuyingStatus,
             LocalDateTime meetingAt,
-            String meetingAddress,
+            String meetingPlace,
             LocalDateTime deadline
     ) {}
 

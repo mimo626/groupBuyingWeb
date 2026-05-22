@@ -56,6 +56,27 @@
         requestParticipatedGroupBuyings(currentStatus);
     };
 
+    function formatDateTime(dateTime) {
+    if (!dateTime) {
+        return '일시 미정';
+    }
+
+    const date = new Date(dateTime);
+
+    if (Number.isNaN(date.getTime())) {
+        return '일시 미정';
+    }
+
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const period = hours < 12 ? '오전' : '오후';
+    const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+
+    return `${month}월 ${day}일 ${period} ${displayHours}:${minutes}`;
+}
+
     function changeStatus(status, element) {
         currentStatus = status;
 
@@ -115,18 +136,19 @@
             const price = (item.totalPrice || 0).toLocaleString();
             const point = (item.paidPoint || 0).toLocaleString();
             const badge = statusConfig[item.groupBuyingStatus] || { text: item.groupBuyingStatus, theme: 'gray' };
-            const meetTime = item.meetingAt || '미정';
-            const meetPlace = item.meetingAddress || '미정';
+            const deadlineText = formatDateTime(item.deadline);
+            const meetingAtText = formatDateTime(item.meetingAt);
+            const meetPlace = item.meetingPlace || '미정';
 
             card.innerHTML = `
                 <div class="card-header">
                     <span class="status-badge theme-${badge.theme}">${badge.text}</span>
                 </div>
                 <h3 class="title">${item.title}</h3>
-                <p class="deadline">마감 ${item.deadline || '일시 미상'}</p>
+                <p class="deadline">마감 ${deadlineText}</p>
 
                 <div class="meeting-info">
-                    📍 만남: ${meetTime} · ${meetPlace}
+                   📍 만남: ${meetingAtText} · ${meetPlace}
                 </div>
 
                 <div class="info-row">
