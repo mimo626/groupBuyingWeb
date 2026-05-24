@@ -42,7 +42,6 @@ public class GroupBuyingRequest {
 
             @NotBlank(message = "상품 URL은 필수입니다.")
             String productUrl,
-            String productImageUrl,
             @NotNull(message = "마감 기한을 설정해주세요.")
             LocalDateTime deadline
     ) {}
