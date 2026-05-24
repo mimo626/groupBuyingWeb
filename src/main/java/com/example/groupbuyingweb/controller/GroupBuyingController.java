@@ -10,6 +10,7 @@ import com.example.groupbuyingweb.service.PointService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,7 +43,7 @@ public class GroupBuyingController {
         return "redirect:/group-buyings/" + res.groupBuyingId();
     }
 
-    // 실제 수정 처리 요청
+    // 수정 처리 요청
     @PostMapping("/{id}/edit") // HTML Form은 기본적으로 GET/POST만 지원하므로 POST 사용 추천
     public String editGroupBuying(@PathVariable("id") Long groupBuyingId,
                                   @Valid @ModelAttribute GroupBuyingRequest.Create request, // 폼에서 넘어온 수정 데이터
@@ -104,5 +105,18 @@ public class GroupBuyingController {
         String memberId = loginSessionManager.requireLoginUserId(session);
         GroupBuyingParticipationResponse.SettleResult dto = pointService.settlePoint(groupBuyingId, memberId);
         return ApiResponse.success(dto); // 공구 참여자 전체 정산 완료 : true / 아니면 false
+    }
+
+    // 삭제 처리 요청
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<String> deleteGroupBuying(@PathVariable("id") Long groupBuyingId,
+                                  HttpSession session) {
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
+
+        // 서비스에 수정 요청 (권한 체크 -> 기존 데이터 조회 -> 값 덮어쓰기 -> 저장)
+        groupBuyingService.deleteGroupBuying(groupBuyingId, loggedInUserId);
+
+        return ResponseEntity.ok("success");
     }
 }
