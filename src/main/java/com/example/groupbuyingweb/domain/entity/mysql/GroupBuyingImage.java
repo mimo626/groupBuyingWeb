@@ -26,4 +26,7 @@ public class GroupBuyingImage {
     public void updateGroupBuying(GroupBuying groupBuying) {
         this.groupBuying = groupBuying;
     }
+    public void updateIsThumbnail(boolean isThumbnail) {
+        this.isThumbnail = isThumbnail;
+    }
 }

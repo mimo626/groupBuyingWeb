@@ -75,6 +75,10 @@ public class GroupBuying {
     @OneToMany(mappedBy = "groupBuying", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupBuyingImage> images = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "groupBuying", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupBuyingParticipation> participations = new ArrayList<>();
+
     @CreationTimestamp
     @Column(updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
@@ -85,18 +89,29 @@ public class GroupBuying {
         this.viewCount = this.viewCount == null ? 0 : this.viewCount;
     }
 
-    public void patch(GroupBuyingRequest.Update request) {
-        if (request.title() != null) this.title = request.title();
-        if (request.productName() != null) this.productName = request.productName();
-        if (request.category() != null) this.category = request.category();
-        if (request.productContent() != null) this.productContent = request.productContent();
-        if (request.totalPrice() != null) this.totalPrice = request.totalPrice();
-        if (request.targetQuantity() != null) this.targetQuantity = request.targetQuantity();
-        if (request.entX() != null) this.entX = request.entX();
-        if (request.entY() != null) this.entY = request.entY();
-        if (request.meetingPlace() != null) this.meetingPlace = request.meetingPlace();
-        if (request.productUrl() != null) this.productUrl = request.productUrl();
-        if (request.deadline() != null) this.deadline = request.deadline();
+    // 엔티티 내부 정보 업데이트 메서드
+    public void update(String title, String productName, GroupBuyingCategory category,
+                       String productContent, double totalPrice, int targetQuantity,
+                       double entX, double entY, String meetingPlace, String meetingAddress,
+                       String productUrl, LocalDateTime deadline, String neighborhoodName) {
+        this.title = title;
+        this.productName = productName;
+        this.category = category;
+        this.productContent = productContent;
+        this.totalPrice = totalPrice;
+        this.targetQuantity = targetQuantity;
+        this.entX = entX;
+        this.entY = entY;
+        this.meetingPlace = meetingPlace;
+        this.meetingAddress = meetingAddress;
+        this.productUrl = productUrl;
+        this.deadline = deadline;
+        this.neighborhoodName = neighborhoodName;
+    }
+
+    // 기존 이미지를 싹 지우는 메서드
+    public void clearImages() {
+        this.images.clear();
     }
 
     // 상태 변경

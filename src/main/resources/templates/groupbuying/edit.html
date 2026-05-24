@@ -162,28 +162,28 @@
 <div class="form-container">
     <div class="header2">
         <a href="javascript:history.back()" class="close-btn">✕</a>
-        <span>공동 구매 글 개설</span>
+        <span>공동 구매 글 수정</span>
     </div>
 
-    <form action="/api/group-buyings" method="post" enctype="multipart/form-data" id="createForm">
+    <form th:action="@{/api/group-buyings/{id}/edit(id=${groupBuying.id})}" method="post" enctype="multipart/form-data" id="createForm">
         <div class="form-group">
             <label>공구 제목 <span class="required">*</span></label>
-            <input type="text" name="title" class="form-control" placeholder="예: 신선 딸기 공구" required>
+            <input type="text" name="title" class="form-control" th:value="${groupBuying.title}" required>
         </div>
 
         <div class="form-group">
             <label>상품 이름 <span class="required">*</span></label>
-            <input type="text" name="productName" class="form-control" placeholder="예: 제주 감귤" required>
+            <input type="text" name="productName" class="form-control" th:value="${groupBuying.productName}" required>
         </div>
 
         <div class="form-group">
             <label>상품 설명 <span style="color: #999; font-weight: normal; font-size: 12px;">(선택)</span></label>
-            <textarea name="productContent" class="form-control" placeholder="예: 5kg 한 박스, 정품 보증 1년"></textarea>
+            <textarea name="productContent" class="form-control" th:text="${groupBuying.productContent}"></textarea>
         </div>
 
         <div class="form-group">
             <label>상품 URL <span class="required">*</span></label>
-            <input type="url" name="productUrl" class="form-control" placeholder="https://..." required>
+            <input type="url" name="productUrl" class="form-control" th:value="${groupBuying.productUrl}" required>
         </div>
 
         <div class="flex-row">
@@ -192,35 +192,55 @@
                 <select name="category" class="form-control">
                     <option th:each="category : ${categories}"
                             th:value="${category.name()}"
-                            th:text="${category.description}">생활용품
+                            th:text="${category.description}"
+                            th:selected="${category.name() == groupBuying.category.name()}">
+                        생활용품
                     </option>
                 </select>
             </div>
             <div class="form-group">
                 <label>전체 가격 <span class="required">*</span></label>
-                <input type="number" name="totalPrice" class="form-control" placeholder="예: 150000" required>
+                <input type="number" name="totalPrice" class="form-control" th:value="${#numbers.formatInteger(groupBuying.totalPrice, 0)}" required>
             </div>
         </div>
 
         <div class="flex-row">
             <div class="form-group">
                 <label>내가 살 수량 <span class="required">*</span></label>
-                <input type="number" name="organizerQuantity" class="form-control" value="1" min="1" required>
+                <input type="number" name="organizerQuantity" class="form-control" th:value="${groupBuying.currentQuantity}" min="1" required>
             </div>
             <div class="form-group">
                 <label>모집 수량 <span class="required">*</span></label>
-                <input type="number" name="targetQuantity" class="form-control" value="10" min="2" required>
+                <input type="number" name="targetQuantity" class="form-control" th:value="${groupBuying.targetQuantity}" min="2" required>
             </div>
         </div>
 
         <div class="form-group">
             <label>마감 시간 <span class="required">*</span></label>
-            <input type="datetime-local" name="deadline" class="form-control" required>
+            <input type="datetime-local" name="deadline" th:value="${#temporals.format(groupBuying.deadline, 'yyyy-MM-dd''T''HH:mm')}" class="form-control" required>
         </div>
 
         <div class="form-group">
             <label>대표 이미지 <span style="color: #999; font-weight: normal; font-size: 12px;">(최대 3개, 선택)</span></label>
+
+            <!-- 기존에 등록된 이미지 목록 미리보기 -->
+            <div class="current-images-preview" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div th:each="image : ${groupBuying.images}" class="image-zone" style="position: relative;">
+                    <!-- 이미지 띄우기 -->
+                    <img th:src="${image.imageUrl}" alt="기존 이미지" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
+
+                    <!-- 삭제용 체크박스 또는 버튼 -->
+                    <button type="button" class="btn-delete-img" th:onclick="'deleteExistingImage(' + ${image.id} + ', this)'"
+                            style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">
+                        X
+                    </button>
+                </div>
+            </div>
+
+            <!-- 새로 추가할 이미지를 선택하는 인풋 -->
             <input type="file" name="images" id="imageInput" accept="image/*" multiple class="form-control"/>
+            <!-- 지워진 ID들이 여기에 쉼표(,)로 구분되어 쌓임 -->
+            <input type="hidden" name="deletedImageIds" id="deletedImageIds" value="">
         </div>
 
         <div class="form-group">
@@ -230,17 +250,17 @@
                     <span class="hint-text">이웃과 만나서 거래하고 싶은 장소를 선택해주세요.(공공장소가 좋아요)</span>
                     <div id="map" style="width:100%;height:350px;"></div>
 
-                    <input type="hidden" id="entX" name="entX">
-                    <input type="hidden" id="entY" name="entY">
-                    <input type="hidden" id="meetingAddress" name="meetingAddress">
+                    <input type="hidden" id="entX" name="entX" th:value="${groupBuying.entX}">
+                    <input type="hidden" id="entY" name="entY" th:value="${groupBuying.entY}">
+                    <input type="hidden" id="meetingAddress" name="meetingAddress" th:value="${groupBuying.meetingAddress}">
 
                 </div>
                 <span class="icon">📍</span>
-                <input type="text" name="meetingPlace" class="form-control" placeholder="선택한 곳의 장소명을 입력해 주세요.(예-강남역 1번 출구)" required>
+                <input type="text" name="meetingPlace" class="form-control" th:value="${groupBuying.meetingPlace}" required>
             </div>
         </div>
 
-        <button type="submit" class="btn-submit">개설하기</button>
+        <button type="submit" class="btn-submit">수정하기</button>
     </form>
 </div>
 
@@ -251,79 +271,94 @@
     const HOME_URL = "/group-buyings";
     const CHAT_ROOMS_URL = "/chat/rooms";
     const MY_PAGE_URL = "/mypage";
-  // 헤더 버튼 라우팅
-  document.getElementById("homeBtn").addEventListener("click", () => {
-      window.location.href = HOME_URL;
-  });
-  document.getElementById("chattingBtn").addEventListener("click", () => {
-      window.location.href = CHAT_ROOMS_URL;
-  });
-  document.getElementById("myPageBtn").addEventListener("click", () => {
-      window.location.href = MY_PAGE_URL;
-  });
 
-  // JS 3개 제한 로직
-  document.getElementById('imageInput').addEventListener('change', function() {
-      if (this.files.length > 3) {
-          alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
-          this.value = '';
-      }
-  });
+    // 헤더 버튼 라우팅
+    document.getElementById("homeBtn").addEventListener("click", () => {
+        window.location.href = HOME_URL;
+    });
+    document.getElementById("chattingBtn").addEventListener("click", () => {
+        window.location.href = CHAT_ROOMS_URL;
+    });
+    document.getElementById("myPageBtn").addEventListener("click", () => {
+        window.location.href = MY_PAGE_URL;
+    });
 
-  // kakaoMap 설정 로직
-  var mapContainer = document.getElementById('map');
-  var geocoder = new kakao.maps.services.Geocoder();
-  var map, marker, infowindow;
-  var userAddress = [[${memberAddress}]];
+    // 1. 현재 렌더링된 기존 이미지의 개수를 변수로 관리
+    let currentExistingImageCount = /*[[${groupBuying.images != null ? groupBuying.images.size() : 0}]]*/ 0;
 
-  // 좌표, 주소, 인포윈도우 텍스트를 받아서 한 번에 업데이트 해주는 함수
-  function updateLocationData(coords, detailAddr, infoText) {
-      // 숨겨진 input 값들 업데이트
-      document.getElementById('entX').value = coords.getLng();
-      document.getElementById('entY').value = coords.getLat();
-      document.getElementById('meetingAddress').value = detailAddr;
+    // 2. 파일 선택 시 총 이미지 개수(남은 기존 이미지 + 새로 추가할 파일) 검증
+    document.getElementById('imageInput').addEventListener('change', function() {
+        if (this.files.length + currentExistingImageCount > 3) {
+            alert("이미지는 총 3개까지만 업로드할 수 있습니다.");
+            this.value = ''; // 선택된 파일 초기화
+        }
+    });
 
-      // 마커 위치 이동
-      marker.setPosition(coords);
+    // 3. 기존 이미지 삭제 로직
+    function deleteExistingImage(imageId, buttonElement) {
+        if (!confirm("이 이미지를 삭제하시겠습니까?")) {
+            return;
+        }
 
-      // 인포윈도우 텍스트 변경 및 열기
-      infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">' + infoText + '</div>');
-      infowindow.open(map, marker);
-  }
+        const deletedInput = document.getElementById('deletedImageIds');
+        let currentIds = deletedInput.value ? deletedInput.value.split(',') : [];
 
-  // 초기 주소 검색
-  geocoder.addressSearch(userAddress, function(result, status) {
-      if (status === kakao.maps.services.Status.OK) {
-          var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-          var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+        if (!currentIds.includes(String(imageId))) {
+            currentIds.push(imageId);
+        }
 
-          // 지도 및 마커, 인포윈도우 객체 생성
-          map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
-          marker = new kakao.maps.Marker({ map: map, position: coords });
-          infowindow = new kakao.maps.InfoWindow();
+        deletedInput.value = currentIds.join(',');
+        console.log("삭제할 이미지 ID들: " + deletedInput.value);
 
-          // 초기 로딩 시 주소 데이터 업데이트
-          updateLocationData(coords, detailAddr, '만남 장소');
+        const imageZone = buttonElement.closest('.image-zone');
+        if (imageZone) {
+            imageZone.remove();
+        }
 
-          // 지도 클릭 이벤트
-          kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
-              var latlng = mouseEvent.latLng;
+        // 화면에서 지워졌으므로 카운트 1 감소
+        currentExistingImageCount--;
+    }
 
-              // 좌표를 통해 주소를 가져온 뒤
-              geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
-                  if (status === kakao.maps.services.Status.OK) {
-                      var newDetailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+    // 카카오맵 로직
+    var mapContainer = document.getElementById('map');
+    var geocoder = new kakao.maps.services.Geocoder();
+    var map, marker, infowindow;
+    var userAddress = /*[[${groupBuying.meetingAddress}]]*/ '';
 
-                      // 클릭 시 주소 데이터 업데이트
-                      updateLocationData(latlng, newDetailAddr, '만남 장소');
-                  }
-              });
-          });
+    function updateLocationData(coords, detailAddr, infoText) {
+        document.getElementById('entX').value = coords.getLng();
+        document.getElementById('entY').value = coords.getLat();
+        document.getElementById('meetingAddress').value = detailAddr;
 
-      } else {
-          alert("기본 주소를 찾을 수 없습니다.");
-      }
-  });
+        marker.setPosition(coords);
+        infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">' + infoText + '</div>');
+        infowindow.open(map, marker);
+    }
+
+    geocoder.addressSearch(userAddress, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+            var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+
+            map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
+            marker = new kakao.maps.Marker({ map: map, position: coords });
+            infowindow = new kakao.maps.InfoWindow();
+
+            updateLocationData(coords, detailAddr, '만남 장소');
+
+            kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+                var latlng = mouseEvent.latLng;
+                geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var newDetailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+                        updateLocationData(latlng, newDetailAddr, '만남 장소');
+                    }
+                });
+            });
+        } else {
+            alert("기본 주소를 찾을 수 없습니다.");
+        }
+    });
 </script>
 </body>
 </html>

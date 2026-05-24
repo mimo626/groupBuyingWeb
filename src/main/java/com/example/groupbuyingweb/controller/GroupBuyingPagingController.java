@@ -55,6 +55,22 @@ public class GroupBuyingPagingController {
         return "groupBuying/detail";
     }
 
+    // 수정 폼 화면 요청
+    @GetMapping("/{id}/edit")
+    public String editGroupBuyingForm(@PathVariable("id") Long groupBuyingId, Model model, HttpSession session) {
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
+
+        // (이때 서비스 단에서 loggedInUserId가 주최자가 맞는지 권한 체크 로직이 들어가면 좋습니다)
+        GroupBuyingResponse.Detail res = groupBuyingService.getGroupBuyingById(groupBuyingId, loggedInUserId);
+        model.addAttribute("categories", GroupBuyingCategory.values());
+        model.addAttribute("kakaoJsKey", kakaoJsKey);
+        model.addAttribute("groupBuying", res);
+
+        return "groupBuying/edit";
+    }
+
+
+
     // 성공 시 200 OK
     // 실패(파라미터 타입 불일치 등) 시 400 Bad Request
     @GetMapping()

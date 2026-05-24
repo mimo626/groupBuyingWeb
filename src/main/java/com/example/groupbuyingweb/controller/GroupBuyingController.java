@@ -10,6 +10,7 @@ import com.example.groupbuyingweb.service.PointService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,14 +34,29 @@ public class GroupBuyingController {
     @PostMapping()
     public String addGroupBuying(
             @Valid @ModelAttribute GroupBuyingRequest.Create request,
-            @RequestParam("images") List<MultipartFile> images,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             HttpSession session) {
         String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
-        System.out.println(request.toString());
         GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, loggedInUserId);
 
         return "redirect:/group-buyings/" + res.groupBuyingId();
+    }
+
+    // 수정 처리 요청
+    @PostMapping("/{id}/edit") // HTML Form은 기본적으로 GET/POST만 지원하므로 POST 사용 추천
+    public String editGroupBuying(@PathVariable("id") Long groupBuyingId,
+                                  @Valid @ModelAttribute GroupBuyingRequest.Create request, // 폼에서 넘어온 수정 데이터
+                                  @RequestParam(value = "images", required = false) List<MultipartFile> images, // required=false 필수
+                                  @RequestParam(value = "deletedImageIds", required = false) List<Long> deletedImageIds,
+                                  HttpSession session) {
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
+
+        // 서비스에 수정 요청 (권한 체크 -> 기존 데이터 조회 -> 값 덮어쓰기 -> 저장)
+        groupBuyingService.updateGroupBuying(groupBuyingId, request, images, deletedImageIds, loggedInUserId);
+
+        // 수정이 완료되면 다시 상세 페이지로 리다이렉트
+        return "redirect:/group-buyings/" + groupBuyingId;
     }
 
     // 성공(참여자 자원 생성 완료) 시 201 Created
@@ -89,5 +105,18 @@ public class GroupBuyingController {
         String memberId = loginSessionManager.requireLoginUserId(session);
         GroupBuyingParticipationResponse.SettleResult dto = pointService.settlePoint(groupBuyingId, memberId);
         return ApiResponse.success(dto); // 공구 참여자 전체 정산 완료 : true / 아니면 false
+    }
+
+    // 삭제 처리 요청
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<String> deleteGroupBuying(@PathVariable("id") Long groupBuyingId,
+                                  HttpSession session) {
+        String loggedInUserId = loginSessionManager.requireLoginUserId(session);
+
+        // 서비스에 수정 요청 (권한 체크 -> 기존 데이터 조회 -> 값 덮어쓰기 -> 저장)
+        groupBuyingService.deleteGroupBuying(groupBuyingId, loggedInUserId);
+
+        return ResponseEntity.ok("success");
     }
 }

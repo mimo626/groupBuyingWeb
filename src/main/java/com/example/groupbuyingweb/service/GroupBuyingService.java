@@ -41,6 +41,7 @@ public class GroupBuyingService {
     private final GroupBuyingRepository groupBuyingRepository;
     private final MemberRepository memberRepository;
     private final GroupBuyingParticipationRepository participationRepository;
+    private final GroupBuyingImageRepository imageRepository;
     private final PointService pointService;
     private final AddressService addressService;
     private final ChatRoomService chatRoomService;
@@ -115,8 +116,6 @@ public class GroupBuyingService {
         }
 
         // 3. DB 저장 (Cascade 옵션 때문에 GroupBuying만 저장해도 Image까지 같이 INSERT 됩니다)
-        groupBuyingRepository.save(groupBuying);
-
         GroupBuying savedGroupBuying = groupBuyingRepository.save(groupBuying);
 
         // 공구 참여 엔티티 생성 (주최자)
@@ -294,6 +293,128 @@ public class GroupBuyingService {
         Member member = getMember(memberId);
         return member.getAddress();
     }
+
+    // 공구 상세 수정
+    @Transactional
+    public GroupBuyingResponse.Detail updateGroupBuying(
+            Long groupBuyingId,
+            GroupBuyingRequest.Create request, // 수정용 Request DTO (Create와 비슷하게 생겼을 겁니다)
+            List<MultipartFile> newImages,
+            List<Long> deletedImageIds,
+            String loggedInUserId) {
+
+        // 1. 기존 공구 엔티티 조회 (없으면 예외 발생)
+        GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+
+        // 2. 권한 체크 (주최자만 수정 가능)
+        String organizerId = groupBuying.getMember().getId();
+        if (!organizerId.equals(loggedInUserId)) {
+            throw new IllegalArgumentException("게시글 수정 권한이 없습니다."); // 예외는 프로젝트 정책에 맞게 변경하세요
+        }
+
+        // 3. 주소가 변경되었을 수 있으므로 동네 이름 다시 계산
+        String updatedNeighborhoodName = addressService.createNeighborhoodName(request.entX(), request.entY());
+
+        // 4. 공구 기본 정보 업데이트
+        // 주최자 수량을 공구참여에서 수정
+        GroupBuyingParticipation groupBuyingParticipation = participationRepository.findByGroupBuyingIdAndMemberId(groupBuyingId, organizerId);
+        groupBuyingParticipation.updateApplyQuantity(request.organizerQuantity());
+
+        groupBuying.update(
+                request.title(),
+                request.productName(),
+                request.category(),
+                request.productContent(),
+                request.totalPrice(),
+                request.targetQuantity(),
+                request.entX(),
+                request.entY(),
+                request.meetingPlace(),
+                request.meetingAddress(),
+                request.productUrl(),
+                request.deadline(),
+                updatedNeighborhoodName
+        );
+
+        // 5. 이미지 수정 로직
+        // 사용자가 삭제하기로 한 기존 이미지 삭제
+         groupBuying.getImages().removeIf(img -> deletedImageIds.contains(img.getId()));
+         imageRepository.deleteAllByIdIn(deletedImageIds);
+
+        // 현재 남은 이미지 중에 썸네일(대표 이미지)이 존재하는지 확인
+        boolean hasThumbnail = groupBuying.getImages().stream()
+                .anyMatch(GroupBuyingImage::isThumbnail);
+
+        // 새로운 이미지 추가 로직
+        if (newImages != null && !newImages.isEmpty()) {
+            for (MultipartFile file : newImages) {
+                if (!file.isEmpty()) {
+                    String originalFilename = file.getOriginalFilename();
+                    String storedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+                    String imageUrl = "/uploads/" + storedFilename;
+                    File targetFile = new File(uploadDir + storedFilename);
+
+                    try {
+                        file.transferTo(targetFile);
+
+                        // 기존에 썸네일이 없다면 새 이미지를 썸네일로, 있다면 일반 이미지로 설정
+                        boolean isThumbnail = !hasThumbnail;
+
+                        // 이번에 썸네일로 지정했다면, 다음 추가되는 파일들은 썸네일이 되지 않도록 상태 변경
+                        if (isThumbnail) {
+                            hasThumbnail = true;
+                        }
+
+                        GroupBuyingImage imageEntity = GroupBuyingImage.builder()
+                                .originalFilename(originalFilename)
+                                .storedFilename(storedFilename)
+                                .imageUrl(imageUrl)
+                                .isThumbnail(isThumbnail)
+                                 .groupBuying(groupBuying)
+                                .build();
+
+                        groupBuying.addImage(imageEntity);
+
+                    } catch (IOException e) {
+                        throw new RuntimeException("파일 업로드 중 오류 발생", e);
+                    }
+                }
+            }
+        }
+
+        // 4. 예외 방지: 만약 사용자가 기존 썸네일을 삭제했는데, 새 이미지는 하나도 추가하지 않은 경우
+        // 남아있는 기존 이미지 중 첫 번째를 강제로 썸네일로 지정해줍니다.
+        if (!hasThumbnail && !groupBuying.getImages().isEmpty()) {
+            groupBuying.getImages().get(0).updateIsThumbnail(true);
+        }
+        // 수정을 한 사람은 주최자이므로 isOrganizer=true, isParticipant=false hasParticipant=false 로 세팅
+        return GroupBuyingResponse.Detail.of(groupBuying, request.organizerQuantity(), true, false, false);
+    }
+
+    // 공동 구매 삭제
+    @Transactional
+    public boolean deleteGroupBuying(Long groupBuyingId, String loggedInUserId) {
+        GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+
+        // 1. 권한 체크 (getGroupBuying 안에 이미 있다면 생략 가능)
+        if (!groupBuying.getMember().getId().equals(loggedInUserId)) {
+            throw new IllegalArgumentException("주최자만 삭제할 수 있습니다.");
+        }
+
+        // 2. 서버 디스크에 저장된 실제 이미지 파일들 삭제
+        for (GroupBuyingImage image : groupBuying.getImages()) {
+            File file = new File(uploadDir + image.getStoredFilename());
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+
+        // 3. 공구 삭제 시 참여자 삭제 + 이미지 DB 삭제도 한 번에 처리
+        groupBuyingRepository.delete(groupBuying);
+
+        return true;
+    }
+
     /* ================= 공통 로직 ================= */
 
     // 공구 상세 Dto 생성
