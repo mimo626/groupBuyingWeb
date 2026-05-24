@@ -75,6 +75,10 @@ public class GroupBuying {
     @OneToMany(mappedBy = "groupBuying", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupBuyingImage> images = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "groupBuying", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupBuyingParticipation> participations = new ArrayList<>();
+
     @CreationTimestamp
     @Column(updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
