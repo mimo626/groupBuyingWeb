@@ -28,6 +28,7 @@ public interface GroupBuyingParticipationRepository extends JpaRepository<GroupB
     boolean existsByGroupBuyingIdAndRole(Long groupBuyingId, UserRole role);
 
     boolean existsByGroupBuyingIdAndMemberIdAndRole(Long groupBuyingId, String memberId, UserRole role);
+
     @Query("SELECT SUM(g.applyQuantity) FROM GroupBuyingParticipation g WHERE g.groupBuying.id = :gbpId")
     Integer sumQuantity(@Param("gbpId") long groupBuyingId);
 
