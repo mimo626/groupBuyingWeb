@@ -41,6 +41,7 @@ public class GroupBuyingService {
     private final GroupBuyingRepository groupBuyingRepository;
     private final MemberRepository memberRepository;
     private final GroupBuyingParticipationRepository participationRepository;
+    private final GroupBuyingImageRepository imageRepository;
     private final PointService pointService;
     private final AddressService addressService;
     private final ChatRoomService chatRoomService;
@@ -299,6 +300,7 @@ public class GroupBuyingService {
             Long groupBuyingId,
             GroupBuyingRequest.Create request, // 수정용 Request DTO (Create와 비슷하게 생겼을 겁니다)
             List<MultipartFile> newImages,
+            List<Long> deletedImageIds,
             String loggedInUserId) {
 
         // 1. 기존 공구 엔티티 조회 (없으면 예외 발생)
@@ -313,13 +315,11 @@ public class GroupBuyingService {
         // 3. 주소가 변경되었을 수 있으므로 동네 이름 다시 계산
         String updatedNeighborhoodName = addressService.createNeighborhoodName(request.entX(), request.entY());
 
-        // 4. 공구 기본 정보 업데이트 (JPA 더티 체킹 활용)
-        // ※ GroupBuying 엔티티 내부에 update() 같은 비즈니스 메서드를 만들어두는 것이 좋습니다. (아래 참고)
-        // 주최자 수량 공구참여에서 수정해야함
+        // 4. 공구 기본 정보 업데이트
+        // 주최자 수량을 공구참여에서 수정
         GroupBuyingParticipation groupBuyingParticipation = participationRepository.findByGroupBuyingIdAndMemberId(groupBuyingId, organizerId);
         groupBuyingParticipation.updateApplyQuantity(request.organizerQuantity());
 
-        // TODO 이미지 변경 반영안됨
         groupBuying.update(
                 request.title(),
                 request.productName(),
@@ -336,23 +336,18 @@ public class GroupBuyingService {
                 updatedNeighborhoodName
         );
 
-        // 5. 이미지 수정 로직 (새로운 이미지가 업로드된 경우에만 실행)
-        if (newImages != null && !newImages.isEmpty() && !newImages.get(0).isEmpty()) {
+        // 5. 이미지 수정 로직
+        // 사용자가 삭제하기로 한 기존 이미지 삭제
+         groupBuying.getImages().removeIf(img -> deletedImageIds.contains(img.getId()));
+         imageRepository.deleteAllByIdIn(deletedImageIds);
 
-            // (선택사항) 서버 디스크에 저장된 기존 실제 파일들을 삭제하는 로직을 여기에 추가하면 용량 관리에 좋습니다.
+        // 현재 남은 이미지 중에 썸네일(대표 이미지)이 존재하는지 확인
+        boolean hasThumbnail = groupBuying.getImages().stream()
+                .anyMatch(GroupBuyingImage::isThumbnail);
 
-            // 기존 DB 이미지 정보 초기화 (고아 객체 제거 orphanRemoval = true 설정 필요)
-            groupBuying.clearImages();
-
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            // 새로운 이미지 저장 로직 (Create 로직과 동일)
-            for (int i = 0; i < newImages.size(); i++) {
-                MultipartFile file = newImages.get(i);
-
+        // 새로운 이미지 추가 로직
+        if (newImages != null && !newImages.isEmpty()) {
+            for (MultipartFile file : newImages) {
                 if (!file.isEmpty()) {
                     String originalFilename = file.getOriginalFilename();
                     String storedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
@@ -362,13 +357,20 @@ public class GroupBuyingService {
                     try {
                         file.transferTo(targetFile);
 
-                        boolean isThumbnail = (i == 0);
+                        // 기존에 썸네일이 없다면 새 이미지를 썸네일로, 있다면 일반 이미지로 설정
+                        boolean isThumbnail = !hasThumbnail;
+
+                        // 이번에 썸네일로 지정했다면, 다음 추가되는 파일들은 썸네일이 되지 않도록 상태 변경
+                        if (isThumbnail) {
+                            hasThumbnail = true;
+                        }
 
                         GroupBuyingImage imageEntity = GroupBuyingImage.builder()
                                 .originalFilename(originalFilename)
                                 .storedFilename(storedFilename)
                                 .imageUrl(imageUrl)
                                 .isThumbnail(isThumbnail)
+                                 .groupBuying(groupBuying)
                                 .build();
 
                         groupBuying.addImage(imageEntity);
@@ -380,6 +382,11 @@ public class GroupBuyingService {
             }
         }
 
+        // 4. 예외 방지: 만약 사용자가 기존 썸네일을 삭제했는데, 새 이미지는 하나도 추가하지 않은 경우
+        // 남아있는 기존 이미지 중 첫 번째를 강제로 썸네일로 지정해줍니다.
+        if (!hasThumbnail && !groupBuying.getImages().isEmpty()) {
+            groupBuying.getImages().get(0).updateIsThumbnail(true);
+        }
         // 수정을 한 사람은 주최자이므로 isOrganizer=true, isParticipant=false hasParticipant=false 로 세팅
         return GroupBuyingResponse.Detail.of(groupBuying, request.organizerQuantity(), true, false, false);
     }
