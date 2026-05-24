@@ -391,6 +391,30 @@ public class GroupBuyingService {
         return GroupBuyingResponse.Detail.of(groupBuying, request.organizerQuantity(), true, false, false);
     }
 
+    // 공동 구매 삭제
+    @Transactional
+    public boolean deleteGroupBuying(Long groupBuyingId, String loggedInUserId) {
+        GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+
+        // 1. 권한 체크 (getGroupBuying 안에 이미 있다면 생략 가능)
+        if (!groupBuying.getMember().getId().equals(loggedInUserId)) {
+            throw new IllegalArgumentException("주최자만 삭제할 수 있습니다.");
+        }
+
+        // 2. 서버 디스크에 저장된 실제 이미지 파일들 삭제
+        for (GroupBuyingImage image : groupBuying.getImages()) {
+            File file = new File(uploadDir + image.getStoredFilename());
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+
+        // 3. 공구 삭제 시 참여자 삭제 + 이미지 DB 삭제도 한 번에 처리
+        groupBuyingRepository.delete(groupBuying);
+
+        return true;
+    }
+
     /* ================= 공통 로직 ================= */
 
     // 공구 상세 Dto 생성
