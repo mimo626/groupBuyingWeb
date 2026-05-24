@@ -305,7 +305,8 @@ public class GroupBuyingService {
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
 
         // 2. 권한 체크 (주최자만 수정 가능)
-        if (!groupBuying.getMember().getId().equals(loggedInUserId)) {
+        String organizerId = groupBuying.getMember().getId();
+        if (!organizerId.equals(loggedInUserId)) {
             throw new IllegalArgumentException("게시글 수정 권한이 없습니다."); // 예외는 프로젝트 정책에 맞게 변경하세요
         }
 
@@ -314,7 +315,10 @@ public class GroupBuyingService {
 
         // 4. 공구 기본 정보 업데이트 (JPA 더티 체킹 활용)
         // ※ GroupBuying 엔티티 내부에 update() 같은 비즈니스 메서드를 만들어두는 것이 좋습니다. (아래 참고)
-        // TODO 주최자 수량 공구참여에서 수정해야함
+        // 주최자 수량 공구참여에서 수정해야함
+        GroupBuyingParticipation groupBuyingParticipation = participationRepository.findByGroupBuyingIdAndMemberId(groupBuyingId, organizerId);
+        groupBuyingParticipation.updateApplyQuantity(request.organizerQuantity());
+
         // TODO 이미지 변경 반영안됨
         groupBuying.update(
                 request.title(),
@@ -376,12 +380,8 @@ public class GroupBuyingService {
             }
         }
 
-        // 현재 수량 및 기타 권한을 다시 계산하여 DTO로 반환
-        int currentQuantity = calculateCurrentQuantity(groupBuyingId);
-        boolean hasParticipants = participationRepository.existsByGroupBuyingIdAndRole(groupBuyingId, UserRole.PARTICIPANT);
-
-        // 수정을 한 사람은 주최자이므로 isOrganizer=true, isParticipant=false 로 세팅
-        return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity, true, false, hasParticipants);
+        // 수정을 한 사람은 주최자이므로 isOrganizer=true, isParticipant=false hasParticipant=false 로 세팅
+        return GroupBuyingResponse.Detail.of(groupBuying, request.organizerQuantity(), true, false, false);
     }
 
     /* ================= 공통 로직 ================= */
