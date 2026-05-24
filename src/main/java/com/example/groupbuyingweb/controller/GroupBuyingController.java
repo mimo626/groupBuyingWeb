@@ -33,11 +33,10 @@ public class GroupBuyingController {
     @PostMapping()
     public String addGroupBuying(
             @Valid @ModelAttribute GroupBuyingRequest.Create request,
-            @RequestParam("images") List<MultipartFile> images,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             HttpSession session) {
         String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
-        System.out.println(request.toString());
         GroupBuyingResponse.Create res = groupBuyingService.addGroupBuying(request, images, loggedInUserId);
 
         return "redirect:/group-buyings/" + res.groupBuyingId();
@@ -47,13 +46,13 @@ public class GroupBuyingController {
     @PostMapping("/{id}/edit") // HTML Form은 기본적으로 GET/POST만 지원하므로 POST 사용 추천
     public String editGroupBuying(@PathVariable("id") Long groupBuyingId,
                                   @Valid @ModelAttribute GroupBuyingRequest.Create request, // 폼에서 넘어온 수정 데이터
-                                  @RequestParam("images") List<MultipartFile> images,
+                                  @RequestParam(value = "images", required = false) List<MultipartFile> images, // required=false 필수
+                                  @RequestParam(value = "deletedImageIds", required = false) List<Long> deletedImageIds,
                                   HttpSession session) {
-
         String loggedInUserId = loginSessionManager.requireLoginUserId(session);
 
         // 서비스에 수정 요청 (권한 체크 -> 기존 데이터 조회 -> 값 덮어쓰기 -> 저장)
-        groupBuyingService.updateGroupBuying(groupBuyingId, request, images, loggedInUserId);
+        groupBuyingService.updateGroupBuying(groupBuyingId, request, images, deletedImageIds, loggedInUserId);
 
         // 수정이 완료되면 다시 상세 페이지로 리다이렉트
         return "redirect:/group-buyings/" + groupBuyingId;
