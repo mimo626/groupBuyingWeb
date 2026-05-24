@@ -64,4 +64,7 @@ public class GroupBuyingParticipation {
         this.paymentStatus = PaymentStatus.Complete;
         this.paidPoint -= point;
     }
+    public void updateApplyQuantity(Integer applyQuantity) {
+        this.applyQuantity = applyQuantity;
+    }
 }
