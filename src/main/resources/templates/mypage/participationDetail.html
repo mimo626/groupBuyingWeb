@@ -67,6 +67,16 @@
     const API_PARTICIPATION_DETAIL_URL = `/api/members/me/group-buying/participations/`; // /api/mypage/participations/{participationId}
     const GROUP_BUYING_URL = `/group-buyings/`;
 
+    const statusMap = {
+        'RECRUITING': '모집중',
+        'START': '공구시작',
+        'PURCHASED': '구매완료',
+        'SHIPPING': '배송중',
+        'MEETING_SCHEDULED': '만남예정',
+        'SETTLING': '정산중',
+        'CLOSED': '종료'
+    };
+
     window.onload = function() {
         const pathSegments = window.location.pathname.split('/');
         const participationId = pathSegments[pathSegments.length - 1];
@@ -110,7 +120,7 @@
     }
 
     function renderDetail(detail) {
-        document.getElementById('group-buying-status-badge').innerText = detail.groupBuyingStatus || '';
+        document.getElementById('group-buying-status-badge').innerText = statusMap[detail.groupBuyingStatus] || '';
         document.getElementById('product-content').innerText = detail.productContent || '';
         document.getElementById('group-buying-title').innerText = detail.title || '';
         document.getElementById('product-name').innerText = detail.productName || '';
