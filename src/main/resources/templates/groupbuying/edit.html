@@ -271,105 +271,94 @@
     const HOME_URL = "/group-buyings";
     const CHAT_ROOMS_URL = "/chat/rooms";
     const MY_PAGE_URL = "/mypage";
-  // 헤더 버튼 라우팅
-  document.getElementById("homeBtn").addEventListener("click", () => {
-      window.location.href = HOME_URL;
-  });
-  document.getElementById("chattingBtn").addEventListener("click", () => {
-      window.location.href = CHAT_ROOMS_URL;
-  });
-  document.getElementById("myPageBtn").addEventListener("click", () => {
-      window.location.href = MY_PAGE_URL;
-  });
 
-  // JS 3개 제한 로직
-  document.getElementById('imageInput').addEventListener('change', function() {
-      if (this.files.length > 3) {
-          alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
-          this.value = '';
-      }
-  });
-  // kakaoMap 설정 로직
-  var mapContainer = document.getElementById('map');
-  var geocoder = new kakao.maps.services.Geocoder();
-  var map, marker, infowindow;
-  var userAddress = [[${groupBuying.meetingAddress}]];
+    // 헤더 버튼 라우팅
+    document.getElementById("homeBtn").addEventListener("click", () => {
+        window.location.href = HOME_URL;
+    });
+    document.getElementById("chattingBtn").addEventListener("click", () => {
+        window.location.href = CHAT_ROOMS_URL;
+    });
+    document.getElementById("myPageBtn").addEventListener("click", () => {
+        window.location.href = MY_PAGE_URL;
+    });
 
+    // 1. 현재 렌더링된 기존 이미지의 개수를 변수로 관리
+    let currentExistingImageCount = /*[[${groupBuying.images != null ? groupBuying.images.size() : 0}]]*/ 0;
 
-  // 좌표, 주소, 인포윈도우 텍스트를 받아서 한 번에 업데이트 해주는 함수
-  function updateLocationData(coords, detailAddr, infoText) {
-      // 숨겨진 input 값들 업데이트
-      document.getElementById('entX').value = coords.getLng();
-      document.getElementById('entY').value = coords.getLat();
-      document.getElementById('meetingAddress').value = detailAddr;
+    // 2. 파일 선택 시 총 이미지 개수(남은 기존 이미지 + 새로 추가할 파일) 검증
+    document.getElementById('imageInput').addEventListener('change', function() {
+        if (this.files.length + currentExistingImageCount > 3) {
+            alert("이미지는 총 3개까지만 업로드할 수 있습니다.");
+            this.value = ''; // 선택된 파일 초기화
+        }
+    });
 
-      // 마커 위치 이동
-      marker.setPosition(coords);
-
-      // 인포윈도우 텍스트 변경 및 열기
-      infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">' + infoText + '</div>');
-      infowindow.open(map, marker);
-  }
-
-  // 초기 주소 검색
-  geocoder.addressSearch(userAddress, function(result, status) {
-      if (status === kakao.maps.services.Status.OK) {
-          var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-          var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
-
-          // 지도 및 마커, 인포윈도우 객체 생성
-          map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
-          marker = new kakao.maps.Marker({ map: map, position: coords });
-          infowindow = new kakao.maps.InfoWindow();
-
-          // 초기 로딩 시 주소 데이터 업데이트
-          updateLocationData(coords, detailAddr, '만남 장소');
-
-          // 지도 클릭 이벤트
-          kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
-              var latlng = mouseEvent.latLng;
-
-              // 좌표를 통해 주소를 가져온 뒤
-              geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
-                  if (status === kakao.maps.services.Status.OK) {
-                      var newDetailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
-
-                      // 클릭 시 주소 데이터 업데이트
-                      updateLocationData(latlng, newDetailAddr, '만남 장소');
-                  }
-              });
-          });
-
-      } else {
-          alert("기본 주소를 찾을 수 없습니다.");
-      }
-  });
-
+    // 3. 기존 이미지 삭제 로직
     function deleteExistingImage(imageId, buttonElement) {
-    if (!confirm("이 이미지를 삭제하시겠습니까?")) {
-        return; // 취소를 누르면 아무 일도 안 일어남
+        if (!confirm("이 이미지를 삭제하시겠습니까?")) {
+            return;
+        }
+
+        const deletedInput = document.getElementById('deletedImageIds');
+        let currentIds = deletedInput.value ? deletedInput.value.split(',') : [];
+
+        if (!currentIds.includes(String(imageId))) {
+            currentIds.push(imageId);
+        }
+
+        deletedInput.value = currentIds.join(',');
+        console.log("삭제할 이미지 ID들: " + deletedInput.value);
+
+        const imageZone = buttonElement.closest('.image-zone');
+        if (imageZone) {
+            imageZone.remove();
+        }
+
+        // 화면에서 지워졌으므로 카운트 1 감소
+        currentExistingImageCount--;
     }
 
-    // 1. 서버로 보낼 hidden input 가져오기
-    const deletedInput = document.getElementById('deletedImageIds');
+    // 카카오맵 로직
+    var mapContainer = document.getElementById('map');
+    var geocoder = new kakao.maps.services.Geocoder();
+    var map, marker, infowindow;
+    var userAddress = /*[[${groupBuying.meetingAddress}]]*/ '';
 
-    // 2. 기존에 기록된 ID 배열 만들기 (비어있으면 빈 배열, 있으면 쉼표 분리)
-    let currentIds = deletedInput.value ? deletedInput.value.split(',') : [];
+    function updateLocationData(coords, detailAddr, infoText) {
+        document.getElementById('entX').value = coords.getLng();
+        document.getElementById('entY').value = coords.getLat();
+        document.getElementById('meetingAddress').value = detailAddr;
 
-    // 3. 현재 지운 이미지 ID를 배열에 추가 (중복 방지)
-    if (!currentIds.includes(String(imageId))) {
-        currentIds.push(imageId);
+        marker.setPosition(coords);
+        infowindow.setContent('<div style="width:150px;text-align:center;padding:6px 0;">' + infoText + '</div>');
+        infowindow.open(map, marker);
     }
 
-    // 4. 다시 hidden input에 쉼표로 연결해서 저장 (예: "12,15")
-    deletedInput.value = currentIds.join(',');
+    geocoder.addressSearch(userAddress, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+            var detailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
 
-    // 5. 화면에서 이미지 영역 지우기 (X 버튼을 둘러싼 부모 div 요소를 찾아 삭제)
-    const imageZone = buttonElement.closest('.image-zone');
-    if (imageZone) {
-        imageZone.remove();
-    }
-}
+            map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
+            marker = new kakao.maps.Marker({ map: map, position: coords });
+            infowindow = new kakao.maps.InfoWindow();
+
+            updateLocationData(coords, detailAddr, '만남 장소');
+
+            kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+                var latlng = mouseEvent.latLng;
+                geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var newDetailAddr = result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name;
+                        updateLocationData(latlng, newDetailAddr, '만남 장소');
+                    }
+                });
+            });
+        } else {
+            alert("기본 주소를 찾을 수 없습니다.");
+        }
+    });
 </script>
 </body>
 </html>
