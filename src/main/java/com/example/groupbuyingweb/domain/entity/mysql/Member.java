@@ -62,7 +62,7 @@ public class Member {
 
     public void chargePoint(Double charge) {
         if (charge <= 0.0){ // 충전금액 0 일 때 테스트
-            throw new BusinessException(ErrorCode.TEST_ZERO_POINT);
+            throw new BusinessException(ErrorCode.INVALID_POINT);
         }
         this.point += charge;
     }

@@ -52,7 +52,8 @@
 </main>
 
 <script th:inline="javascript">
-    const API_POINT_CHARGE_URL = `/api/members/me/point`;
+    const API_POINT_CHARGE_URL = `/api/members/me/point/kakao/ready`;
+    const API_KAKAO_APPROVE_URL = '/api/members/me/point/kakao/approve';
     const MYPAGE_URL = '/mypage';
 
     window.onload = function() {
@@ -72,6 +73,28 @@
         });
     };
 
+    function handleKakaoApprove(pgToken) {
+        fetch(API_KAKAO_APPROVE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pgToken: pgToken })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 200) {
+                    alert("포인트 충전이 완료되었습니다!");
+                    location.href = '/mypage';
+                } else {
+                    alert("결제 승인 중 오류가 발생했습니다.");
+                    location.href = '/mypage/charge?error=true';
+                }
+            })
+            .catch(() => {
+                alert("네트워크 오류가 발생했습니다.");
+                location.href = '/mypage/charge?error=true';
+            });
+    }
+
     // 포인트 충전 API 요청 함수
     function requestCharge() {
         const pointValue = document.getElementById("pointInput").value;
@@ -88,14 +111,14 @@
         }
 
         // API 엔드포인트 및 방식
-        const apiUrl = API_POINT_CHARGE_URL; //api/members/me/point
+        const apiUrl = API_POINT_CHARGE_URL;
         const requestOptions = {
-            method: 'PATCH',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                point: pointValue
+                point: Number(pointValue)
             })
         };
 
@@ -104,17 +127,19 @@
                 return response.json();
             })
             .then(data => {
-                if (data.status === 400 || data.status === 401) {
-                    alert("충전 실패 : " + data.message);
+                if (data.data && data.data.redirectUrl) {
+                    window.open(
+                        data.data.redirectUrl,
+                        'kakaopay',
+                        'width=500,height=600,scrollbars=yes'
+                    );
                 } else {
-                    alert(`${Number(pointValue).toLocaleString()}P 충전이 성공적으로 완료되었습니다!`);
-                    goBack();
+                    alert("결제 준비 중 오류가 발생했습니다.");
                 }
             })
             .catch(error => {
-                console.error("API 호출 에러:", error);
-                // 테스트 시연용 임시 알럿 (실제 서버 없을 때 방지)
-                // alert("오류 발생: " + error.message);
+                console.error("카카오페이 오류:", error);
+                alert("결제 요청 실패: " + error.message);
             });
     }
 

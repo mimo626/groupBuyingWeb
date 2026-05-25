@@ -31,6 +31,11 @@ public class MyPageViewController {
         return "mypage/pointCharge";
     }
 
+    @GetMapping("/charge/popup-success")
+    public String chargePopupSuccess() {
+        return "mypage/chargePopupSuccess";  // 팝업 닫고 부모창에 전달하는 HTML
+    }
+
     @GetMapping("/gb-detail/{participationId}")
     public String participationDetail(@PathVariable Long participationId) {
         return "mypage/participationDetail";

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><title>결제 완료</title></head>
+<body>
+<script>
+    const params  = new URLSearchParams(window.location.search);
+    const pgToken = params.get("pg_token");
+
+    if (pgToken && window.opener) {
+        // 부모창에 pg_token 전달
+        window.opener.handleKakaoApprove(pgToken);
+    }
+    window.close();
+</script>
+</body>
+</html>

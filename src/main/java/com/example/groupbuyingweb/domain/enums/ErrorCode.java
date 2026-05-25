@@ -28,9 +28,8 @@ public enum ErrorCode {
 
     // 포인트
     INSUFFICIENT_POINT(400, "포인트 잔액이 부족합니다."),
-
-    // test 용 - 충전 포인트 0 이면 반환해볼예정
-    TEST_ZERO_POINT(400, "올바른 충전 포인트를 입력하세요"),
+    INVALID_POINT(400, "유효하지 않은 결제 요청입니다."),
+    KAKAO_PAY_API_ERROR(502,"카카오페이 API 호출에 실패했습니다." ),
 
     // 공동구매 생성
     NOT_EXIST_GROUP_BUYING(400, "존재하지 않는 공동구매 게시글입니다."),
