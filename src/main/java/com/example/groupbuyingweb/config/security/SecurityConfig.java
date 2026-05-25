@@ -5,7 +5,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,11 +26,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 세부 권한은 컨트롤러의 @PreAuthorize로 제어할 예정이므로 여기서는 모두 허용
                         .anyRequest().permitAll()
-                )
-
-                // !!!!팀원이 로그인 구현하기 전까지 사용할 임시 필터 등록!!!!
-                // 스프링 시큐리티의 기본 인증 필터가 실행되기 전에 임시 유저를 컨텍스트에 강제 주입함
-                .addFilterBefore(new DummyAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                );
 
         return http.build();
     }
