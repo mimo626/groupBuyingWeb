@@ -1,11 +1,14 @@
 package com.example.groupbuyingweb.controller;
 
 import com.example.groupbuyingweb.core.api.ApiResponse;
+import com.example.groupbuyingweb.core.error.BusinessException;
 import com.example.groupbuyingweb.core.session.LoginSessionManager;
 import com.example.groupbuyingweb.domain.dto.request.GroupBuyingParticipationRequest;
 import com.example.groupbuyingweb.domain.dto.request.MyPageRequest;
 import com.example.groupbuyingweb.domain.dto.response.GroupBuyingParticipationResponse;
 import com.example.groupbuyingweb.domain.dto.response.MyPageResponse;
+import com.example.groupbuyingweb.domain.enums.ErrorCode;
+import com.example.groupbuyingweb.service.KakaoPayClient;
 import com.example.groupbuyingweb.service.MyPageService;
 import com.example.groupbuyingweb.service.PointService;
 import jakarta.servlet.http.HttpSession;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/api/members")
 @Controller
@@ -28,6 +32,10 @@ public class MemberController {
 
     @Autowired
     private PointService pointService;
+
+    @Autowired
+    private KakaoPayClient kakaoPayClient;
+
 
     //@GetMapping("/api/mypage")
     // 성공 : 200 ok
@@ -118,19 +126,52 @@ public class MemberController {
         return ApiResponse.success(dto);
     }
 
-    @PatchMapping("/me/point") //멤버리소스/마이페이지/포인트리소스 업데이트
+    @PostMapping("/me/point/kakao/ready")
     @ResponseBody
-    public ApiResponse<?> chargePoint(
+    public ApiResponse<?> kakaoPayReady(
             // 성공 : 200 OK
-            // 메시지 : 포인트 충전되었습니다.
-            // 실패 : 500 서버 내부 오류
-            // 실패 : 401 로그인 요청
+            // 실패 : 401 로그인 필요
+            // 실패 : 502 카카오페이 API 오류
             @RequestBody GroupBuyingParticipationRequest.Charge request, HttpSession session){
         String memberId = loginSessionManager.requireLoginUserId(session);
         double charge = request.point();
-        GroupBuyingParticipationResponse.UserResult dto = pointService.chargePoint(memberId, charge);
-        return ApiResponse.success(dto);
+        String orderId = kakaoPayClient.makeOrderId(memberId);
+        KakaoPayClient.ReadyResponse response = kakaoPayClient.ready(memberId, (int)charge, orderId);
+
+        session.setAttribute("kakaoTid",      response.tid());
+        session.setAttribute("kakaoOrderId",  orderId);
+        session.setAttribute("kakaoPoint", (int) charge);
+        session.setAttribute("kakaoMemberId", memberId);
+
+        return ApiResponse.success(Map.of("redirectUrl", response.nextRedirectPcUrl()));
     }
 
+    // 성공 : 200 OK
+// 실패 : 400 pg_token 없음 또는 세션 만료
+// 실패 : 401 로그인 필요
+// 실패 : 502 카카오페이 API 오류
+    @ResponseBody
+    @PostMapping("/me/point/kakao/approve")
+    public ApiResponse<?> kakaoPayApprove(@RequestBody Map<String, String> request,
+                                          HttpSession session) {
+        String pgToken = request.get("pgToken");
+        String memberId = (String) session.getAttribute("kakaoMemberId");
+        String tid = (String) session.getAttribute("kakaoTid");
+        String orderId = (String) session.getAttribute("kakaoOrderId");
+        int point = (int) session.getAttribute("kakaoPoint");
 
+        if (pgToken == null || tid == null) {
+            throw new BusinessException(ErrorCode.INVALID_POINT);
+        }
+
+        kakaoPayClient.approve(tid, pgToken, memberId, orderId);
+        pointService.chargePoint(memberId, (double) point);
+
+        session.removeAttribute("kakaoTid");
+        session.removeAttribute("kakaoOrderId");
+        session.removeAttribute("kakaoPoint");
+        session.removeAttribute("kakaoMemberId");
+
+        return ApiResponse.success("포인트 충전이 완료되었습니다.");
+    }
 }
