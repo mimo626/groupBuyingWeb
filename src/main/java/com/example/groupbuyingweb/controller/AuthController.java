@@ -4,6 +4,8 @@ import com.example.groupbuyingweb.core.api.ApiResponse;
 import com.example.groupbuyingweb.domain.dto.request.AuthRequest;
 import com.example.groupbuyingweb.domain.dto.response.AuthResponse;
 import com.example.groupbuyingweb.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -82,11 +84,14 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<AuthResponse.LoginResult> login(
             @Valid @RequestBody AuthRequest.Login request,
-            HttpSession session
+            HttpSession session,
+            HttpServletRequest httpRequest, // 추가: SecurityContext를 세션에 저장하기 위해 Service로 전달한다.
+            HttpServletResponse httpResponse // 추가: SecurityContext를 세션에 저장하기 위해 Service로 전달한다.
     ) {
-        AuthResponse.LoginResult response = authService.login(request, session);
+        AuthResponse.LoginResult response = authService.login(request, session, httpRequest, httpResponse); // 수정: 변경된 AuthService.login() 시그니처에 맞춰 요청/응답 객체를 함께 전달한다.
         return ApiResponse.success(response);
     }
+
 
     // 추가: 성공/실패 상태 코드 기준 주석 정리
     // 성공 시 200 OK
@@ -95,9 +100,11 @@ public class AuthController {
     @ResponseBody
     @PostMapping("/logout")
     public ApiResponse<Void> logout(
-            HttpSession session
+            HttpSession session,
+            HttpServletRequest httpRequest, // 추가: SecurityContext 정리를 위해 Service로 전달한다.
+            HttpServletResponse httpResponse // 추가: SecurityContext 정리를 위해 Service로 전달한다.
     ) {
-        authService.logout(session);
+        authService.logout(session, httpRequest, httpResponse); // 수정: 변경된 AuthService.logout() 시그니처에 맞춰 요청/응답 객체를 함께 전달한다.
         return ApiResponse.success(null);
     }
 }
