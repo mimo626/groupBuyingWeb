@@ -36,6 +36,8 @@ public enum ErrorCode {
 
     // 공동구매 참여
     EXCEED_TARGET_QUANTITY(400, "모집 수량을 초과하여 신청할 수 없습니다."),
+    NOT_EXIST_GROUP_BUYING_PARTICIPANT(400, "존재하지 않는 공동구매 참여입니다."),
+
 
     // 채팅
     NOT_EXIST_CHAT_ROOM(404, "존재하지 않는 채팅방입니다."),
