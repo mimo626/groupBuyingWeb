@@ -136,33 +136,21 @@ public class GroupBuyingService {
     @Transactional
     public GroupBuyingResponse.Participate participateGroupBuying(Integer applyQuantity, String memberId, Long groupBuyingId) {
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
-        int targetQuantity = groupBuying.getTargetQuantity();
         int currentQuantity = calculateCurrentQuantity(groupBuyingId);
+        int expectedTotalQuantity = currentQuantity + applyQuantity;
 
-        int totalQuantityAfterApply = currentQuantity + applyQuantity;
-
-        // 수량 초과 예외 처리
-        if (totalQuantityAfterApply > targetQuantity) {
-            throw new BusinessException(ErrorCode.EXCEED_TARGET_QUANTITY);
-        }
+        validateExpectedQuantity(groupBuying, expectedTotalQuantity);
 
         Member member = getMember(memberId);
 
-        // 공구 참여 엔티티 생성
         GroupBuyingParticipation participation = createParticipation(
                 member, groupBuying, UserRole.PARTICIPANT, applyQuantity, PaymentStatus.Incomplete
         );
 
-        // 단가 계산 (총액 / 목표수량)
-        double unitPrice = groupBuying.getTotalPrice() / targetQuantity;
-
-        // 참여자의 포인트 결제 진행 (DB 조회 없이 만들어둔 객체를 그대로 넘김)
+        double unitPrice = groupBuying.getTotalPrice() / groupBuying.getTargetQuantity();
         pointService.payPoint(member, participation, unitPrice);
 
-        // 상태 변경: 목표 수량 달성 시 공구 시작 및 채팅방 생성
-        if (totalQuantityAfterApply == targetQuantity) {
-            processStatusChange(groupBuyingId, GroupBuyingStatus.START, null, null);
-        }
+        checkAndStartGroupBuyingIfFull(groupBuying, expectedTotalQuantity);
 
         return new GroupBuyingResponse.Participate(groupBuyingId, participation.getId(), applyQuantity);
     }
@@ -305,6 +293,12 @@ public class GroupBuyingService {
 
         // 1. 기존 공구 엔티티 조회 (없으면 예외 발생)
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+        GroupBuyingParticipation participation = participationRepository.findByGroupBuyingIdAndMemberId(groupBuyingId, loggedInUserId);
+
+        int applyQuantity = 0;
+        if(participation != null){
+            applyQuantity = participation.getApplyQuantity();
+        }
 
         // 2. 권한 체크 (주최자만 수정 가능)
         String organizerId = groupBuying.getMember().getId();
@@ -388,7 +382,7 @@ public class GroupBuyingService {
             groupBuying.getImages().get(0).updateIsThumbnail(true);
         }
         // 수정을 한 사람은 주최자이므로 isOrganizer=true, isParticipant=false hasParticipant=false 로 세팅
-        return GroupBuyingResponse.Detail.of(groupBuying, request.organizerQuantity(), true, false, false);
+        return GroupBuyingResponse.Detail.of(groupBuying, request.organizerQuantity(), applyQuantity, true, false, false);
     }
 
     // 공동 구매 삭제
@@ -415,6 +409,29 @@ public class GroupBuyingService {
         return true;
     }
 
+    // 공구 참여 수량 수정
+    @Transactional
+    public GroupBuyingResponse.Participate updateGroupBuyingApplyQuantity(Long groupBuyingId, String loggedInUserId, GroupBuyingRequest.Participate request) {
+        GroupBuying groupBuying = getGroupBuying(groupBuyingId);
+
+        GroupBuyingParticipation groupBuyingParticipation = participationRepository.findByGroupBuyingIdAndMemberId(
+                groupBuyingId,
+                loggedInUserId
+        );
+
+        if (groupBuyingParticipation == null) {
+            throw new BusinessException(ErrorCode.NOT_EXIST_GROUP_BUYING_PARTICIPANT);
+        }
+
+        int currentTotalQuantity = calculateCurrentQuantity(groupBuyingId);
+        int expectedTotalQuantity = currentTotalQuantity - groupBuyingParticipation.getApplyQuantity() + request.applyQuantity();
+
+        validateExpectedQuantity(groupBuying, expectedTotalQuantity);
+        groupBuyingParticipation.updateApplyQuantity(request.applyQuantity());
+        checkAndStartGroupBuyingIfFull(groupBuying, expectedTotalQuantity);
+
+        return GroupBuyingResponse.Participate.of(groupBuyingId, groupBuyingParticipation);
+    }
     /* ================= 공통 로직 ================= */
 
     // 공구 상세 Dto 생성
@@ -422,10 +439,10 @@ public class GroupBuyingService {
     public GroupBuyingResponse.Detail getGroupBuyingById(Long groupBuyingId, String loggedInUserId) {
         // 조회수 증가
         groupBuyingRepository.incrementViewCount(groupBuyingId);
-
         // 공동구매 엔티티 조회 (예외 처리 생략)
         GroupBuying groupBuying = getGroupBuying(groupBuyingId);
 
+        int applyQuantity = getMyApplyQuantity(groupBuyingId, loggedInUserId);
         // 현재 모집된 수량
         int currentQuantity = calculateCurrentQuantity(groupBuyingId);
 
@@ -447,7 +464,7 @@ public class GroupBuyingService {
                         .existsByGroupBuyingIdAndMemberIdAndRole(groupBuyingId, loggedInUserId, UserRole.PARTICIPANT);
             }
         }
-        return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity, isOrganizer, isParticipant, hasParticipants);
+        return GroupBuyingResponse.Detail.of(groupBuying, currentQuantity, applyQuantity, isOrganizer, isParticipant, hasParticipants);
     }
 
     // 공구 참여 엔티티 생성
@@ -476,11 +493,32 @@ public class GroupBuyingService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_GROUP_BUYING));
     }
 
-    // 멤버 조회 (임시 로직 격리)
+    // 멤버 조회
     private Member getMember(String memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXIST_MEMBER)
         );
+    }
+
+    // 내 신청 수량 조회 공통 로직
+    private int getMyApplyQuantity(Long groupBuyingId, String memberId) {
+        if (memberId == null) return 0;
+        GroupBuyingParticipation participation = participationRepository.findByGroupBuyingIdAndMemberId(groupBuyingId, memberId);
+        return participation != null ? participation.getApplyQuantity() : 0;
+    }
+
+    // 신청 수량 초과 검증 공통 로직
+    private void validateExpectedQuantity(GroupBuying groupBuying, int expectedTotalQuantity) {
+        if (expectedTotalQuantity > groupBuying.getTargetQuantity()) {
+            throw new BusinessException(ErrorCode.EXCEED_TARGET_QUANTITY);
+        }
+    }
+
+    // 목표 수량 달성 시 공구 시작(START) 상태 변경 공통 로직
+    private void checkAndStartGroupBuyingIfFull(GroupBuying groupBuying, int expectedTotalQuantity) {
+        if (expectedTotalQuantity == groupBuying.getTargetQuantity() && groupBuying.getStatus() == GroupBuyingStatus.RECRUITING) {
+            processStatusChange(groupBuying.getId(), GroupBuyingStatus.START, null, null);
+        }
     }
 
     // 디데이 계산

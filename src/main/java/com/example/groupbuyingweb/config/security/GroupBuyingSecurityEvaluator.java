@@ -68,8 +68,8 @@ public class GroupBuyingSecurityEvaluator {
                 .orElse(false);
     }
 
-    // 참여 취소 권한 (참여자 본인 + 모집중)
-    public boolean canCancelParticipation(Authentication authentication, Long groupBuyingId) {
+    // 참여자의 수정(수량 수정, 취소) 권한 (참여자 본인 + 모집중)
+    public boolean canUpdateParticipation(Authentication authentication, Long groupBuyingId) {
         String userId = getUserId(authentication);
         if (userId == null) return false;
 

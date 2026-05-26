@@ -273,7 +273,11 @@
 
         <div th:if="${groupBuying.isParticipant}">
             <div th:if="${groupBuying.status.name() == 'RECRUITING'}" class="button-group">
-                <button id="btn-participant-edit" class="submit-btn sub-btn">참여 수량 수정</button>
+                <button id="btn-participant-edit" class="submit-btn"
+                        th:data-id="${groupBuying.id}"
+                        th:data-quantity="${groupBuying.applyQuantity}"
+                        onclick="editParticipate(this.getAttribute('data-id'), this.getAttribute('data-quantity'))"
+                >참여 수량 수정</button>
                 <button id="btn-cancel" class="submit-btn danger-btn" onclick="confirmCancel()">참여 취소</button>
             </div>
         </div>
@@ -299,6 +303,9 @@
 
 <script th:if="${participateSuccess}">
     alert("참여 신청이 완료되었습니다!");
+</script>
+<script th:if="${updateParticipateSuccess}">
+    alert("참여 수량이 수정되었습니다!");
 </script>
 <script type="text/javascript"
         th:src="@{//dapi.kakao.com/v2/maps/sdk.js(appkey=${kakaoJsKey},libraries='services')}">
@@ -388,6 +395,52 @@
 
         document.body.appendChild(form);
         form.submit();
+    }
+
+    // --- 참여 수량 수정 통신 로직 ---
+    function editParticipate(id, currentQuantity) {
+        // 1. prompt 창의 메시지에 현재 수량 표시 및 기본값(currentQuantity) 세팅
+        const quantityStr = prompt(`현재 신청하신 수량은 ${currentQuantity}개입니다.\n변경할 수량을 입력해주세요. (숫자만 입력)`, currentQuantity);
+
+        if (quantityStr === null || quantityStr.trim() === "") return;
+
+        const applyQuantity = parseInt(quantityStr, 10);
+        if (isNaN(applyQuantity) || applyQuantity <= 0) {
+            alert("유효한 수량을 입력해주세요.");
+            return;
+        }
+
+        // 변경된 수량이 기존 수량과 똑같다면 굳이 서버에 요청할 필요 없음 (소소한 최적화!)
+        if (applyQuantity === parseInt(currentQuantity, 10)) {
+            alert("기존에 신청하신 수량과 동일합니다.");
+            return;
+        }
+
+        // 2. Fetch API 로직 (이전과 동일)
+        fetch(`/api/group-buyings/${id}/participants`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+                // 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+            },
+            body: JSON.stringify({
+                applyQuantity: applyQuantity
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("서버 응답 오류");
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert("참여 수량이 성공적으로 수정되었습니다.");
+            window.location.reload();
+         })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("서버와 통신 중 문제가 발생했습니다.");
+        });
     }
     // --- 이미지 삭제 로직 ---
     document.getElementById('btn-delete').addEventListener('click', () => {

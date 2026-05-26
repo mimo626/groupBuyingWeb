@@ -2,6 +2,7 @@ package com.example.groupbuyingweb.domain.dto.response;
 
 import com.example.groupbuyingweb.domain.entity.mysql.GroupBuying;
 import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingImage;
+import com.example.groupbuyingweb.domain.entity.mysql.GroupBuyingParticipation;
 import com.example.groupbuyingweb.domain.entity.mysql.Member;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingCategory;
 import com.example.groupbuyingweb.domain.enums.GroupBuyingStatus;
@@ -59,6 +60,7 @@ public class GroupBuyingResponse {
             double unitPrice,
             int targetQuantity,
             int currentQuantity,
+            int applyQuantity,
             String meetingPlace, // 만남 장소 텍스트
             String meetingAddress,
             Double entX,
@@ -80,7 +82,7 @@ public class GroupBuyingResponse {
             }
         }
 
-        public static Detail of(GroupBuying groupBuying, int currentQuantity,
+        public static Detail of(GroupBuying groupBuying, int currentQuantity, int applyQuantity,
                                 boolean isOrganizer, boolean isParticipant, boolean hasParticipants) {
             return new Detail(
                     groupBuying.getId(),
@@ -93,6 +95,7 @@ public class GroupBuyingResponse {
                     groupBuying.getTargetQuantity() > 0 ? groupBuying.getTotalPrice() / groupBuying.getTargetQuantity() : 0,
                     groupBuying.getTargetQuantity(),
                     currentQuantity,
+                    applyQuantity,
                     groupBuying.getMeetingPlace(),
                     groupBuying.getMeetingAddress(),
                     groupBuying.getEntX(),
@@ -134,7 +137,15 @@ public class GroupBuyingResponse {
             Long groupBuyingId,
             Long groupBuyingPartiId,
             Integer applyQuantity
-    ) {}
+    ) {
+        public static Participate of(Long groupBuyingId, GroupBuyingParticipation groupBuyingParticipation) {
+            return new Participate(
+                    groupBuyingId,
+                    groupBuyingParticipation.getId(),
+                    groupBuyingParticipation.getApplyQuantity()
+            );
+        }
+    }
 
     public record UpdateStatus(
             Long groupBuyingId,

@@ -83,6 +83,31 @@ public class GroupBuyingController {
     // 성공(상태 변경 완료) 시 200 OK
     // 실패(공구 정보 없음) 시 404 Not Found
     // 실패(상태 변경 권한 없음) 시 403 Forbidden
+    @PatchMapping("/{id}/participants")
+    @PreAuthorize("@groupBuyingSecurity.canUpdateParticipation(authentication, #groupBuyingId)")
+    @ResponseBody // 현재 클래스가 @RestController가 아닌 @Controller라면 필수
+    public ResponseEntity<GroupBuyingResponse.Participate> updateGroupBuyingApplyQuantity(
+            @PathVariable("id") Long groupBuyingId,
+            Authentication authentication,
+            @RequestBody GroupBuyingRequest.Participate request
+    ) {
+
+        String loggedInUserId = authentication.getName();
+
+        GroupBuyingResponse.Participate res = groupBuyingService.updateGroupBuyingApplyQuantity(
+                groupBuyingId,
+                loggedInUserId,
+                request);
+
+        System.out.println("updateGroupBuying: " + res.toString());
+
+        return ResponseEntity.ok(res);
+    }
+
+    // 상태 변경 (로그인은 필수, 세부 조건은 서비스 로직에 위임)
+    // 성공(상태 변경 완료) 시 200 OK
+    // 실패(공구 정보 없음) 시 404 Not Found
+    // 실패(상태 변경 권한 없음) 시 403 Forbidden
     @ResponseBody
     @PatchMapping("/{id}/status")
     @PreAuthorize("isAuthenticated()") // 여기서 '상태'까지 검증하긴 복잡하므로 인증만 거치고, 서비스에서 권한/상태 예외 처리
